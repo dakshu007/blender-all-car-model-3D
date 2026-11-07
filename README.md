@@ -11,9 +11,12 @@ Everything is built and checked by reusable **Blender Python** scripts, with
 | Car | State |
 | --- | --- |
 | **CAR-009 "Brenner S1"** (1980s Group-B-style AWD coupe, original design) | Blender build, previews, FBX export and validation (**PASS 46/46**) done. **Unity import and drive test still to do.** Awaiting your art review. |
-| CAR-001 … CAR-015 | Not started. They follow once CAR-009 passes the full Blender → Unity test and is approved. |
+| **8 reference-class cars**: CAR-002 Sorrel A1, CAR-008 Kestrel 9R, CAR-016 Elster 2T, CAR-004 Falcon Mk1 Rally, CAR-017 Falcon Mk2 RS, CAR-006 Torino 131, CAR-018 Isar 3R, CAR-019 Mistral W1 | One original car per reference screenshot, all built by the generic spec-driven builder, with FBX exports and validation. See [`Documentation/COLLECTION_REFERENCE_CARS.md`](Documentation/COLLECTION_REFERENCE_CARS.md). Unity test still to do. |
+| Remaining roster (CAR-001, 003, 005, 007, 010–015) | Not started |
 
 ![CAR-009 studio preview](ArtPipeline/VehicleLibrary/CAR-009/Previews/CAR-009_Preview.png)
+
+![Reference-class collection](Documentation/COLLECTION_OVERVIEW.png)
 
 **CAR-009 at a glance:** 4.26 × 1.92 × 1.37 m · wheelbase 2.36 m · track 1.56 m ·
 22,702 tris · one 2K livery texture · 17 shared materials · four wheel pivots at the
@@ -43,7 +46,13 @@ ArtPipeline/
     cars/car009_spec.py      CAR-009 design spec (dimensions, atlas layout, palette)
     cars/build_car009.py     builds CAR-009 in Blender
     cars/livery_car009.py    paints the CAR-009 livery atlas (Pillow)
-    run_car009_pipeline.sh   runs everything above, in order
+    cars/collection_specs.py compact specs for the 8 reference-class cars
+    cars/carspec.py          spec -> sections, glasshouse, atlas (shared, pure Python)
+    cars/build_generic.py    builds any car from its spec
+    cars/livery_generic.py   paints any car's livery from its spec
+    run_car009_pipeline.sh   runs everything above, in order, for CAR-009
+    run_car_pipeline.sh      same for any spec'd car (or "all")
+    make_collection_doc.py   writes the collection doc from the real reports
   Blender/Reports/           JSON reports from real Blender runs
   VehicleLibrary/CAR-009/
     Source/                  normalised copy of the download (reference)
@@ -75,6 +84,12 @@ Or, with the standalone `bpy` module (`pip install bpy==5.0.1` on Python 3.11):
 
 ```bash
 BPY_PYTHON=/path/to/venv/bin/python ./run_car009_pipeline.sh
+```
+
+For the eight reference-class cars:
+
+```bash
+BLENDER=/Applications/Blender.app/Contents/MacOS/Blender ./run_car_pipeline.sh all
 ```
 
 Each script also runs on its own. For example, to inspect any new download:

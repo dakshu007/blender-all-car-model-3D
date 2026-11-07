@@ -1,0 +1,361 @@
+{
+  "car_id": "CAR-017",
+  "display_name": "Falcon Mk2 RS",
+  "tool": "build_generic.py",
+  "generated_utc": "2026-11-07T22:23:05+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "saved_file": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-017/Working/CAR-017_Working_v001.blend",
+  "reference_class": "A3A1E2BD: late-1970s square-cut two-door saloon with rectangular lamps",
+  "design_to_final_offset": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "bbox": {
+    "min": [
+      -0.897758424282074,
+      -2.1730000972747803,
+      3.3915042877197266e-05
+    ],
+    "max": [
+      0.897758424282074,
+      2.1730000972747803,
+      1.409500002861023
+    ],
+    "size": [
+      1.795516848564148,
+      4.3460001945495605,
+      1.409466028213501
+    ],
+    "center": [
+      0.0,
+      0.0,
+      0.7047669887542725
+    ]
+  },
+  "total_tris": 23706,
+  "wheels": {
+    "FL": {
+      "blender": [
+        -0.7,
+        1.25,
+        0.31
+      ],
+      "unity": [
+        -0.7,
+        0.31,
+        1.25
+      ]
+    },
+    "FR": {
+      "blender": [
+        0.7,
+        1.25,
+        0.31
+      ],
+      "unity": [
+        0.7,
+        0.31,
+        1.25
+      ]
+    },
+    "RL": {
+      "blender": [
+        -0.7,
+        -1.15,
+        0.31
+      ],
+      "unity": [
+        -0.7,
+        0.31,
+        -1.15
+      ]
+    },
+    "RR": {
+      "blender": [
+        0.7,
+        -1.15,
+        0.31
+      ],
+      "unity": [
+        0.7,
+        0.31,
+        -1.15
+      ]
+    }
+  },
+  "wheel_radius": 0.31,
+  "tire_width": 0.215,
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-017_Accent",
+    "M_CAR-017_Cage",
+    "M_CAR-017_Paint",
+    "M_CAR-017_Plate",
+    "M_CAR-017_Rim",
+    "M_CAR-017_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "objects": [
+    {
+      "name": "CAR-017_Body",
+      "type": "MESH",
+      "parent": "CAR-017_Root",
+      "tris": 4396,
+      "materials": [
+        "M_CAR-017_Paint",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-017_Bumper_Front",
+      "type": "MESH",
+      "parent": "CAR-017_Exterior",
+      "tris": 164,
+      "materials": [
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-017_Bumper_Rear",
+      "type": "MESH",
+      "parent": "CAR-017_Exterior",
+      "tris": 164,
+      "materials": [
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-017_Exterior",
+      "type": "EMPTY",
+      "parent": "CAR-017_Root",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-017_Glass",
+      "type": "MESH",
+      "parent": "CAR-017_Root",
+      "tris": 12,
+      "materials": [
+        "M_Glass_Tint"
+      ]
+    },
+    {
+      "name": "CAR-017_Interior",
+      "type": "MESH",
+      "parent": "CAR-017_Root",
+      "tris": 982,
+      "materials": [
+        "M_Interior_Dark",
+        "M_Trim_Black",
+        "M_CAR-017_Seat",
+        "M_CAR-017_Cage"
+      ]
+    },
+    {
+      "name": "CAR-017_Lights",
+      "type": "MESH",
+      "parent": "CAR-017_Root",
+      "tris": 2488,
+      "materials": [
+        "M_Trim_Black",
+        "M_Light_Head",
+        "M_Light_Indicator",
+        "M_Chrome",
+        "M_Light_Aux",
+        "M_Light_Tail"
+      ]
+    },
+    {
+      "name": "CAR-017_Mirrors",
+      "type": "MESH",
+      "parent": "CAR-017_Exterior",
+      "tris": 872,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome"
+      ]
+    },
+    {
+      "name": "CAR-017_MudFlaps",
+      "type": "MESH",
+      "parent": "CAR-017_Exterior",
+      "tris": 176,
+      "materials": [
+        "M_CAR-017_Accent"
+      ]
+    },
+    {
+      "name": "CAR-017_Root",
+      "type": "EMPTY",
+      "parent": null,
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-017_Spoiler",
+      "type": "MESH",
+      "parent": "CAR-017_Exterior",
+      "tris": 32,
+      "materials": [
+        "M_CAR-017_Paint"
+      ]
+    },
+    {
+      "name": "CAR-017_SteeringWheel",
+      "type": "MESH",
+      "parent": "CAR-017_Interior",
+      "tris": 488,
+      "materials": [
+        "M_Trim_Black",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "CAR-017_Trim",
+      "type": "MESH",
+      "parent": "CAR-017_Exterior",
+      "tris": 620,
+      "materials": [
+        "M_Trim_Black",
+        "M_Trim_Grey",
+        "M_Chrome",
+        "M_CAR-017_Accent",
+        "M_CAR-017_Plate"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_FL",
+      "type": "EMPTY",
+      "parent": "CAR-017_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-017_Wheel_FL_Rim",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_FL",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-017_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_FL_Tire",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_FL",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_FR",
+      "type": "EMPTY",
+      "parent": "CAR-017_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-017_Wheel_FR_Rim",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_FR",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-017_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_FR_Tire",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_FR",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_RL",
+      "type": "EMPTY",
+      "parent": "CAR-017_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-017_Wheel_RL_Rim",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_RL",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-017_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_RL_Tire",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_RL",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_RR",
+      "type": "EMPTY",
+      "parent": "CAR-017_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-017_Wheel_RR_Rim",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_RR",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-017_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheel_RR_Tire",
+      "type": "MESH",
+      "parent": "CAR-017_Wheel_RR",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-017_Wheels",
+      "type": "EMPTY",
+      "parent": "CAR-017_Root",
+      "tris": 0,
+      "materials": []
+    }
+  ]
+}

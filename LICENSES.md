@@ -41,6 +41,24 @@ or recreated from them. See `ArtPipeline/References/REFERENCE_NOTES.md`.
 
 ## Original content in this repository
 
-The CAR-009 "Brenner S1" model, its livery, and the fictional names "Brenner S1",
-"HALVIK", "ORSA TYRES", "K. VARGA / L. MOEN" and "BRN 27S" were created for this
-project.
+All car models and liveries were created for this project by the build scripts in
+`ArtPipeline/Blender/Scripts/cars/`. No third-party mesh is used in them, and nothing
+was traced or extracted from any game.
+
+| Car | Fictional names used (car, sponsors, crew, plate) |
+| --- | --- |
+| CAR-009 Brenner S1 | HALVIK, ORSA TYRES, K. VARGA / L. MOEN, BRN 27S |
+| CAR-002 Sorrel A1 | VELTRO, M. ARDEN / J. KOSKI, SRL 14A |
+| CAR-008 Kestrel 9R | NORDA, E. LIND / R. SOTO, KST 61 |
+| CAR-016 Elster 2T | KORVEN, T. HALE / O. BERG, EL 2033 |
+| CAR-004 Falcon Mk1 Rally | ORVIK, S. MARR / D. OKAFOR, FLC 707 |
+| CAR-017 Falcon Mk2 RS | OSTREA, P. VANCE / I. DAHL, FMK 22 |
+| CAR-006 Torino 131 | LUMA, G. RIVA / N. COSTA, TR 1310 |
+| CAR-018 Isar 3R | SKERRY, H. ADLER / V. NUNES, IS 388 |
+| CAR-019 Mistral W1 | OKAPI, MW 105 |
+
+The eight reference-class cars (CAR-002/004/006/008/016/017/018/019) take only the
+general body type, era and proportions of their reference screenshot. Their
+liveries and colour schemes are new. Before a commercial release, run a trademark
+check on the fictional car and sponsor names. The roster's suggested names
+"Torino 131" and "Falcon" are working titles.

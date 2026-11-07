@@ -1,0 +1,360 @@
+{
+  "car_id": "CAR-006",
+  "display_name": "Torino 131",
+  "tool": "build_generic.py",
+  "generated_utc": "2026-11-07T22:26:14+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "saved_file": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-006/Working/CAR-006_Working_v001.blend",
+  "reference_class": "E42282C2: late-1970s boxy four-door saloon with flared arches",
+  "design_to_final_offset": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "bbox": {
+    "min": [
+      -0.9244865775108337,
+      -2.2230000495910645,
+      3.3915042877197266e-05
+    ],
+    "max": [
+      0.9244865775108337,
+      2.2230000495910645,
+      1.399999976158142
+    ],
+    "size": [
+      1.8489731550216675,
+      4.446000099182129,
+      1.3999660015106201
+    ],
+    "center": [
+      0.0,
+      0.0,
+      0.700016975402832
+    ]
+  },
+  "total_tris": 25028,
+  "wheels": {
+    "FL": {
+      "blender": [
+        -0.72,
+        1.26,
+        0.31
+      ],
+      "unity": [
+        -0.72,
+        0.31,
+        1.26
+      ]
+    },
+    "FR": {
+      "blender": [
+        0.72,
+        1.26,
+        0.31
+      ],
+      "unity": [
+        0.72,
+        0.31,
+        1.26
+      ]
+    },
+    "RL": {
+      "blender": [
+        -0.72,
+        -1.23,
+        0.31
+      ],
+      "unity": [
+        -0.72,
+        0.31,
+        -1.23
+      ]
+    },
+    "RR": {
+      "blender": [
+        0.72,
+        -1.23,
+        0.31
+      ],
+      "unity": [
+        0.72,
+        0.31,
+        -1.23
+      ]
+    }
+  },
+  "wheel_radius": 0.31,
+  "tire_width": 0.225,
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-006_Accent",
+    "M_CAR-006_Cage",
+    "M_CAR-006_Paint",
+    "M_CAR-006_Plate",
+    "M_CAR-006_Rim",
+    "M_CAR-006_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "objects": [
+    {
+      "name": "CAR-006_Body",
+      "type": "MESH",
+      "parent": "CAR-006_Root",
+      "tris": 4606,
+      "materials": [
+        "M_CAR-006_Paint",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-006_Bumper_Front",
+      "type": "MESH",
+      "parent": "CAR-006_Exterior",
+      "tris": 164,
+      "materials": [
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-006_Bumper_Rear",
+      "type": "MESH",
+      "parent": "CAR-006_Exterior",
+      "tris": 164,
+      "materials": [
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-006_Exterior",
+      "type": "EMPTY",
+      "parent": "CAR-006_Root",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-006_Glass",
+      "type": "MESH",
+      "parent": "CAR-006_Root",
+      "tris": 16,
+      "materials": [
+        "M_Glass_Tint"
+      ]
+    },
+    {
+      "name": "CAR-006_Interior",
+      "type": "MESH",
+      "parent": "CAR-006_Root",
+      "tris": 982,
+      "materials": [
+        "M_Interior_Dark",
+        "M_Trim_Black",
+        "M_CAR-006_Seat",
+        "M_CAR-006_Cage"
+      ]
+    },
+    {
+      "name": "CAR-006_Lights",
+      "type": "MESH",
+      "parent": "CAR-006_Root",
+      "tris": 3072,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Light_Head",
+        "M_Light_Indicator",
+        "M_Light_Aux",
+        "M_Light_Tail"
+      ]
+    },
+    {
+      "name": "CAR-006_Mirrors",
+      "type": "MESH",
+      "parent": "CAR-006_Exterior",
+      "tris": 872,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome"
+      ]
+    },
+    {
+      "name": "CAR-006_MudFlaps",
+      "type": "MESH",
+      "parent": "CAR-006_Exterior",
+      "tris": 176,
+      "materials": [
+        "M_CAR-006_Accent"
+      ]
+    },
+    {
+      "name": "CAR-006_Root",
+      "type": "EMPTY",
+      "parent": null,
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-006_Spoiler",
+      "type": "MESH",
+      "parent": "CAR-006_Exterior",
+      "tris": 76,
+      "materials": [
+        "M_CAR-006_Paint"
+      ]
+    },
+    {
+      "name": "CAR-006_SteeringWheel",
+      "type": "MESH",
+      "parent": "CAR-006_Interior",
+      "tris": 488,
+      "materials": [
+        "M_Trim_Black",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "CAR-006_Trim",
+      "type": "MESH",
+      "parent": "CAR-006_Exterior",
+      "tris": 572,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_CAR-006_Accent",
+        "M_CAR-006_Plate"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_FL",
+      "type": "EMPTY",
+      "parent": "CAR-006_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-006_Wheel_FL_Rim",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_FL",
+      "tris": 1860,
+      "materials": [
+        "M_CAR-006_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_FL_Tire",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_FL",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_FR",
+      "type": "EMPTY",
+      "parent": "CAR-006_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-006_Wheel_FR_Rim",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_FR",
+      "tris": 1860,
+      "materials": [
+        "M_CAR-006_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_FR_Tire",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_FR",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_RL",
+      "type": "EMPTY",
+      "parent": "CAR-006_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-006_Wheel_RL_Rim",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_RL",
+      "tris": 1860,
+      "materials": [
+        "M_CAR-006_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_RL_Tire",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_RL",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_RR",
+      "type": "EMPTY",
+      "parent": "CAR-006_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-006_Wheel_RR_Rim",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_RR",
+      "tris": 1860,
+      "materials": [
+        "M_CAR-006_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheel_RR_Tire",
+      "type": "MESH",
+      "parent": "CAR-006_Wheel_RR",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-006_Wheels",
+      "type": "EMPTY",
+      "parent": "CAR-006_Root",
+      "tris": 0,
+      "materials": []
+    }
+  ]
+}

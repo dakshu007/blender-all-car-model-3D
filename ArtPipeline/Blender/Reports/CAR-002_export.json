@@ -1,0 +1,72 @@
+{
+  "car_id": "CAR-002",
+  "tool": "export_vehicle_fbx.py",
+  "generated_utc": "2026-11-07T22:13:37+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-002/Working/CAR-002_Working_v001.blend",
+  "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-002/Export/CAR-002_Export.fbx",
+  "fbx_size_bytes": 564476,
+  "object_count": 25,
+  "objects": [
+    "CAR-002_Body",
+    "CAR-002_Bumper_Front",
+    "CAR-002_Bumper_Rear",
+    "CAR-002_Exterior",
+    "CAR-002_Glass",
+    "CAR-002_Interior",
+    "CAR-002_Lights",
+    "CAR-002_Mirrors",
+    "CAR-002_MudFlaps",
+    "CAR-002_Root",
+    "CAR-002_SteeringWheel",
+    "CAR-002_Trim",
+    "CAR-002_Wheel_FL",
+    "CAR-002_Wheel_FL_Rim",
+    "CAR-002_Wheel_FL_Tire",
+    "CAR-002_Wheel_FR",
+    "CAR-002_Wheel_FR_Rim",
+    "CAR-002_Wheel_FR_Tire",
+    "CAR-002_Wheel_RL",
+    "CAR-002_Wheel_RL_Rim",
+    "CAR-002_Wheel_RL_Tire",
+    "CAR-002_Wheel_RR",
+    "CAR-002_Wheel_RR_Rim",
+    "CAR-002_Wheel_RR_Tire",
+    "CAR-002_Wheels"
+  ],
+  "triangles": 23556,
+  "textures_copied": [
+    "CAR-002_BaseColor.png"
+  ],
+  "settings": {
+    "use_selection": true,
+    "object_types": [
+      "EMPTY",
+      "MESH"
+    ],
+    "axis_forward": "Z",
+    "axis_up": "Y",
+    "bake_space_transform": false,
+    "apply_unit_scale": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "global_scale": 1.0,
+    "use_mesh_modifiers": true,
+    "mesh_smooth_type": "FACE",
+    "use_tspace": false,
+    "use_custom_props": true,
+    "add_leaf_bones": false,
+    "bake_anim": false,
+    "path_mode": "STRIP",
+    "embed_textures": false,
+    "colors_type": "NONE"
+  },
+  "actions": [
+    "exported 25 objects -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-002/Export/CAR-002_Export.fbx",
+    "vehicle data -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-002/Export/CAR-002_vehicle_data.json"
+  ],
+  "warnings": []
+}
