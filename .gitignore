@@ -1,0 +1,22 @@
+# Copyrighted game screenshots supplied as visual reference only - never publish
+ArtPipeline/References/*.jpeg
+ArtPipeline/References/*.jpg
+ArtPipeline/References/*.png
+ArtPipeline/References/__MACOSX/
+
+# Blender autosave / backup files
+*.blend1
+*.blend2
+*.blend@
+
+# Export script safety backups (the approved FBX is CAR-XXX_Export.fbx)
+*_backup*.fbx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store

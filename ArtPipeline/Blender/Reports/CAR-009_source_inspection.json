@@ -1,0 +1,1208 @@
+{
+  "car_id": "CAR-009",
+  "generated_utc": "2026-11-07T21:06:18+00:00",
+  "tool": "inspect_vehicle.py",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "source_file": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbx",
+  "source_size_bytes": 2331052,
+  "source_unmodified": true,
+  "scene_unit_scale": 1.0,
+  "object_count": 7,
+  "object_types": {
+    "EMPTY": 1,
+    "MESH": 6
+  },
+  "duplicate_object_names": [],
+  "totals": {
+    "verts": 16358,
+    "edges": 35370,
+    "faces": 19726,
+    "tris": 19726
+  },
+  "vehicle_bbox": {
+    "min": [
+      -0.9479517340660095,
+      -2.196700096130371,
+      -2.6400928732073226e-07
+    ],
+    "max": [
+      0.9479518532752991,
+      2.1967005729675293,
+      1.6900004148483276
+    ],
+    "size": [
+      1.8959035873413086,
+      4.3934006690979,
+      1.6900006532669067
+    ],
+    "center": [
+      5.960464477539063e-08,
+      2.384185791015625e-07,
+      0.8450000882148743
+    ]
+  },
+  "longest_horizontal_axis": "Y",
+  "objects": [
+    {
+      "name": "rally-car",
+      "type": "EMPTY",
+      "parent": null,
+      "children": [
+        "rally-car_body",
+        "rally-car_wheel_fl",
+        "rally-car_wheel_fr",
+        "rally-car_wheel_rl",
+        "rally-car_wheel_rr",
+        "rally-car_windows"
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        -0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "rally-car_body",
+      "type": "MESH",
+      "parent": "rally-car",
+      "children": [],
+      "location": [
+        0.0,
+        0.0167,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0167,
+        -0.0
+      ],
+      "dimensions": [
+        1.8959,
+        4.3934,
+        1.62
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 11596,
+      "edges": 24836,
+      "faces": 13784,
+      "tris": 13784,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "rally-car_body_pbr"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9479517340660095,
+          -2.196700096130371,
+          0.06999965012073517
+        ],
+        "max": [
+          0.9479518532752991,
+          2.1967005729675293,
+          1.6900004148483276
+        ],
+        "size": [
+          1.8959035873413086,
+          4.3934006690979,
+          1.6200007200241089
+        ],
+        "center": [
+          5.960464477539063e-08,
+          2.384185791015625e-07,
+          0.8800000548362732
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        -0.0,
+        0.0167,
+        -0.88
+      ],
+      "health": {
+        "non_manifold_edges": 8320,
+        "boundary_edges": 8320,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 5,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 4413,
+        "loose_parts": 571
+      }
+    },
+    {
+      "name": "rally-car_wheel_fl",
+      "type": "MESH",
+      "parent": "rally-car",
+      "children": [],
+      "location": [
+        0.76,
+        -1.2833,
+        0.34
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.76,
+        -1.2833,
+        0.34
+      ],
+      "dimensions": [
+        0.24986,
+        0.68,
+        0.68
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 1052,
+      "edges": 2291,
+      "faces": 1280,
+      "tris": 1280,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "rally-car_tire_x",
+        "rally-car_rim_x",
+        "rally-car_hubcap_x",
+        "rally-car_trim_charcoal_x"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          0.6350718140602112,
+          -1.6232998371124268,
+          1.5322322610700212e-07
+        ],
+        "max": [
+          0.8849279284477234,
+          -0.9432997703552246,
+          0.6800002455711365
+        ],
+        "size": [
+          0.2498561143875122,
+          0.6800000667572021,
+          0.6800000667572021
+        ],
+        "center": [
+          0.7599998712539673,
+          -1.2832998037338257,
+          0.3400002121925354
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 742,
+        "boundary_edges": 742,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 410,
+        "loose_parts": 41
+      }
+    },
+    {
+      "name": "rally-car_wheel_fr",
+      "type": "MESH",
+      "parent": "rally-car",
+      "children": [],
+      "location": [
+        -0.76,
+        -1.2833,
+        0.34
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.76,
+        -1.2833,
+        0.34
+      ],
+      "dimensions": [
+        0.24986,
+        0.68,
+        0.68
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 1052,
+      "edges": 2291,
+      "faces": 1280,
+      "tris": 1280,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "rally-car_tire_x.001",
+        "rally-car_rim_x.001",
+        "rally-car_hubcap_x.001",
+        "rally-car_trim_charcoal_x.001"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.8849281668663025,
+          -1.6232998371124268,
+          1.5322322610700212e-07
+        ],
+        "max": [
+          -0.6350720524787903,
+          -0.9432997703552246,
+          0.6800002455711365
+        ],
+        "size": [
+          0.2498561143875122,
+          0.6800000667572021,
+          0.6800000667572021
+        ],
+        "center": [
+          -0.7600001096725464,
+          -1.2832998037338257,
+          0.3400002121925354
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 742,
+        "boundary_edges": 742,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 410,
+        "loose_parts": 41
+      }
+    },
+    {
+      "name": "rally-car_wheel_rl",
+      "type": "MESH",
+      "parent": "rally-car",
+      "children": [],
+      "location": [
+        0.76,
+        1.2367,
+        0.34
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.76,
+        1.2367,
+        0.34
+      ],
+      "dimensions": [
+        0.24986,
+        0.68,
+        0.68
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 1052,
+      "edges": 2291,
+      "faces": 1280,
+      "tris": 1280,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "rally-car_tire_x.002",
+        "rally-car_rim_x.002",
+        "rally-car_hubcap_x.002",
+        "rally-car_trim_charcoal_x.002"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          0.6350719332695007,
+          0.8967001438140869,
+          -2.6400928732073226e-07
+        ],
+        "max": [
+          0.8849280476570129,
+          1.576700210571289,
+          0.679999828338623
+        ],
+        "size": [
+          0.2498561143875122,
+          0.6800000667572021,
+          0.6800000667572021
+        ],
+        "center": [
+          0.7599999904632568,
+          1.236700177192688,
+          0.339999794960022
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 742,
+        "boundary_edges": 742,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 410,
+        "loose_parts": 41
+      }
+    },
+    {
+      "name": "rally-car_wheel_rr",
+      "type": "MESH",
+      "parent": "rally-car",
+      "children": [],
+      "location": [
+        -0.76,
+        1.2367,
+        0.34
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.76,
+        1.2367,
+        0.34
+      ],
+      "dimensions": [
+        0.24986,
+        0.68,
+        0.68
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 1052,
+      "edges": 2291,
+      "faces": 1280,
+      "tris": 1280,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "rally-car_tire_x.003",
+        "rally-car_rim_x.003",
+        "rally-car_hubcap_x.003",
+        "rally-car_trim_charcoal_x.003"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.8849280476570129,
+          0.8967001438140869,
+          -2.6400928732073226e-07
+        ],
+        "max": [
+          -0.6350719332695007,
+          1.576700210571289,
+          0.679999828338623
+        ],
+        "size": [
+          0.2498561143875122,
+          0.6800000667572021,
+          0.6800000667572021
+        ],
+        "center": [
+          -0.7599999904632568,
+          1.236700177192688,
+          0.339999794960022
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 742,
+        "boundary_edges": 742,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 410,
+        "loose_parts": 41
+      }
+    },
+    {
+      "name": "rally-car_windows",
+      "type": "MESH",
+      "parent": "rally-car",
+      "children": [],
+      "location": [
+        0.0,
+        0.0167,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0167,
+        -0.0
+      ],
+      "dimensions": [
+        1.50346,
+        2.7376,
+        0.38066
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 554,
+      "edges": 1370,
+      "faces": 822,
+      "tris": 822,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "rally-car_window_glass_x"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.7517318725585938,
+          -0.905043363571167,
+          0.9868366718292236
+        ],
+        "max": [
+          0.7517318725585938,
+          1.8325546979904175,
+          1.3675000667572021
+        ],
+        "size": [
+          1.5034637451171875,
+          2.737597942352295,
+          0.3806633949279785
+        ],
+        "center": [
+          0.0,
+          0.46375566720962524,
+          1.177168369293213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        -0.44706,
+        -1.17717
+      ],
+      "health": {
+        "non_manifold_edges": 274,
+        "boundary_edges": 274,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 6
+      }
+    }
+  ],
+  "materials": [
+    {
+      "name": "rally-car_body_pbr",
+      "users": 1,
+      "use_nodes": true,
+      "images": [
+        "rally-car_body_basecolor",
+        "rally-car_body_normal",
+        "rally-car_body_metallic-rally-car_body_roughness_roughness",
+        "rally-car_body_metallic-rally-car_body_roughness_metallic"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "rally-car_hubcap_x",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_hubcap_x.001",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_hubcap_x.002",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_hubcap_x.003",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_rim_x",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_rim_x.001",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_rim_x.002",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_rim_x.003",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_tire_x",
+      "users": 1,
+      "use_nodes": true,
+      "images": [
+        "rally-car_tire_color",
+        "rally-car_tire_normal"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "rally-car_tire_x.001",
+      "users": 1,
+      "use_nodes": true,
+      "images": [
+        "rally-car_tire_color",
+        "rally-car_tire_normal"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "rally-car_tire_x.002",
+      "users": 1,
+      "use_nodes": true,
+      "images": [
+        "rally-car_tire_color",
+        "rally-car_tire_normal"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "rally-car_tire_x.003",
+      "users": 1,
+      "use_nodes": true,
+      "images": [
+        "rally-car_tire_color",
+        "rally-car_tire_normal"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "rally-car_trim_charcoal_x",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_trim_charcoal_x.001",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_trim_charcoal_x.002",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_trim_charcoal_x.003",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "rally-car_window_glass_x",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeNormalMap",
+        "ShaderNodeOutputMaterial"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "name": "rally-car_body_basecolor",
+      "filepath": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbm/rally-car_body_basecolor.jpg",
+      "packed": true,
+      "file_found": true,
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "missing": false
+    },
+    {
+      "name": "rally-car_body_metallic-rally-car_body_roughness_metallic",
+      "filepath": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbm/rally-car_body_metallic-rally-car_body_roughness_metallic.jpg",
+      "packed": true,
+      "file_found": true,
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "missing": false
+    },
+    {
+      "name": "rally-car_body_metallic-rally-car_body_roughness_roughness",
+      "filepath": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbm/rally-car_body_metallic-rally-car_body_roughness_roughness.jpg",
+      "packed": true,
+      "file_found": true,
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "missing": false
+    },
+    {
+      "name": "rally-car_body_normal",
+      "filepath": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbm/rally-car_body_normal.jpg",
+      "packed": true,
+      "file_found": true,
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "missing": false
+    },
+    {
+      "name": "rally-car_tire_color",
+      "filepath": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbm/rally-car_tire_color.jpg",
+      "packed": true,
+      "file_found": true,
+      "size": [
+        64,
+        256
+      ],
+      "colorspace": "sRGB",
+      "missing": false
+    },
+    {
+      "name": "rally-car_tire_normal",
+      "filepath": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbm/rally-car_tire_normal.jpg",
+      "packed": true,
+      "file_found": true,
+      "size": [
+        64,
+        256
+      ],
+      "colorspace": "Non-Color",
+      "missing": false
+    }
+  ],
+  "missing_images": [],
+  "wheel_candidates": {
+    "NOTE": "Suggestions only. Verify visually before renaming, separating or moving anything.",
+    "separate_wheel_objects_found": 4,
+    "appears_to_have_four_separate_wheel_objects": true,
+    "wheel_shaped_loose_parts_in_joined_meshes": 12,
+    "suggestions": [
+      {
+        "object": "rally-car_wheel_fl",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          0.7599998712539673,
+          -1.2832998037338257,
+          0.3400002121925354
+        ]
+      },
+      {
+        "object": "rally-car_wheel_fr",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.7600001096725464,
+          -1.2832998037338257,
+          0.3400002121925354
+        ]
+      },
+      {
+        "object": "rally-car_wheel_rl",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          0.7599999904632568,
+          1.236700177192688,
+          0.339999794960022
+        ]
+      },
+      {
+        "object": "rally-car_wheel_rr",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.7599999904632568,
+          1.236700177192688,
+          0.339999794960022
+        ]
+      },
+      {
+        "object": "rally-car_body",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.73,
+          -0.8133,
+          0.2
+        ],
+        "size": [
+          0.26,
+          0.025,
+          0.26
+        ],
+        "islands": 7,
+        "faces": 46
+      },
+      {
+        "object": "rally-car_body",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.7354,
+          -0.8133,
+          0.2
+        ],
+        "size": [
+          0.2492,
+          0.025,
+          0.26
+        ],
+        "islands": 5,
+        "faces": 36
+      },
+      {
+        "object": "rally-car_body",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.7246,
+          1.7067,
+          0.2
+        ],
+        "size": [
+          0.2492,
+          0.025,
+          0.26
+        ],
+        "islands": 5,
+        "faces": 36
+      },
+      {
+        "object": "rally-car_body",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.7246,
+          1.7067,
+          0.2
+        ],
+        "size": [
+          0.2492,
+          0.025,
+          0.26
+        ],
+        "islands": 5,
+        "faces": 36
+      },
+      {
+        "object": "rally-car_wheel_fl",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.7569,
+          -1.2833,
+          0.34
+        ],
+        "size": [
+          0.2436,
+          0.68,
+          0.68
+        ],
+        "islands": 36,
+        "faces": 544
+      },
+      {
+        "object": "rally-car_wheel_fl",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.8612,
+          -1.2833,
+          0.34
+        ],
+        "size": [
+          0.0474,
+          0.643,
+          0.643
+        ],
+        "islands": 5,
+        "faces": 736
+      },
+      {
+        "object": "rally-car_wheel_fr",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.7569,
+          -1.2833,
+          0.34
+        ],
+        "size": [
+          0.2436,
+          0.68,
+          0.68
+        ],
+        "islands": 36,
+        "faces": 544
+      },
+      {
+        "object": "rally-car_wheel_fr",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.8612,
+          -1.2833,
+          0.34
+        ],
+        "size": [
+          0.0474,
+          0.643,
+          0.643
+        ],
+        "islands": 5,
+        "faces": 736
+      },
+      {
+        "object": "rally-car_wheel_rl",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.7569,
+          1.2367,
+          0.34
+        ],
+        "size": [
+          0.2436,
+          0.68,
+          0.68
+        ],
+        "islands": 36,
+        "faces": 544
+      },
+      {
+        "object": "rally-car_wheel_rl",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.8612,
+          1.2367,
+          0.34
+        ],
+        "size": [
+          0.0474,
+          0.643,
+          0.643
+        ],
+        "islands": 5,
+        "faces": 736
+      },
+      {
+        "object": "rally-car_wheel_rr",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.7569,
+          1.2367,
+          0.34
+        ],
+        "size": [
+          0.2436,
+          0.68,
+          0.68
+        ],
+        "islands": 36,
+        "faces": 544
+      },
+      {
+        "object": "rally-car_wheel_rr",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.8612,
+          1.2367,
+          0.34
+        ],
+        "size": [
+          0.0474,
+          0.643,
+          0.643
+        ],
+        "islands": 5,
+        "faces": 736
+      }
+    ]
+  }
+}

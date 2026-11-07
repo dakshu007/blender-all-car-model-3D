@@ -1,0 +1,9 @@
+{
+  "rally-car": "CAR-009_SourceRoot",
+  "rally-car_body": "CAR-009_Body",
+  "rally-car_windows": "CAR-009_Glass",
+  "rally-car_wheel_fl": "CAR-009_Wheel_FL",
+  "rally-car_wheel_fr": "CAR-009_Wheel_FR",
+  "rally-car_wheel_rl": "CAR-009_Wheel_RL",
+  "rally-car_wheel_rr": "CAR-009_Wheel_RR"
+}

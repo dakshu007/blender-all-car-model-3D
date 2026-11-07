@@ -1,0 +1,10 @@
+Model: "Rally Car" by Grab3D
+Source: https://grab3d.com/models/vehicles/rally-car/
+License: CC0 1.0 Universal (public domain dedication)
+License page: https://grab3d.com/license/
+Full CC0 text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+Recorded on 2026-11-07 from the live model page, which read:
+  "Free under CC0 for personal and commercial use, no attribution."
+  "$0 · CC0 ... CC0: no login, no attribution [CC0 1.0]"
+  "License: CC0 1.0 · public domain"

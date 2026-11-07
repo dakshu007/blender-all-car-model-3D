@@ -1,0 +1,304 @@
+{
+  "car_id": "CAR-009",
+  "tool": "prepare_vehicle.py",
+  "generated_utc": "2026-11-07T21:12:14+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "dry_run": true,
+  "source_file": "/home/user/blender-all-car-model-3D/ArtPipeline/Incoming/CAR-009/rally-car.fbx",
+  "saved_file": null,
+  "actions": [
+    "rename 'rally-car' -> 'CAR-009_SourceRoot'",
+    "rename 'rally-car_body' -> 'CAR-009_Body'",
+    "rename 'rally-car_windows' -> 'CAR-009_Glass'",
+    "rename 'rally-car_wheel_fl' -> 'CAR-009_Wheel_FL'",
+    "rename 'rally-car_wheel_fr' -> 'CAR-009_Wheel_FR'",
+    "rename 'rally-car_wheel_rl' -> 'CAR-009_Wheel_RL'",
+    "rename 'rally-car_wheel_rr' -> 'CAR-009_Wheel_RR'",
+    "rotate top-level objects 180 deg about Z (source forward -Y -> +Y)",
+    "create CAR-009_Root at ground centre (0.0, 0.0, -0.0); parent top-level objects",
+    "apply rotation+scale on 'rally-car_body'",
+    "apply rotation+scale on 'rally-car_wheel_fl'",
+    "apply rotation+scale on 'rally-car_wheel_fr'",
+    "apply rotation+scale on 'rally-car_wheel_rl'",
+    "apply rotation+scale on 'rally-car_wheel_rr'",
+    "apply rotation+scale on 'rally-car_windows'",
+    "CAR-009_Wheel_FL: origin -> bbox centre (0.76, -1.2833, 0.34) (moved 0.0000 m)",
+    "CAR-009_Wheel_FR: origin -> bbox centre (-0.76, -1.2833, 0.34) (moved 0.0000 m)",
+    "CAR-009_Wheel_RL: origin -> bbox centre (0.76, 1.2367, 0.34) (moved 0.0000 m)",
+    "CAR-009_Wheel_RR: origin -> bbox centre (-0.76, 1.2367, 0.34) (moved 0.0000 m)",
+    "replace material 'rally-car_hubcap_x.001' with identical 'rally-car_hubcap_x'",
+    "replace material 'rally-car_hubcap_x.002' with identical 'rally-car_hubcap_x'",
+    "replace material 'rally-car_hubcap_x.003' with identical 'rally-car_hubcap_x'",
+    "replace material 'rally-car_rim_x.001' with identical 'rally-car_rim_x'",
+    "replace material 'rally-car_rim_x.002' with identical 'rally-car_rim_x'",
+    "replace material 'rally-car_rim_x.003' with identical 'rally-car_rim_x'",
+    "replace material 'rally-car_tire_x.001' with identical 'rally-car_tire_x'",
+    "replace material 'rally-car_tire_x.002' with identical 'rally-car_tire_x'",
+    "replace material 'rally-car_tire_x.003' with identical 'rally-car_tire_x'",
+    "replace material 'rally-car_trim_charcoal_x.001' with identical 'rally-car_trim_charcoal_x'",
+    "replace material 'rally-car_trim_charcoal_x.002' with identical 'rally-car_trim_charcoal_x'",
+    "replace material 'rally-car_trim_charcoal_x.003' with identical 'rally-car_trim_charcoal_x'",
+    "add collision box (1.896, 4.393, 1.69) in collection CAR-009_Collision"
+  ],
+  "warnings": [],
+  "before": {
+    "objects": [
+      {
+        "name": "rally-car",
+        "type": "EMPTY",
+        "parent": null,
+        "world_origin": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "rally-car_body",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.0,
+          0.0167,
+          -0.0
+        ],
+        "verts": 11596,
+        "tris": 13784
+      },
+      {
+        "name": "rally-car_wheel_fl",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.76,
+          -1.2833,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_wheel_fr",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          -0.76,
+          -1.2833,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_wheel_rl",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.76,
+          1.2367,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_wheel_rr",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          -0.76,
+          1.2367,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_windows",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.0,
+          0.0167,
+          -0.0
+        ],
+        "verts": 554,
+        "tris": 822
+      }
+    ],
+    "materials": [
+      "rally-car_body_pbr",
+      "rally-car_hubcap_x",
+      "rally-car_hubcap_x.001",
+      "rally-car_hubcap_x.002",
+      "rally-car_hubcap_x.003",
+      "rally-car_rim_x",
+      "rally-car_rim_x.001",
+      "rally-car_rim_x.002",
+      "rally-car_rim_x.003",
+      "rally-car_tire_x",
+      "rally-car_tire_x.001",
+      "rally-car_tire_x.002",
+      "rally-car_tire_x.003",
+      "rally-car_trim_charcoal_x",
+      "rally-car_trim_charcoal_x.001",
+      "rally-car_trim_charcoal_x.002",
+      "rally-car_trim_charcoal_x.003",
+      "rally-car_window_glass_x"
+    ],
+    "bbox": {
+      "min": [
+        -0.9479517340660095,
+        -2.196700096130371,
+        -2.6400928732073226e-07
+      ],
+      "max": [
+        0.9479518532752991,
+        2.1967005729675293,
+        1.6900004148483276
+      ],
+      "size": [
+        1.8959035873413086,
+        4.3934006690979,
+        1.6900006532669067
+      ],
+      "center": [
+        5.960464477539063e-08,
+        2.384185791015625e-07,
+        0.8450000882148743
+      ]
+    }
+  },
+  "after": {
+    "objects": [
+      {
+        "name": "rally-car",
+        "type": "EMPTY",
+        "parent": null,
+        "world_origin": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "rally-car_body",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.0,
+          0.0167,
+          -0.0
+        ],
+        "verts": 11596,
+        "tris": 13784
+      },
+      {
+        "name": "rally-car_wheel_fl",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.76,
+          -1.2833,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_wheel_fr",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          -0.76,
+          -1.2833,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_wheel_rl",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.76,
+          1.2367,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_wheel_rr",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          -0.76,
+          1.2367,
+          0.34
+        ],
+        "verts": 1052,
+        "tris": 1280
+      },
+      {
+        "name": "rally-car_windows",
+        "type": "MESH",
+        "parent": "rally-car",
+        "world_origin": [
+          0.0,
+          0.0167,
+          -0.0
+        ],
+        "verts": 554,
+        "tris": 822
+      }
+    ],
+    "materials": [
+      "rally-car_body_pbr",
+      "rally-car_hubcap_x",
+      "rally-car_hubcap_x.001",
+      "rally-car_hubcap_x.002",
+      "rally-car_hubcap_x.003",
+      "rally-car_rim_x",
+      "rally-car_rim_x.001",
+      "rally-car_rim_x.002",
+      "rally-car_rim_x.003",
+      "rally-car_tire_x",
+      "rally-car_tire_x.001",
+      "rally-car_tire_x.002",
+      "rally-car_tire_x.003",
+      "rally-car_trim_charcoal_x",
+      "rally-car_trim_charcoal_x.001",
+      "rally-car_trim_charcoal_x.002",
+      "rally-car_trim_charcoal_x.003",
+      "rally-car_window_glass_x"
+    ],
+    "bbox": {
+      "min": [
+        -0.9479517340660095,
+        -2.196700096130371,
+        -2.6400928732073226e-07
+      ],
+      "max": [
+        0.9479518532752991,
+        2.1967005729675293,
+        1.6900004148483276
+      ],
+      "size": [
+        1.8959035873413086,
+        4.3934006690979,
+        1.6900006532669067
+      ],
+      "center": [
+        5.960464477539063e-08,
+        2.384185791015625e-07,
+        0.8450000882148743
+      ]
+    }
+  }
+}
