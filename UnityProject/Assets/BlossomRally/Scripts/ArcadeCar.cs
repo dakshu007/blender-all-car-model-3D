@@ -76,6 +76,10 @@ namespace BlossomRally
         public bool Grounded { get; private set; }
         public float SteerAngle { get; private set; }
         public float EngineRpm { get; private set; }
+        /// <summary>Simulated gear 1..5 (for engine sound, HUD).</summary>
+        public int Gear { get; private set; } = 1;
+        /// <summary>Last surface under the rear wheels.</summary>
+        public Surface RearSurface { get; private set; } = Surface.Asphalt;
         public float UprightTimer { get; private set; }
         public bool IsDrifting { get { return driftActive; } }
         public int DriftDirection { get { return driftDir; } }       // +1 right, -1 left
@@ -121,7 +125,8 @@ namespace BlossomRally
         {
             if (!controlsEnabled) { throttle = brake = steerInput = handbrake = 0f; return; }
             float targetSteer = InputReader.Steer;
-            steerInput = Mathf.MoveTowards(steerInput, targetSteer, Time.deltaTime * (Mathf.Abs(targetSteer) > 0.01f ? 5f : 7f));
+            float rate = InputReader.AnalogSteer ? 14f : (Mathf.Abs(targetSteer) > 0.01f ? 5f : 7f);
+            steerInput = Mathf.MoveTowards(steerInput, targetSteer, Time.deltaTime * rate);
             throttle = InputReader.Throttle;
             brake = InputReader.Brake;
             handbrake = InputReader.Handbrake ? 1f : 0f;
@@ -306,6 +311,8 @@ namespace BlossomRally
             float ratio = Mathf.Clamp01(speed / maxSpeed);
             float gearPos = ratio * 5f;
             float inGear = gearPos - Mathf.Floor(gearPos);
+            Gear = Mathf.Clamp(Mathf.FloorToInt(gearPos) + 1, 1, 5);
+            foreach (var wr in wheels) if (!wr.front && wr.grounded) RearSurface = wr.surface;
             float target = 900f + (Mathf.Floor(gearPos) < 1 ? ratio * 5f : inGear) * 5600f + throttle * 700f + DriftIntensity * 900f;
             EngineRpm = Mathf.Lerp(EngineRpm, Mathf.Clamp(target, 850f, 7800f), dt * 6f);
         }

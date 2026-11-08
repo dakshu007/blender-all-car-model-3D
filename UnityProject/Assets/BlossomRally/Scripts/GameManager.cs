@@ -12,6 +12,28 @@ namespace BlossomRally
 
         public static GameManager Instance { get; private set; }
 
+        // ---- public hooks used by events, replay, photo mode, valley life ----
+        public ArcadeCar Car { get { return car; } }
+        public WorldBuilder World { get { return world; } }
+        public CameraRig Rig { get { return rig; } }
+        public bool IsDriving { get { return state == State.Drive && !paused; } }
+        /// <summary>Set by photo / replay modes to hide the driving HUD.</summary>
+        public static bool HideHud;
+
+        /// <summary>Place the player's car at a pose with zero velocity (event restarts, checkpoint resets).</summary>
+        public void TeleportCar(Vector3 p, Quaternion r)
+        {
+            if (car == null || car.Body == null) return;
+            car.Body.SetVelocity(Vector3.zero);
+            car.Body.angularVelocity = Vector3.zero;
+            car.transform.SetPositionAndRotation(p, r);
+            car.Body.position = p;
+            car.Body.rotation = r;
+            car.ResetDrift();
+            rig.SnapBehind();
+            ResetDrift(false);
+        }
+
         State state = State.Loading;
         WorldBuilder world;
         Atmosphere atmosphere;

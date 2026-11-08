@@ -42,6 +42,8 @@ namespace BlossomRally
         readonly Dictionary<long, List<int>> riverGrid = new Dictionary<long, List<int>>();
         class BridgeInfo { public int road; public List<int> idx; public float sHit, span, arch, total; }
         readonly List<BridgeInfo> bridges = new List<BridgeInfo>();
+        /// <summary>Bridge centres for other systems: x, deck height, z, road yaw (deg).</summary>
+        public readonly List<Vector4> BridgeMarks = new List<Vector4>();
         readonly List<Vector4> pads = new List<Vector4>();               // x, z, radius, height
         readonly List<Vector3> blossomSpots = new List<Vector3>();       // x, z, radius
         readonly Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
@@ -348,7 +350,12 @@ namespace BlossomRally
                 list[j] = sj;
             }
             info.idx.Sort((a, b) => AlongRoad(list, a, sHit, closed, total).CompareTo(AlongRoad(list, b, sHit, closed, total)));
-            if (info.idx.Count > 1) bridges.Add(info);
+            if (info.idx.Count > 1)
+            {
+                bridges.Add(info);
+                var mid = list[info.idx[info.idx.Count / 2]];
+                BridgeMarks.Add(new Vector4(mid.pos.x, mid.height, mid.pos.y, Mathf.Atan2(mid.tangent.x, mid.tangent.y) * Mathf.Rad2Deg));
+            }
         }
 
         readonly List<Vector4> houseSpots = new List<Vector4>();   // x, z, yaw, type

@@ -9,6 +9,14 @@ namespace BlossomRally
     {
         public static float Gust { get; private set; }
         public static Light Sun { get; private set; }
+        /// <summary>0 = full day .. 1 = night (lanterns glow, headlights on).</summary>
+        public static float NightFactor { get; private set; }
+        /// <summary>0 = dry .. 1 = soaked roads.</summary>
+        public static float Wetness { get; private set; }
+        /// <summary>0 = no rain .. 1 = heavy rain.</summary>
+        public static float RainIntensity { get; private set; }
+        /// <summary>0 = clear sky .. 1 = overcast.</summary>
+        public static float CloudCover { get; private set; }
 
         public class Weather
         {
