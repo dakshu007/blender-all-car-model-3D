@@ -1,0 +1,326 @@
+{
+  "tool": "build_environment_kit.py",
+  "generated_utc": "2026-11-08T06:29:15+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "saved_file": "/home/user/blender-all-car-model-3D/ArtPipeline/EnvironmentLibrary/Working/ENV_Kit_v001.blend",
+  "loop_frames": 96,
+  "fps": 24,
+  "components": [
+    {
+      "component": "ENV_CherryKing",
+      "category": "vegetation",
+      "objects": 60,
+      "meshes": 50,
+      "triangles": 59418,
+      "animated_objects": 49,
+      "size_m": [
+        15.81,
+        14.14,
+        8.75
+      ]
+    },
+    {
+      "component": "ENV_CherryTree",
+      "category": "vegetation",
+      "objects": 40,
+      "meshes": 32,
+      "triangles": 46100,
+      "animated_objects": 31,
+      "size_m": [
+        10.17,
+        9.55,
+        5.72
+      ]
+    },
+    {
+      "component": "ENV_CherryYoung",
+      "category": "vegetation",
+      "objects": 24,
+      "meshes": 17,
+      "triangles": 39710,
+      "animated_objects": 16,
+      "size_m": [
+        6.67,
+        6.74,
+        4.01
+      ]
+    },
+    {
+      "component": "ENV_GrassClump",
+      "category": "vegetation",
+      "objects": 2,
+      "meshes": 1,
+      "triangles": 308,
+      "animated_objects": 1,
+      "size_m": [
+        0.65,
+        0.75,
+        0.61
+      ]
+    },
+    {
+      "component": "ENV_GrassPatch",
+      "category": "vegetation",
+      "objects": 2,
+      "meshes": 1,
+      "triangles": 16432,
+      "animated_objects": 1,
+      "size_m": [
+        4.45,
+        4.59,
+        0.68
+      ]
+    },
+    {
+      "component": "ENV_Bamboo",
+      "category": "vegetation",
+      "objects": 34,
+      "meshes": 17,
+      "triangles": 21192,
+      "animated_objects": 16,
+      "size_m": [
+        4.12,
+        3.99,
+        9.24
+      ]
+    },
+    {
+      "component": "ENV_TeaTerrace",
+      "category": "vegetation",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 3264,
+      "animated_objects": 1,
+      "size_m": [
+        16.0,
+        12.2,
+        3.49
+      ]
+    },
+    {
+      "component": "ENV_HouseTwoStorey",
+      "category": "architecture",
+      "objects": 14,
+      "meshes": 7,
+      "triangles": 6888,
+      "animated_objects": 6,
+      "size_m": [
+        10.06,
+        8.16,
+        8.29
+      ]
+    },
+    {
+      "component": "ENV_HouseShop",
+      "category": "architecture",
+      "objects": 11,
+      "meshes": 6,
+      "triangles": 3730,
+      "animated_objects": 4,
+      "size_m": [
+        10.91,
+        7.28,
+        5.19
+      ]
+    },
+    {
+      "component": "ENV_Garage",
+      "category": "architecture",
+      "objects": 13,
+      "meshes": 8,
+      "triangles": 3642,
+      "animated_objects": 4,
+      "size_m": [
+        17.19,
+        11.13,
+        6.84
+      ]
+    },
+    {
+      "component": "ENV_Pagoda",
+      "category": "architecture",
+      "objects": 34,
+      "meshes": 17,
+      "triangles": 18492,
+      "animated_objects": 16,
+      "size_m": [
+        10.72,
+        11.88,
+        18.1
+      ]
+    },
+    {
+      "component": "ENV_LakePavilion",
+      "category": "architecture",
+      "objects": 14,
+      "meshes": 7,
+      "triangles": 6364,
+      "animated_objects": 6,
+      "size_m": [
+        7.89,
+        16.32,
+        6.55
+      ]
+    },
+    {
+      "component": "ENV_PaifangGate",
+      "category": "architecture",
+      "objects": 7,
+      "meshes": 4,
+      "triangles": 4310,
+      "animated_objects": 2,
+      "size_m": [
+        15.0,
+        2.78,
+        7.69
+      ]
+    },
+    {
+      "component": "ENV_StoneBridge",
+      "category": "architecture",
+      "objects": 4,
+      "meshes": 3,
+      "triangles": 2400,
+      "animated_objects": 0,
+      "size_m": [
+        8.4,
+        18.0,
+        5.12
+      ]
+    },
+    {
+      "component": "ENV_LanternHanging",
+      "category": "props",
+      "objects": 4,
+      "meshes": 2,
+      "triangles": 420,
+      "animated_objects": 1,
+      "size_m": [
+        0.82,
+        0.9,
+        1.58
+      ]
+    },
+    {
+      "component": "ENV_LanternPost",
+      "category": "props",
+      "objects": 4,
+      "meshes": 2,
+      "triangles": 552,
+      "animated_objects": 1,
+      "size_m": [
+        1.16,
+        0.62,
+        3.28
+      ]
+    },
+    {
+      "component": "ENV_Road_AsphaltStraight",
+      "category": "roads",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 262,
+      "animated_objects": 0,
+      "size_m": [
+        9.0,
+        20.0,
+        0.13
+      ]
+    },
+    {
+      "component": "ENV_Road_AsphaltCurve90",
+      "category": "roads",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 468,
+      "animated_objects": 0,
+      "size_m": [
+        29.6,
+        29.6,
+        0.13
+      ]
+    },
+    {
+      "component": "ENV_Road_Hairpin",
+      "category": "roads",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 728,
+      "animated_objects": 0,
+      "size_m": [
+        27.0,
+        23.5,
+        0.13
+      ]
+    },
+    {
+      "component": "ENV_Road_Gravel",
+      "category": "roads",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 160,
+      "animated_objects": 0,
+      "size_m": [
+        7.8,
+        21.2,
+        0.1
+      ]
+    },
+    {
+      "component": "ENV_Road_Dirt",
+      "category": "roads",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 160,
+      "animated_objects": 0,
+      "size_m": [
+        7.8,
+        21.71,
+        0.1
+      ]
+    },
+    {
+      "component": "ENV_Road_LanternStreet",
+      "category": "roads",
+      "objects": 35,
+      "meshes": 18,
+      "triangles": 4520,
+      "animated_objects": 8,
+      "size_m": [
+        7.7,
+        20.0,
+        3.28
+      ]
+    },
+    {
+      "component": "ENV_Water_River",
+      "category": "water",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 384,
+      "animated_objects": 0,
+      "size_m": [
+        19.4,
+        24.0,
+        0.95
+      ]
+    },
+    {
+      "component": "ENV_Water_Lake",
+      "category": "water",
+      "objects": 3,
+      "meshes": 2,
+      "triangles": 1750,
+      "animated_objects": 0,
+      "size_m": [
+        38.86,
+        25.29,
+        1.54
+      ]
+    }
+  ]
+}

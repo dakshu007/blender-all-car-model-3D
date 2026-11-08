@@ -1,0 +1,517 @@
+{
+  "tool": "export_env_fbx.py",
+  "generated_utc": "2026-11-08T06:56:41+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "settings": {
+    "use_selection": true,
+    "object_types": [
+      "EMPTY",
+      "MESH"
+    ],
+    "axis_forward": "Z",
+    "axis_up": "Y",
+    "bake_space_transform": false,
+    "apply_unit_scale": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "use_mesh_modifiers": true,
+    "mesh_smooth_type": "FACE",
+    "use_custom_props": true,
+    "add_leaf_bones": false,
+    "colors_type": "SRGB",
+    "path_mode": "STRIP",
+    "embed_textures": false,
+    "bake_anim": true,
+    "bake_anim_use_all_bones": false,
+    "bake_anim_use_nla_strips": false,
+    "bake_anim_use_all_actions": false,
+    "bake_anim_force_startend_keying": true,
+    "bake_anim_step": 1.0,
+    "bake_anim_simplify_factor": 0.0
+  },
+  "loop_frames": [
+    1,
+    96
+  ],
+  "results": [
+    {
+      "component": "ENV_CherryKing",
+      "fbx": "ENV_CherryKing.fbx",
+      "bytes": 2197324,
+      "triangles": 59418,
+      "expected": {
+        "objects": 60,
+        "animated": 49,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 60,
+        "animated_objects": 60,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 50
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_CherryTree",
+      "fbx": "ENV_CherryTree.fbx",
+      "bytes": 1625660,
+      "triangles": 46100,
+      "expected": {
+        "objects": 40,
+        "animated": 31,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 40,
+        "animated_objects": 40,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 32
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_CherryYoung",
+      "fbx": "ENV_CherryYoung.fbx",
+      "bytes": 1268348,
+      "triangles": 39710,
+      "expected": {
+        "objects": 24,
+        "animated": 16,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 24,
+        "animated_objects": 24,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 17
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_GrassClump",
+      "fbx": "ENV_GrassClump.fbx",
+      "bytes": 54684,
+      "triangles": 308,
+      "expected": {
+        "objects": 2,
+        "animated": 0,
+        "blend_shapes": 1
+      },
+      "reimported": {
+        "objects": 2,
+        "animated_objects": 2,
+        "animated_blend_shapes": 1,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_GrassPatch",
+      "fbx": "ENV_GrassPatch.fbx",
+      "bytes": 541804,
+      "triangles": 16432,
+      "expected": {
+        "objects": 2,
+        "animated": 0,
+        "blend_shapes": 1
+      },
+      "reimported": {
+        "objects": 2,
+        "animated_objects": 2,
+        "animated_blend_shapes": 1,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Bamboo",
+      "fbx": "ENV_Bamboo.fbx",
+      "bytes": 889548,
+      "triangles": 21192,
+      "expected": {
+        "objects": 34,
+        "animated": 16,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 34,
+        "animated_objects": 34,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 17
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_TeaTerrace",
+      "fbx": "ENV_TeaTerrace.fbx",
+      "bytes": 165404,
+      "triangles": 3264,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 1
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 1,
+        "meshes_with_vertex_colors": 2
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_HouseTwoStorey",
+      "fbx": "ENV_HouseTwoStorey.fbx",
+      "bytes": 274764,
+      "triangles": 6888,
+      "expected": {
+        "objects": 14,
+        "animated": 6,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 14,
+        "animated_objects": 14,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 7
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_HouseShop",
+      "fbx": "ENV_HouseShop.fbx",
+      "bytes": 204380,
+      "triangles": 3730,
+      "expected": {
+        "objects": 11,
+        "animated": 4,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 11,
+        "animated_objects": 11,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 5
+      },
+      "textures": [
+        "ENV_Sign_Teahouse.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Garage",
+      "fbx": "ENV_Garage.fbx",
+      "bytes": 226668,
+      "triangles": 3642,
+      "expected": {
+        "objects": 13,
+        "animated": 4,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 13,
+        "animated_objects": 13,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 7
+      },
+      "textures": [
+        "ENV_Banner_Start.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Pagoda",
+      "fbx": "ENV_Pagoda.fbx",
+      "bytes": 677532,
+      "triangles": 18492,
+      "expected": {
+        "objects": 34,
+        "animated": 16,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 34,
+        "animated_objects": 34,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 17
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_LakePavilion",
+      "fbx": "ENV_LakePavilion.fbx",
+      "bytes": 271596,
+      "triangles": 6364,
+      "expected": {
+        "objects": 14,
+        "animated": 6,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 14,
+        "animated_objects": 14,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 7
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_PaifangGate",
+      "fbx": "ENV_PaifangGate.fbx",
+      "bytes": 160172,
+      "triangles": 4310,
+      "expected": {
+        "objects": 7,
+        "animated": 2,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 7,
+        "animated_objects": 7,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 3
+      },
+      "textures": [
+        "ENV_Plaque_BlossomVillage.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_StoneBridge",
+      "fbx": "ENV_StoneBridge.fbx",
+      "bytes": 96732,
+      "triangles": 2400,
+      "expected": {
+        "objects": 4,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 4,
+        "animated_objects": 4,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 2
+      },
+      "textures": [
+        "ENV_Road_Asphalt.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_LanternHanging",
+      "fbx": "ENV_LanternHanging.fbx",
+      "bytes": 70860,
+      "triangles": 420,
+      "expected": {
+        "objects": 4,
+        "animated": 1,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 4,
+        "animated_objects": 4,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 2
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_LanternPost",
+      "fbx": "ENV_LanternPost.fbx",
+      "bytes": 72636,
+      "triangles": 552,
+      "expected": {
+        "objects": 4,
+        "animated": 1,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 4,
+        "animated_objects": 4,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 2
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Road_AsphaltStraight",
+      "fbx": "ENV_Road_AsphaltStraight.fbx",
+      "bytes": 59084,
+      "triangles": 262,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [
+        "ENV_Road_Asphalt.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Road_AsphaltCurve90",
+      "fbx": "ENV_Road_AsphaltCurve90.fbx",
+      "bytes": 66860,
+      "triangles": 468,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [
+        "ENV_Road_Asphalt.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Road_Hairpin",
+      "fbx": "ENV_Road_Hairpin.fbx",
+      "bytes": 70268,
+      "triangles": 728,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [
+        "ENV_Road_Asphalt.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Road_Gravel",
+      "fbx": "ENV_Road_Gravel.fbx",
+      "bytes": 59340,
+      "triangles": 160,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [
+        "ENV_Road_Gravel.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Road_Dirt",
+      "fbx": "ENV_Road_Dirt.fbx",
+      "bytes": 59340,
+      "triangles": 160,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 1
+      },
+      "textures": [
+        "ENV_Road_Dirt.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Road_LanternStreet",
+      "fbx": "ENV_Road_LanternStreet.fbx",
+      "bytes": 509276,
+      "triangles": 4520,
+      "expected": {
+        "objects": 35,
+        "animated": 8,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 35,
+        "animated_objects": 35,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 17
+      },
+      "textures": [
+        "ENV_Road_Paving.png"
+      ],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Water_River",
+      "fbx": "ENV_Water_River.fbx",
+      "bytes": 59212,
+      "triangles": 384,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 2
+      },
+      "textures": [],
+      "status": "PASS"
+    },
+    {
+      "component": "ENV_Water_Lake",
+      "fbx": "ENV_Water_Lake.fbx",
+      "bytes": 84764,
+      "triangles": 1750,
+      "expected": {
+        "objects": 3,
+        "animated": 0,
+        "blend_shapes": 0
+      },
+      "reimported": {
+        "objects": 3,
+        "animated_objects": 3,
+        "animated_blend_shapes": 0,
+        "meshes_with_vertex_colors": 2
+      },
+      "textures": [],
+      "status": "PASS"
+    }
+  ]
+}

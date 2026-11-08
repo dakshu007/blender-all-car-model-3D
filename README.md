@@ -23,6 +23,18 @@ Everything is built and checked by reusable **Blender Python** scripts, with
 axle centres, with separate tyre and rim meshes · interior with roll cage · collision
 boxes in their own collection.
 
+## Environment kit: Chinese spring valley (in review)
+
+24 animated world components, built in Blender from the map blueprint and the
+reference images. They cover cherry blossom trees (king, standard, young), grass,
+bamboo, tea terraces, village houses, a teahouse, the start garage, a five-tier
+pagoda, the lake pavilion, the 花村 paifang gate, the stone arch bridge, lanterns,
+the road kit, the river and the lotus lake. Plan:
+[`Documentation/ENVIRONMENT_KIT_PLAN.md`](Documentation/ENVIRONMENT_KIT_PLAN.md).
+Details: [`Documentation/ENVIRONMENT_KIT.md`](Documentation/ENVIRONMENT_KIT.md).
+
+![Environment diorama](ArtPipeline/EnvironmentLibrary/Previews/ENV_Diorama_Diorama_hero.png)
+
 ## Repository layout
 
 ```text
@@ -61,6 +73,8 @@ ArtPipeline/
     Textures/                CAR-009_BaseColor.png
     Previews/                studio renders + contact sheet
     Documentation/           inspection report, design, plan
+  Blender/Scripts/environment/   environment kit builders, diorama, renders, FBX export
+  EnvironmentLibrary/            Working (.blend), Textures, Export (FBX), Previews
 UnityProject/Assets/_Game/Scripts/Vehicles/
   VehicleDefinition.cs       ScriptableObject with gameplay stats
   VehicleWheelVisuals.cs     WheelCollider -> visual wheel pivots
