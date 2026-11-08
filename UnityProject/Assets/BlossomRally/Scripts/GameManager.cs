@@ -1,5 +1,6 @@
 // GameManager.cs - Blossom Rally entry point: builds the valley, car-select showroom, driving,
-// drift scoring and HUD. Press Play in ANY scene - it bootstraps itself if needed.
+// drift scoring, HUD and the ESC pause menu (weather / fog, petals, colour grade, camera, car).
+// Press Play in ANY scene - it bootstraps itself if needed.
 using System.Collections;
 using UnityEngine;
 
@@ -30,7 +31,13 @@ namespace BlossomRally
         string lastDrift = "";
         float lastDriftTimer;
 
-        GUIStyle big, mid, small, title, shadow;
+        GUIStyle big, mid, small, title, shadow, button;
+
+        // pause menu
+        bool paused;
+        int menuIndex;
+        static readonly string[] MenuItems = { "Resume", "Weather", "Petals", "Colour grade", "Camera", "Change car", "Controls help" };
+        static readonly string[] PetalNames = { "Calm", "Spring", "Blossom storm" };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void AutoStart()
@@ -78,6 +85,48 @@ namespace BlossomRally
             yield return world.Build();
             SpawnCar(0, world.SpawnPosition, world.SpawnRotation);
             EnterSelect();
+        }
+
+        void SetPaused(bool p)
+        {
+            paused = p;
+            Time.timeScale = p ? 0f : 1f;
+            AudioListener.pause = p;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            if (p) menuIndex = 0;
+        }
+
+        void OnDisable()
+        {
+            if (paused) { Time.timeScale = 1f; AudioListener.pause = false; }
+        }
+
+        void MenuActivate(int i, int dir)
+        {
+            switch (i)
+            {
+                case 0: SetPaused(false); break;
+                case 1: atmosphere.SetWeather(atmosphere.WeatherIndex + dir); break;
+                case 2: petals.SetLevel(petals.level + dir); break;
+                case 3: postFx.effectEnabled = !postFx.effectEnabled; break;
+                case 4: rig.Cycle(); break;
+                case 5: SetPaused(false); EnterSelect(); break;
+                case 6: showHelp = !showHelp; helpTimer = 0f; break;
+            }
+        }
+
+        string MenuValue(int i)
+        {
+            switch (i)
+            {
+                case 1: return atmosphere.Current.name;
+                case 2: return PetalNames[petals.level];
+                case 3: return postFx.effectEnabled ? "On" : "Off";
+                case 4: return rig.mode.ToString();
+                case 6: return showHelp ? "Shown" : "Hidden";
+                default: return "";
+            }
         }
 
         void EnterSelect()
@@ -137,6 +186,7 @@ namespace BlossomRally
             car.Body.position = p;
             car.Body.rotation = r;
             rig.SnapBehind();
+            car.ResetDrift();
             ResetDrift(false);
         }
 
@@ -149,6 +199,16 @@ namespace BlossomRally
         void Update()
         {
             if (state == State.Loading) return;
+            if (paused)
+            {
+                if (InputReader.Down(KeyCode.Escape)) { SetPaused(false); return; }
+                if (InputReader.Down(KeyCode.UpArrow) || InputReader.Down(KeyCode.W)) menuIndex = (menuIndex + MenuItems.Length - 1) % MenuItems.Length;
+                if (InputReader.Down(KeyCode.DownArrow) || InputReader.Down(KeyCode.S)) menuIndex = (menuIndex + 1) % MenuItems.Length;
+                if (InputReader.Down(KeyCode.LeftArrow) || InputReader.Down(KeyCode.A)) { if (menuIndex > 0 && menuIndex < 5) MenuActivate(menuIndex, -1); }
+                if (InputReader.Down(KeyCode.RightArrow) || InputReader.Down(KeyCode.D)) { if (menuIndex > 0 && menuIndex < 5) MenuActivate(menuIndex, 1); }
+                if (InputReader.Down(KeyCode.Return) || InputReader.Down(KeyCode.KeypadEnter) || InputReader.Down(KeyCode.Space)) MenuActivate(menuIndex, 1);
+                return;
+            }
             if (state == State.Select)
             {
                 if (InputReader.Down(KeyCode.RightArrow) || InputReader.Down(KeyCode.D)) SpawnCar(carIndex + 1, world.SpawnPosition, world.SpawnRotation);
@@ -166,10 +226,11 @@ namespace BlossomRally
             if (InputReader.Down(KeyCode.R)) Respawn();
             if (InputReader.Down(KeyCode.C)) rig.Cycle();
             if (InputReader.Down(KeyCode.P)) { petals.CycleLevel(); Toast(new[] { "Petals: calm", "Petals: spring", "Petals: blossom storm" }[petals.level]); }
-            if (InputReader.Down(KeyCode.G)) { atmosphere.CycleFog(); Toast("Fog density changed"); }
+            if (InputReader.Down(KeyCode.G)) { atmosphere.CycleWeather(); Toast("Weather: " + atmosphere.Current.name); }
             if (InputReader.Down(KeyCode.F)) { postFx.effectEnabled = !postFx.effectEnabled; Toast(postFx.effectEnabled ? "Colour grade ON" : "Colour grade OFF"); }
             if (InputReader.Down(KeyCode.H)) showHelp = !showHelp;
-            if (InputReader.Down(KeyCode.Escape) || InputReader.Down(KeyCode.Tab)) EnterSelect();
+            if (InputReader.Down(KeyCode.Escape)) { SetPaused(true); return; }
+            if (InputReader.Down(KeyCode.Tab)) EnterSelect();
             if (car != null && (car.UprightTimer > 2f || car.transform.position.y < -30f)) Respawn();
             UpdateDrift(Time.deltaTime);
             if (helpTimer > 0f) { helpTimer -= Time.deltaTime; if (helpTimer <= 0f) showHelp = false; }
@@ -180,7 +241,8 @@ namespace BlossomRally
         void UpdateDrift(float dt)
         {
             if (car == null) return;
-            bool active = car.Grounded && car.SpeedKmh > 30f && Mathf.Abs(car.SlipAngle) > 12f && Mathf.Abs(car.SlipAngle) < 100f;
+            bool active = (car.IsDrifting && car.Grounded && car.SpeedKmh > 20f && car.DriftAngle > 6f && car.DriftAngle < 100f)
+                          || (car.Grounded && car.SpeedKmh > 30f && Mathf.Abs(car.SlipAngle) > 12f && Mathf.Abs(car.SlipAngle) < 100f);
             if (active)
             {
                 drifting = true;
@@ -221,6 +283,7 @@ namespace BlossomRally
             small = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.UpperLeft, wordWrap = true };
             title = new GUIStyle(GUI.skin.label) { fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             shadow = new GUIStyle(GUI.skin.label);
+            button = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft };
         }
 
         void Label(Rect r, string text, GUIStyle st, Color c)
@@ -239,6 +302,26 @@ namespace BlossomRally
             GUI.color = new Color(0.20f, 0.10f, 0.16f, alpha);
             GUI.DrawTexture(r, Texture2D.whiteTexture);
             GUI.color = old;
+        }
+
+        void DrawPauseMenu(float W, float H, Color white, Color pink)
+        {
+            Panel(new Rect(0, 0, W, H), 0.35f);
+            float pw = 460f, rowH = 44f, ph = 110f + MenuItems.Length * rowH;
+            float px = (W - pw) * 0.5f, py = (H - ph) * 0.5f;
+            Panel(new Rect(px, py, pw, ph), 0.7f);
+            Label(new Rect(px, py + 14, pw, 50), "PAUSED", title, pink);
+            for (int i = 0; i < MenuItems.Length; i++)
+            {
+                Rect r = new Rect(px + 30, py + 80 + i * rowH, pw - 60, rowH - 6);
+                bool sel = i == menuIndex;
+                if (sel) Panel(r, 0.5f);
+                string val = MenuValue(i);
+                string text = (sel ? "›  " : "   ") + MenuItems[i] + (val.Length > 0 ? "   ·   " + val : "");
+                Label(new Rect(r.x + 10, r.y, r.width - 10, r.height), text, button, sel ? pink : white);
+                if (GUI.Button(r, GUIContent.none, GUIStyle.none)) { menuIndex = i; MenuActivate(i, 1); }
+            }
+            Label(new Rect(px, py + ph - 30, pw, 24), "↑ ↓ choose   ← → / ENTER change   ESC resume", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter }, white);
         }
 
         void OnGUI()
@@ -281,6 +364,19 @@ namespace BlossomRally
             }
             Label(new Rect(20, H - 60, 400, 30), "Score " + Mathf.RoundToInt(totalScore) + "    Best drift " + Mathf.RoundToInt(bestDrift),
                   new GUIStyle(mid) { alignment = TextAnchor.MiddleLeft }, white);
+            if (car != null && car.IsDrifting)
+            {
+                // drift angle meter: fill = current angle, tick = the angle your inputs ask for
+                float bw = 280f, bx = (W - bw) * 0.5f, by = H - 46f;
+                Panel(new Rect(bx - 4, by - 4, bw + 8, 18), 0.45f);
+                var oc = GUI.color;
+                GUI.color = new Color(pink.r, pink.g, pink.b, 0.9f);
+                GUI.DrawTexture(new Rect(bx, by, bw * Mathf.Clamp01(car.DriftAngle / 60f), 10), Texture2D.whiteTexture);
+                GUI.color = white;
+                GUI.DrawTexture(new Rect(bx + bw * Mathf.Clamp01(car.DriftTargetAngle / 60f) - 1.5f, by - 4, 3, 18), Texture2D.whiteTexture);
+                GUI.color = oc;
+                Label(new Rect(0, by - 34, W, 28), (car.DriftDirection > 0 ? "DRIFT  >  " : "<  DRIFT  ") + Mathf.RoundToInt(car.DriftAngle) + "°", mid, white);
+            }
             if (drifting && driftPoints > 10f)
             {
                 Label(new Rect(0, 70, W, 40), "DRIFT  x" + driftCombo.ToString("0"), mid, pink);
@@ -293,17 +389,20 @@ namespace BlossomRally
             if (toastTimer > 0f) Label(new Rect(0, H * 0.22f, W, 40), toast, mid, new Color(1f, 1f, 1f, Mathf.Clamp01(toastTimer)));
             if (showHelp)
             {
-                Panel(new Rect(16, 16, 360, 268), 0.45f);
-                Label(new Rect(30, 26, 340, 260),
+                Panel(new Rect(16, 16, 400, 318), 0.45f);
+                Label(new Rect(30, 26, 380, 310),
                       "W / ↑   throttle        S / ↓   brake / reverse\n" +
-                      "A D / ← →   steer      SPACE   handbrake (drift!)\n\n" +
+                      "A D / ← →   steer      SPACE   handbrake\n\n" +
+                      "DRIFT:  hold SPACE + steer to kick the tail out\n" +
+                      "   W holds the slide · steer INTO it = more angle\n" +
+                      "   counter-steer or lift off = straighten out\n" +
+                      "   tap SPACE + steer the other way = switch sides\n\n" +
                       "1 - 9   switch car       R   reset to road\n" +
-                      "C   camera (chase / cockpit / hood / cinematic)\n" +
-                      "P   petals (calm / spring / storm)\n" +
-                      "G   fog      F   colour grade      H   help\n" +
-                      "ESC   car select\n\n" +
-                      "Tip: flick with handbrake, then hold throttle\nand counter-steer to chain long drifts.", small, white);
+                      "C   camera      P   petals      F   colour grade\n" +
+                      "G   weather (clear / haze / cloudy / fog off)\n" +
+                      "ESC   pause menu      TAB   car select      H   help", small, white);
             }
+            if (paused) DrawPauseMenu(W, H, white, pink);
         }
     }
 }

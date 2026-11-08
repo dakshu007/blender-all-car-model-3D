@@ -48,6 +48,11 @@ namespace BlossomRally
             }
         }
 
+        public static Material Grass
+        {
+            get { return Get("Grass", () => new Material(FindShader("BlossomRally/Grass"))); }
+        }
+
         public static Material Glow
         {
             get { return Get("Glow", () => new Material(FindShader("BlossomRally/VertexColorGlow"))); }

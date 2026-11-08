@@ -26,6 +26,7 @@ namespace BlossomRally
         const float TerrainHalf = 660f;
         const float TerrainCell = 4f;
         const float RoadLift = 0.05f;
+        public const float WaterY = -1.15f;
 
         public readonly List<RoadDef> roads = MapData.Roads();
         public readonly List<List<RoadSample>> roadSamples = new List<List<RoadSample>>();
@@ -39,13 +40,17 @@ namespace BlossomRally
         readonly List<RoadSample> allSamples = new List<RoadSample>();
         readonly List<Vector2> riverPts = new List<Vector2>();
         readonly Dictionary<long, List<int>> riverGrid = new Dictionary<long, List<int>>();
-        readonly List<Vector4> bridges = new List<Vector4>();            // x, z, yaw(deg), deck height
+        class BridgeInfo { public int road; public List<int> idx; public float sHit, span, arch, total; }
+        readonly List<BridgeInfo> bridges = new List<BridgeInfo>();
         readonly List<Vector4> pads = new List<Vector4>();               // x, z, radius, height
         readonly List<Vector3> blossomSpots = new List<Vector3>();       // x, z, radius
         readonly Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
         readonly System.Random rng = new System.Random(20261108);
 
         Transform staticRoot, dynamicRoot, grassRoot;
+        float[] terrH;
+        int terrN;
+        public int GrassBlades { get; private set; }
 
         float Rand(float a, float b) { return a + (float)rng.NextDouble() * (b - a); }
 
@@ -171,6 +176,9 @@ namespace BlossomRally
             Status = "Shaping the valley"; Progress = 0.15f;
             yield return BuildTerrain();
 
+            Status = "Growing the meadows"; Progress = 0.40f;
+            yield return BuildGrass();
+
             Status = "Paving roads"; Progress = 0.45f;
             BuildRoadMeshes();
             BuildWater();
@@ -249,30 +257,27 @@ namespace BlossomRally
                 }
                 roadSamples.Add(list);
             }
-            // bridges where any road crosses the river
+            // bridges where any road crosses the river: the road itself rises into a gentle stone arch
+            // (part of the road mesh, so there are no seams, steps or gaps), max ~10% grade on the ramps
             for (int r = 0; r < roadSamples.Count; r++)
             {
                 var list = roadSamples[r];
-                for (int i = 0; i < list.Count - 1; i++)
+                bool closed = roads[r].closed;
+                int n = list.Count;
+                float total = list[n - 1].distance + (closed ? Vector2.Distance(list[n - 1].pos, list[0].pos) : 0f);
+                int segs = closed ? n : n - 1;
+                for (int i = 0; i < segs; i++)
                 {
+                    int i1 = (i + 1) % n;
                     for (int k = 0; k < riverPts.Count - 1; k++)
                     {
                         Vector2 hit;
-                        if (!Spline.SegmentIntersect(list[i].pos, list[i + 1].pos, riverPts[k], riverPts[k + 1], out hit)) continue;
-                        float halfLen = 15f;
-                        float hEnds = 0f; int cnt = 0;
-                        for (int j = 0; j < list.Count; j++)
-                        {
-                            float d = Vector2.Distance(list[j].pos, hit);
-                            if (d < halfLen + 1.5f)
-                            {
-                                var s = list[j]; s.bridge = true; list[j] = s;
-                                if (d > halfLen - 1.5f) { hEnds += s.height; cnt++; }
-                            }
-                        }
-                        Vector2 t = list[i].tangent;
-                        float yaw = Mathf.Atan2(t.x, t.y) * Mathf.Rad2Deg;
-                        bridges.Add(new Vector4(hit.x, hit.y, yaw, cnt > 0 ? hEnds / cnt : 0f));
+                        if (!Spline.SegmentIntersect(list[i].pos, list[i1].pos, riverPts[k], riverPts[k + 1], out hit)) continue;
+                        Vector2 rt = (list[i1].pos - list[i].pos).normalized;
+                        Vector2 rv = (riverPts[k + 1] - riverPts[k]).normalized;
+                        float sinA = Mathf.Max(0.4f, Mathf.Abs(rt.x * rv.y - rt.y * rv.x));
+                        float sHit = list[i].distance + Vector2.Distance(list[i].pos, hit);
+                        LiftBridge(list, closed, total, sHit, 17f / sinA, r);
                     }
                 }
             }
@@ -286,6 +291,64 @@ namespace BlossomRally
                     if (!roadGrid.TryGetValue(key, out l)) { l = new List<int>(); roadGrid[key] = l; }
                     l.Add(idx);
                 }
+        }
+
+        float AlongRoad(List<RoadSample> list, int j, float sHit, bool closed, float total)
+        {
+            float d = list[j].distance - sHit;
+            if (closed)
+            {
+                if (d > total * 0.5f) d -= total;
+                else if (d < -total * 0.5f) d += total;
+            }
+            return d;
+        }
+
+        float HeightAlong(List<RoadSample> list, float sHit, float offset, bool closed, float total)
+        {
+            int best = 0; float bd = float.MaxValue;
+            for (int j = 0; j < list.Count; j++)
+            {
+                float e = Mathf.Abs(AlongRoad(list, j, sHit, closed, total) - offset);
+                if (e < bd) { bd = e; best = j; }
+            }
+            return list[best].height;
+        }
+
+        void LiftBridge(List<RoadSample> list, bool closed, float total, float sHit, float riverHalf, int road)
+        {
+            float span = riverHalf + 2.5f;                 // deck length either side of the river centre
+            float R = span + 6f, lift = 1.1f, hA = 0f, hB = 0f;
+            for (int it = 0; it < 6; it++)
+            {
+                hA = HeightAlong(list, sHit, -R, closed, total);
+                hB = HeightAlong(list, sHit, R, closed, total);
+                lift = Mathf.Max(0.6f, WaterY + 2.4f - 0.5f * (hA + hB));     // deck clears the water by ~2.4 m
+                float lin = Mathf.Abs(hB - hA) / (2f * R);
+                R = Mathf.Max(span + 6f, lift * Mathf.PI * 0.5f / Mathf.Max(0.03f, 0.095f - lin));
+            }
+            var info = new BridgeInfo { road = road, idx = new List<int>(), sHit = sHit, span = span, arch = riverHalf, total = total };
+            var newH = new float[list.Count];
+            for (int j = 0; j < list.Count; j++)
+            {
+                newH[j] = list[j].height;
+                float d = AlongRoad(list, j, sHit, closed, total);
+                if (Mathf.Abs(d) > R) continue;
+                float lin = Mathf.Lerp(hA, hB, (d + R) / (2f * R));
+                float w = Spline.SmoothStep(R, R * 0.6f, Mathf.Abs(d));
+                float bump = 0.5f * (Mathf.Cos(Mathf.PI * d / R) + 1f);
+                newH[j] = Mathf.Lerp(list[j].height, lin, w) + lift * bump;
+                if (Mathf.Abs(d) <= span) info.idx.Add(j);
+            }
+            for (int j = 0; j < list.Count; j++)
+            {
+                var sj = list[j];
+                sj.height = newH[j];
+                if (info.idx.Contains(j)) sj.bridge = true;
+                list[j] = sj;
+            }
+            info.idx.Sort((a, b) => AlongRoad(list, a, sHit, closed, total).CompareTo(AlongRoad(list, b, sHit, closed, total)));
+            if (info.idx.Count > 1) bridges.Add(info);
         }
 
         readonly List<Vector4> houseSpots = new List<Vector4>();   // x, z, yaw, type
@@ -386,19 +449,19 @@ namespace BlossomRally
                 }
             // grass verges along every road + meadow tufts
             foreach (var list in roadSamples)
-                for (int i = 0; i < list.Count; i += 3)
+                for (int i = 0; i < list.Count; i += 11)
                 {
                     var s = list[i];
                     if (s.bridge) continue;
                     Vector2 nrm = new Vector2(s.tangent.y, -s.tangent.x);
                     for (int side = -1; side <= 1; side += 2)
                     {
-                        Vector2 p = s.pos + nrm * side * (s.halfWidth + Rand(1.2f, 7f)) + s.tangent * Rand(-2f, 2f);
+                        Vector2 p = s.pos + nrm * side * (s.halfWidth + Rand(3f, 9f)) + s.tangent * Rand(-2f, 2f);
                         if (RiverDistance(p) < 14f || MapData.LakeK(p) < 1.25f) continue;
                         plants.Add(new Plant { res = "ENV_GrassClump", pos = new Vector3(p.x, 0, p.y), yaw = Rand(0, 360), scale = Rand(0.9f, 1.6f), kind = 5 });
                     }
                 }
-            for (int i = 0; i < 1400; i++)
+            for (int i = 0; i < 450; i++)
             {
                 Vector2 p = new Vector2(Rand(-460f, 460f), Rand(-460f, 440f));
                 if (!clearOfFeatures(p, 2f) || MapData.InTeaTerraces(p)) continue;
@@ -432,7 +495,7 @@ namespace BlossomRally
                     verts[j * n + i] = new Vector3(x, h, z);
                     cols[j * n + i] = GroundColor(x, z, h);
                 }
-                if (j % 24 == 0) { Progress = 0.15f + 0.25f * j / n; yield return null; }
+                if (j % 24 == 0) { Progress = 0.15f + 0.23f * j / n; yield return null; }
             }
             var tris = new int[(n - 1) * (n - 1) * 6];
             int t = 0;
@@ -455,7 +518,165 @@ namespace BlossomRally
             mr.sharedMaterial = MaterialLibrary.Terrain;
             mr.shadowCastingMode = ShadowCastingMode.On;
             go.AddComponent<MeshCollider>().sharedMesh = mesh;
-            Progress = 0.44f;
+            terrN = n;
+            terrH = new float[n * n];
+            for (int i = 0; i < verts.Length; i++) terrH[i] = verts[i].y;
+            Progress = 0.38f;
+        }
+
+        /// <summary>Height of the actual terrain mesh (same triangulation), so grass sits exactly on it.</summary>
+        public float TerrainHeight(float x, float z)
+        {
+            if (terrH == null) return HeightAt(x, z);
+            float fx = (x + TerrainHalf) / TerrainCell, fz = (z + TerrainHalf) / TerrainCell;
+            int i = Mathf.Clamp(Mathf.FloorToInt(fx), 0, terrN - 2), j = Mathf.Clamp(Mathf.FloorToInt(fz), 0, terrN - 2);
+            float u = Mathf.Clamp01(fx - i), w = Mathf.Clamp01(fz - j);
+            float ha = terrH[j * terrN + i], hb = terrH[j * terrN + i + 1], hc = terrH[(j + 1) * terrN + i], hd = terrH[(j + 1) * terrN + i + 1];
+            if (u + w <= 1f) return ha + (hb - ha) * u + (hc - ha) * w;
+            return hd + (hc - hd) * (1f - u) + (hb - hd) * (1f - w);
+        }
+
+        // ------------------------------------------------------------------ grass
+        static readonly Color[] GrassTips =
+        {
+            new Color(0.56f, 0.78f, 0.30f), new Color(0.68f, 0.82f, 0.36f), new Color(0.42f, 0.66f, 0.24f), new Color(0.62f, 0.74f, 0.32f)
+        };
+
+        IEnumerator BuildGrass()
+        {
+            var root = new GameObject("World_GrassBlades").transform;
+            var mat = MaterialLibrary.Grass;
+            var grng = new System.Random(4242);
+            System.Func<float> R01 = () => (float)grng.NextDouble();
+            const float chunk = 40f, lo = -470f;
+            int chunks = Mathf.CeilToInt(-2f * lo / chunk);
+            var verts = new List<Vector3>(); var cols = new List<Color32>(); var uvs = new List<Vector4>();
+            var nrms = new List<Vector3>(); var tris = new List<int>();
+            var spots = new List<Vector3>();
+            int done = 0, total = 0;
+            for (int cz = 0; cz < chunks; cz++)
+                for (int cx = 0; cx < chunks; cx++)
+                {
+                    float x0 = lo + cx * chunk, z0 = lo + cz * chunk;
+                    Vector2 cc = new Vector2(x0 + chunk * 0.5f, z0 + chunk * 0.5f);
+                    RoadSample crs;
+                    bool roadNear = NearestRoad(cc, out crs, 64f) < 64f;
+                    spots.Clear();
+                    foreach (var bs in blossomSpots)
+                        if (Mathf.Abs(bs.x - cc.x) < chunk * 0.5f + bs.z * 1.3f && Mathf.Abs(bs.y - cc.y) < chunk * 0.5f + bs.z * 1.3f) spots.Add(bs);
+                    verts.Clear(); cols.Clear(); uvs.Clear(); nrms.Clear(); tris.Clear();
+                    for (float z = z0; z < z0 + chunk; z += 1f)
+                        for (float x = x0; x < x0 + chunk; x += 1f)
+                        {
+                            float px = x + R01(), pz = z + R01();
+                            Vector2 p = new Vector2(px, pz);
+                            // soft meadow patches across the valley
+                            float meadow = Mathf.Clamp01((Mathf.Sin(px * 0.021f + Mathf.Sin(pz * 0.017f) * 2.1f) * Mathf.Sin(pz * 0.024f + 0.7f) - 0.3f) * 1.8f);
+                            float prob = meadow * 0.22f;
+                            float spotK = 0f;
+                            foreach (var bs in spots)
+                            {
+                                float db = Vector2.Distance(p, new Vector2(bs.x, bs.y));
+                                if (db < bs.z * 1.3f) spotK = Mathf.Max(spotK, 1f - db / (bs.z * 1.3f));
+                            }
+                            prob = Mathf.Max(prob, spotK * 0.6f);
+                            float edge = 99f;
+                            if (roadNear)
+                            {
+                                RoadSample rs;
+                                float d = NearestRoad(p, out rs, 26f);
+                                if (d < 26f)
+                                {
+                                    edge = d - rs.halfWidth;
+                                    if (edge < 0.35f) continue;                 // never on the road
+                                    if (rs.bridge && edge < 5f) continue;       // bridge parapets
+                                    float band = edge < 9f ? 0.62f : Mathf.Lerp(0.62f, 0.12f, (edge - 9f) / 13f);
+                                    prob = Mathf.Max(prob, band);
+                                }
+                            }
+                            if (prob < 0.02f || R01() > prob) continue;
+                            if (MapData.InVillage(p) || MapData.InTeaTerraces(p)) continue;
+                            if (MapData.LakeK(p) < 1.2f || RiverDistance(p) < 11.5f) continue;
+                            if (MapData.InBambooForest(p) && R01() < 0.6f) continue;
+                            bool onPad = false;
+                            foreach (var pad in pads)
+                                if ((new Vector2(pad.x, pad.y) - p).sqrMagnitude < pad.z * pad.z) { onPad = true; break; }
+                            if (onPad) continue;
+                            AddTuft(p, edge, spotK, meadow, R01, verts, cols, uvs, nrms, tris);
+                        }
+                    if (verts.Count > 0)
+                    {
+                        var m = new Mesh { name = "Grass_" + cx + "_" + cz };
+                        if (verts.Count > 65000) m.indexFormat = IndexFormat.UInt32;
+                        m.SetVertices(verts);
+                        m.SetNormals(nrms);
+                        m.SetColors(cols);
+                        m.SetUVs(0, uvs);
+                        m.SetTriangles(tris, 0);
+                        m.RecalculateBounds();
+                        var bnd = m.bounds;
+                        bnd.Expand(1.5f);              // room for wind / car displacement
+                        m.bounds = bnd;
+                        var go = new GameObject(m.name);
+                        go.transform.SetParent(root, false);
+                        go.layer = LayerGrass;
+                        go.AddComponent<MeshFilter>().sharedMesh = m;
+                        var mr = go.AddComponent<MeshRenderer>();
+                        mr.sharedMaterial = mat;
+                        mr.shadowCastingMode = ShadowCastingMode.Off;
+                        mr.receiveShadows = true;
+                        total += verts.Count / 3;
+                    }
+                    if (++done % 8 == 0)
+                    {
+                        Progress = 0.38f + 0.07f * done / (chunks * chunks);
+                        yield return null;
+                    }
+                }
+            GrassBlades = total;
+            Debug.Log("[BlossomRally] grass blades: " + total);
+        }
+
+        void AddTuft(Vector2 p, float edge, float spotK, float meadow, System.Func<float> R01,
+                     List<Vector3> verts, List<Color32> cols, List<Vector4> uvs, List<Vector3> nrms, List<int> tris)
+        {
+            int blades = 2 + Mathf.FloorToInt(R01() * 1.99f);
+            float tall = edge < 2.5f ? 0.65f : (edge > 9f ? Mathf.Lerp(1f, 1.35f, meadow) : 1f);   // verge is trimmed short
+            // patch colour so the field isn't uniform
+            float patch = 0.5f + 0.5f * Mathf.Sin(p.x * 0.11f + Mathf.Sin(p.y * 0.07f) * 1.7f) * Mathf.Sin(p.y * 0.09f + 0.4f);
+            for (int b = 0; b < blades; b++)
+            {
+                Vector2 o = new Vector2(R01() - 0.5f, R01() - 0.5f) * 0.36f;
+                Vector2 rp = p + o;
+                float y = TerrainHeight(rp.x, rp.y) - 0.02f;
+                float yaw = R01() * Mathf.PI * 2f;
+                Vector3 side = new Vector3(Mathf.Cos(yaw), 0f, Mathf.Sin(yaw));
+                Vector3 lean = new Vector3(o.x, 0f, o.y).normalized * 0.5f + new Vector3(R01() - 0.5f, 0f, R01() - 0.5f) * 0.6f;
+                float H = (0.30f + R01() * 0.34f) * tall;
+                float W = 0.045f + R01() * 0.045f;
+                Vector3 c = new Vector3(rp.x, y, rp.y);
+                Vector3 tip = c + lean * H * 0.45f + Vector3.up * H;
+                Color rootC = Color.Lerp(new Color(0.17f, 0.30f, 0.10f), new Color(0.26f, 0.40f, 0.14f), R01());
+                Color tipC = GrassTips[Mathf.FloorToInt(R01() * GrassTips.Length) % GrassTips.Length];
+                tipC = Color.Lerp(tipC, new Color(0.76f, 0.84f, 0.42f), patch * 0.35f);
+                float roll = R01();
+                if (roll < 0.05f) tipC = new Color(0.84f, 0.79f, 0.52f);                                    // dry blade
+                else if (spotK > 0.1f && roll < 0.05f + 0.07f * spotK) tipC = new Color(0.99f, 0.77f, 0.86f); // fallen petals / pink flowers
+                else if (roll > 0.985f) tipC = new Color(0.98f, 0.97f, 0.92f);                              // white daisy
+                else if (roll > 0.972f) tipC = new Color(0.99f, 0.86f, 0.34f);                              // buttercup
+                Vector3 nrm = (Vector3.up + lean * 0.35f).normalized;
+                Vector4 uv = new Vector4(c.x, c.y, c.z, R01());
+                int i0 = verts.Count;
+                verts.Add(c - side * W * 0.5f);
+                verts.Add(tip);
+                verts.Add(c + side * W * 0.5f);
+                Color32 r32 = rootC; r32.a = 0;
+                Color32 t32 = tipC; t32.a = 255;
+                cols.Add(r32); cols.Add(t32); cols.Add(r32);
+                nrms.Add(nrm); nrms.Add(nrm); nrms.Add(nrm);
+                uvs.Add(uv); uvs.Add(uv); uvs.Add(uv);
+                tris.Add(i0); tris.Add(i0 + 1); tris.Add(i0 + 2);
+            }
         }
 
         Color32 GroundColor(float x, float z, float h)
@@ -512,20 +733,18 @@ namespace BlossomRally
                                                    Resources.Load<Texture2D>("Env/" + tex));
                 float tile = def.surface == Surface.Paving ? 4f : 7f;
                 int count = list.Count + (def.closed ? 1 : 0);
-                // split into runs that skip bridge spans
+                // split into runs of <= 240 samples (bridges are part of the road surface)
                 var run = new List<RoadSample>();
                 int part = 0;
                 for (int i = 0; i < count; i++)
                 {
                     var s = list[i % list.Count];
-                    if (s.bridge || run.Count >= 240)
+                    if (run.Count >= 240)
                     {
-                        if (run.Count > 1) MakeRoadPiece(def, run, mat, lineMat, tile, part++);
-                        bool keepLast = !s.bridge && run.Count > 0;
-                        var last = keepLast ? run[run.Count - 1] : default(RoadSample);
+                        MakeRoadPiece(def, run, mat, lineMat, tile, part++);
+                        var last = run[run.Count - 1];
                         run.Clear();
-                        if (keepLast) run.Add(last);
-                        if (s.bridge) continue;
+                        run.Add(last);
                     }
                     run.Add(s);
                 }
@@ -621,7 +840,7 @@ namespace BlossomRally
 
         void BuildWater()
         {
-            const float y = -1.15f;
+            const float y = WaterY;
             var v = new List<Vector3>();
             var t = new List<int>();
             for (int i = 0; i < riverPts.Count; i++)
@@ -799,18 +1018,187 @@ namespace BlossomRally
             Vector2 lc = MapData.LakeCenter;
             var pav = Spawn("ENV_LakePavilion", new Vector3(lc.x, -0.85f, lc.y - (MapData.LakeRadii.y - 16f)), 0f, Vector3.one * 1.3f, staticRoot);
             if (pav != null) AddBox(pav, new Vector3(0f, 1.8f, 0f), new Vector3(7f, 3.6f, 7f));
-            // stone bridges
-            foreach (var b in bridges)
+            // stone arch bridges (procedural, built around the lifted road deck)
+            foreach (var b in bridges) BuildBridge(b);
+        }
+
+        // ------------------------------------------------------------------ bridges
+        class MeshAcc
+        {
+            public readonly List<Vector3> v = new List<Vector3>();
+            public readonly List<Color32> c = new List<Color32>();
+            public readonly List<int> t = new List<int>();
+
+            public void Quad(Vector3 a, Vector3 b, Vector3 cc, Vector3 d, Vector3 outward, Color32 ca, Color32 cb)
             {
-                var br = Spawn("ENV_StoneBridge", new Vector3(b.x, b.w + RoadLift - 0.27f, b.y), b.z, new Vector3(1.25f, 1f, 30f / 18f), staticRoot);
-                if (br == null) continue;
-                foreach (var mf in br.GetComponentsInChildren<MeshFilter>())
+                // a,d = "bottom" edge (colour ca), b,c = "top" edge (colour cb)
+                int i = v.Count;
+                v.Add(a); v.Add(b); v.Add(cc); v.Add(d);
+                c.Add(ca); c.Add(cb); c.Add(cb); c.Add(ca);
+                Vector3 nrm = Vector3.Cross(b - a, cc - a);
+                if (Vector3.Dot(nrm, outward) >= 0f) t.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3 });
+                else t.AddRange(new[] { i, i + 2, i + 1, i, i + 3, i + 2 });
+            }
+
+            public void Box(Vector3 centre, Vector3 fwd, Vector3 size, Color32 col, Color32 top)
+            {
+                Vector3 f = fwd.normalized * size.z * 0.5f;
+                Vector3 r = Vector3.Cross(Vector3.up, fwd).normalized * size.x * 0.5f;
+                Vector3 u = Vector3.up * size.y;
+                Vector3 b0 = centre - f - r, b1 = centre - f + r, b2 = centre + f + r, b3 = centre + f - r;
+                Quad(b0, b0 + u, b1 + u, b1, -f, col, top);
+                Quad(b1, b1 + u, b2 + u, b2, r, col, top);
+                Quad(b2, b2 + u, b3 + u, b3, f, col, top);
+                Quad(b3, b3 + u, b0 + u, b0, -r, col, top);
+                Quad(b0 + u, b1 + u, b2 + u, b3 + u, Vector3.up, top, top);
+            }
+        }
+
+        static Color32 Stone(float shade, float hash)
+        {
+            float k = shade * (0.94f + 0.08f * hash);
+            return new Color32((byte)(Mathf.Clamp01(0.82f * k) * 255), (byte)(Mathf.Clamp01(0.78f * k) * 255), (byte)(Mathf.Clamp01(0.72f * k) * 255), 0);
+        }
+
+        static float Hash(int a, int b)
+        {
+            uint h = (uint)(a * 73856093) ^ (uint)(b * 19349663);
+            h ^= h >> 13; h *= 0x5bd1e995; h ^= h >> 15;
+            return (h & 0xffff) / 65535f;
+        }
+
+        void BuildBridge(BridgeInfo b)
+        {
+            var list = roadSamples[b.road];
+            bool closed = roads[b.road].closed;
+            int n = list.Count;
+            // extend two samples into the abutments at each end
+            var ext = new List<int>(b.idx);
+            for (int e = 1; e <= 2; e++)
+            {
+                int lo = b.idx[0] - e, hi = b.idx[b.idx.Count - 1] + e;
+                if (closed) { lo = (lo + n) % n; hi %= n; }
+                if (lo >= 0 && lo < n) ext.Insert(0, lo);
+                if (hi >= 0 && hi < n) ext.Add(hi);
+            }
+            var acc = new MeshAcc();
+            var go = new GameObject("StoneBridge_" + bridges.IndexOf(b));
+            go.transform.SetParent(staticRoot, false);
+            const float wallIn = 0.05f, wallOut = 0.6f, wallH = 0.72f, cope = 0.12f, over = 0.06f;
+            Color32 moss = new Color32(128, 138, 112, 0);
+            Color32 copeCol = Stone(1.12f, 0.5f);
+            Color32 soffit = Stone(0.62f, 0.3f);
+            float springY = WaterY - 0.45f;
+            float postAcc = 0f;
+
+            System.Func<int, Vector3> P3 = j => new Vector3(list[j].pos.x, list[j].height + RoadLift, list[j].pos.y);
+            System.Func<int, Vector3> N3 = j => new Vector3(list[j].tangent.y, 0f, -list[j].tangent.x);
+            System.Func<int, float, float> Bottom = (j, side) =>
+            {
+                float d = AlongRoad(list, j, b.sHit, closed, b.total);
+                float y = list[j].height + RoadLift;
+                float crown = y - 0.75f;
+                if (Mathf.Abs(d) < b.arch)
                 {
-                    var mc = mf.gameObject.AddComponent<MeshCollider>();
-                    mc.sharedMesh = mf.sharedMesh;
-                    if (mf.name.Contains("_Road")) mf.gameObject.AddComponent<SurfaceTag>().surface = Surface.Asphalt;
+                    float q = d / b.arch;
+                    return springY + (crown - springY) * Mathf.Pow(1f - q * q, 0.42f);
+                }
+                Vector3 e = P3(j) + N3(j) * side * (list[j].halfWidth + wallOut);
+                return Mathf.Min(HeightAt(e.x, e.z) - 0.6f, crown);
+            };
+
+            for (int q = 0; q < ext.Count - 1; q++)
+            {
+                int j0 = ext[q], j1 = ext[q + 1];
+                Vector3 p0 = P3(j0), p1 = P3(j1), n0 = N3(j0), n1 = N3(j1);
+                float hw0 = list[j0].halfWidth, hw1 = list[j1].halfWidth;
+                Vector3 fwd = (p1 - p0);
+                float segLen = new Vector2(fwd.x, fwd.z).magnitude;
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Vector3 out0 = n0 * side, out1 = n1 * side;
+                    Vector3 i0 = p0 + out0 * (hw0 + wallIn), i1 = p1 + out1 * (hw1 + wallIn);
+                    Vector3 o0 = p0 + out0 * (hw0 + wallOut), o1 = p1 + out1 * (hw1 + wallOut);
+                    float t0 = p0.y + wallH, t1 = p1.y + wallH;
+                    float b0 = Bottom(j0, side), b1 = Bottom(j1, side);
+                    Color32 wallCol = Stone(1f, Hash(q, side));
+                    Color32 low = (b0 < 0.2f || b1 < 0.2f) ? moss : Stone(0.9f, Hash(q, side + 5));
+                    // outer spandrel wall, inner parapet face
+                    acc.Quad(new Vector3(o0.x, b0, o0.z), new Vector3(o0.x, t0, o0.z), new Vector3(o1.x, t1, o1.z), new Vector3(o1.x, b1, o1.z), out0, low, wallCol);
+                    acc.Quad(new Vector3(i0.x, p0.y - 0.05f, i0.z), new Vector3(i0.x, t0, i0.z), new Vector3(i1.x, t1, i1.z), new Vector3(i1.x, p1.y - 0.05f, i1.z), -out0, Stone(0.85f, 0.5f), wallCol);
+                    // coping slab on top of the parapet
+                    Vector3 ci0 = p0 + out0 * (hw0 + wallIn - over), ci1 = p1 + out1 * (hw1 + wallIn - over);
+                    Vector3 co0 = p0 + out0 * (hw0 + wallOut + over), co1 = p1 + out1 * (hw1 + wallOut + over);
+                    acc.Quad(new Vector3(ci0.x, t0 + cope, ci0.z), new Vector3(co0.x, t0 + cope, co0.z), new Vector3(co1.x, t1 + cope, co1.z), new Vector3(ci1.x, t1 + cope, ci1.z), Vector3.up, copeCol, copeCol);
+                    acc.Quad(new Vector3(co0.x, t0, co0.z), new Vector3(co0.x, t0 + cope, co0.z), new Vector3(co1.x, t1 + cope, co1.z), new Vector3(co1.x, t1, co1.z), out0, copeCol, copeCol);
+                    acc.Quad(new Vector3(ci0.x, t0, ci0.z), new Vector3(ci0.x, t0 + cope, ci0.z), new Vector3(ci1.x, t1 + cope, ci1.z), new Vector3(ci1.x, t1, ci1.z), -out0, copeCol, copeCol);
+                    acc.Quad(new Vector3(ci0.x, t0, ci0.z), new Vector3(co0.x, t0, co0.z), new Vector3(co1.x, t1, co1.z), new Vector3(ci1.x, t1, ci1.z), Vector3.down, soffit, soffit);
+                    // end caps of the parapet at both ends of the bridge
+                    if (q == 0 || q == ext.Count - 2)
+                    {
+                        bool first = q == 0;
+                        Vector3 ii = first ? i0 : i1, oo = first ? o0 : o1;
+                        float yb = first ? p0.y - 0.05f : p1.y - 0.05f, yt = (first ? t0 : t1) + cope;
+                        Vector3 capOut = first ? -fwd : fwd;
+                        acc.Quad(new Vector3(ii.x, yb, ii.z), new Vector3(ii.x, yt, ii.z), new Vector3(oo.x, yt, oo.z), new Vector3(oo.x, yb, oo.z), capOut, Stone(0.95f, 0.4f), copeCol);
+                        // big end post with a lion-head style cap
+                        Vector3 post = (ii + oo) * 0.5f;
+                        post.y = yt;
+                        acc.Box(post, fwd, new Vector3(0.78f, 0.55f, 0.78f), copeCol, Stone(1.18f, 0.2f));
+                        acc.Box(post + Vector3.up * 0.55f, fwd, new Vector3(0.46f, 0.32f, 0.46f), Stone(1.1f, 0.8f), Stone(1.2f, 0.6f));
+                    }
+                    // invisible wall so cars bounce off the parapet instead of climbing it
+                    var wall = new GameObject("BridgeWall");
+                    wall.transform.SetParent(go.transform, false);
+                    Vector3 mid = (i0 + i1 + o0 + o1) * 0.25f;
+                    mid.y = (p0.y + p1.y) * 0.5f + 0.7f;
+                    wall.transform.position = mid;
+                    wall.transform.rotation = Quaternion.LookRotation(fwd.normalized, Vector3.up);
+                    wall.AddComponent<BoxCollider>().size = new Vector3(wallOut - wallIn, 1.6f, segLen + 0.08f);
+                }
+                // arch soffit / underside of the deck
+                {
+                    Vector3 l0 = p0 - n0 * (hw0 + wallOut), r0 = p0 + n0 * (hw0 + wallOut);
+                    Vector3 l1 = p1 - n1 * (hw1 + wallOut), r1 = p1 + n1 * (hw1 + wallOut);
+                    float bl0 = Bottom(j0, -1), br0 = Bottom(j0, 1), bl1 = Bottom(j1, -1), br1 = Bottom(j1, 1);
+                    acc.Quad(new Vector3(l0.x, bl0, l0.z), new Vector3(r0.x, br0, r0.z), new Vector3(r1.x, br1, r1.z), new Vector3(l1.x, bl1, l1.z), Vector3.down, soffit, soffit);
+                }
+                // small balusters along the coping
+                postAcc += segLen;
+                if (postAcc >= 2.4f)
+                {
+                    postAcc = 0f;
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        Vector3 c = p1 + n1 * side * (hw1 + (wallIn + wallOut) * 0.5f);
+                        c.y = p1.y + wallH + cope;
+                        acc.Box(c, fwd, new Vector3(0.34f, 0.32f, 0.34f), copeCol, Stone(1.2f, 0.7f));
+                    }
                 }
             }
+
+            var mesh = new Mesh { name = go.name };
+            mesh.SetVertices(acc.v);
+            mesh.SetColors(acc.c);
+            mesh.SetTriangles(acc.t, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            var body = new GameObject("Body");
+            body.transform.SetParent(go.transform, false);
+            body.AddComponent<MeshFilter>().sharedMesh = mesh;
+            body.AddComponent<MeshRenderer>().sharedMaterial = MaterialLibrary.Terrain;
+
+            // red lanterns at the four corners of the bridge
+            int[] ends = { ext[0], ext[ext.Count - 1] };
+            foreach (int j in ends)
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Vector3 p = P3(j) + N3(j) * side * (list[j].halfWidth + 1.5f);
+                    Vector3 arm = -N3(j) * side;
+                    float yaw = Mathf.Atan2(-arm.z, arm.x) * Mathf.Rad2Deg;
+                    var lp = Spawn("ENV_LanternPost", new Vector3(p.x, HeightAt(p.x, p.z), p.z), yaw, Vector3.one, staticRoot);
+                    if (lp != null) AddBox(lp, new Vector3(0f, 1.2f, 0f), new Vector3(0.45f, 2.4f, 0.45f));
+                }
         }
 
         IEnumerator SpawnVegetation(List<Plant> plan)

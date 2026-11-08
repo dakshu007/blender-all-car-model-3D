@@ -10,6 +10,7 @@ namespace BlossomRally
         public int level = 1;          // 0 calm, 1 spring, 2 blossom storm
         ParticleSystem petals, mist;
         static readonly float[] Rates = { 90f, 320f, 900f };
+        float mistRate = -1f;
 
         void Start()
         {
@@ -22,6 +23,12 @@ namespace BlossomRally
         {
             level = (level + 1) % 3;
             ApplyLevel();
+        }
+
+        public void SetLevel(int l)
+        {
+            level = (l % 3 + 3) % 3;
+            if (petals != null) ApplyLevel();
         }
 
         void ApplyLevel()
@@ -41,6 +48,18 @@ namespace BlossomRally
             f.Normalize();
             petals.transform.position = follow.position + f * 22f + Vector3.up * 16f;
             mist.transform.position = follow.position + f * 60f + Vector3.up * 3f;
+            // mist amount follows the weather preset (none when fog is off)
+            if (Mathf.Abs(Atmosphere.MistRate - mistRate) > 0.05f)
+            {
+                mistRate = Atmosphere.MistRate;
+                var em = mist.emission;
+                em.rateOverTime = mistRate;
+                if (mistRate < 0.1f) mist.Clear();
+            }
+            var mainM = mist.main;
+            mainM.startColor = new ParticleSystem.MinMaxGradient(
+                new Color(RenderSettings.fogColor.r, RenderSettings.fogColor.g * 1.02f, RenderSettings.fogColor.b * 1.03f, 0.10f),
+                new Color(0.95f, 0.9f, 1f, 0.06f));
         }
 
         ParticleSystem MakePetals()

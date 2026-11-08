@@ -181,13 +181,23 @@ namespace BlossomRally
         }
     }
 
-    /// <summary>Tyre smoke (coloured by surface) and skid marks.</summary>
+    /// <summary>Tyre smoke (coloured by surface), skid marks, flying grass clippings and the
+    /// shader globals that let grass / plants bend and shake around the car.</summary>
     public class CarFX : MonoBehaviour
     {
         ArcadeCar car;
         readonly List<ParticleSystem> smoke = new List<ParticleSystem>();
+        readonly List<ParticleSystem> clippings = new List<ParticleSystem>();
         readonly List<TrailRenderer> skids = new List<TrailRenderer>();
         readonly List<ArcadeCar.Wheel> fxWheels = new List<ArcadeCar.Wheel>();
+
+        static readonly int IdCarA = Shader.PropertyToID("_BR_CarA");
+        static readonly int IdCarB = Shader.PropertyToID("_BR_CarB");
+        static readonly int IdTrail = Shader.PropertyToID("_BR_Trail");
+        static readonly int IdTrailSpeed = Shader.PropertyToID("_BR_TrailSpeed");
+        readonly Vector4[] trail = new Vector4[6];
+        readonly float[] trailSpeed = new float[6];
+        float trailTimer;
 
         void Start()
         {
@@ -198,7 +208,86 @@ namespace BlossomRally
                 fxWheels.Add(w);
                 smoke.Add(MakeSmoke());
                 skids.Add(MakeSkid());
+                clippings.Add(MakeClippings());
             }
+            Vector3 p = transform.position;
+            for (int i = 0; i < trail.Length; i++) trail[i] = new Vector4(p.x, p.y, p.z, -100f);
+        }
+
+        void OnDestroy()
+        {
+            // effects live in world space (not parented), so clean them up with the car
+            foreach (var ps in smoke) if (ps != null) Destroy(ps.gameObject);
+            foreach (var ps in clippings) if (ps != null) Destroy(ps.gameObject);
+            foreach (var tr in skids) if (tr != null) Destroy(tr.gameObject);
+        }
+
+        void Update()
+        {
+            if (car == null) return;
+            // footprint capsule between the axles, on the ground
+            Vector3 f = Vector3.zero, r = Vector3.zero;
+            int nf = 0, nr = 0;
+            foreach (var w in car.wheels)
+            {
+                Vector3 g = transform.TransformPoint(w.local - Vector3.up * w.radius);
+                if (w.front) { f += g; nf++; } else { r += g; nr++; }
+            }
+            if (nf > 0) f /= nf; else f = transform.position;
+            if (nr > 0) r /= nr; else r = transform.position;
+            float speed = car.SpeedKmh / 3.6f;
+            Shader.SetGlobalVector(IdCarA, new Vector4(f.x, f.y, f.z, 1.35f));
+            Shader.SetGlobalVector(IdCarB, new Vector4(r.x, r.y, r.z, speed));
+            Vector3 c = (f + r) * 0.5f;
+            float now = Time.timeSinceLevelLoad;
+            trailTimer -= Time.deltaTime;
+            if (trailTimer <= 0f)
+            {
+                trailTimer = 0.2f;
+                for (int i = trail.Length - 1; i >= 2; i--) { trail[i] = trail[i - 1]; trailSpeed[i] = trailSpeed[i - 1]; }
+                trail[1] = new Vector4(c.x, c.y, c.z, now);
+                trailSpeed[1] = speed;
+            }
+            trail[0] = new Vector4(c.x, c.y, c.z, now);
+            trailSpeed[0] = speed;
+            Shader.SetGlobalVectorArray(IdTrail, trail);
+            Shader.SetGlobalFloatArray(IdTrailSpeed, trailSpeed);
+        }
+
+        ParticleSystem MakeClippings()
+        {
+            var go = new GameObject("GrassClippings");
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.11f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.40f, 0.62f, 0.20f), new Color(0.70f, 0.84f, 0.36f));
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.gravityModifier = 0.9f;
+            main.maxParticles = 300;
+            var em = ps.emission;
+            em.rateOverTime = 0f;
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 28f;
+            shape.radius = 0.15f;
+            var rot = ps.rotationOverLifetime;
+            rot.enabled = true;
+            rot.z = new ParticleSystem.MinMaxCurve(-8f, 8f);
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                      new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.7f), new GradientAlphaKey(0f, 1f) });
+            col.color = new ParticleSystem.MinMaxGradient(g);
+            var rr = go.GetComponent<ParticleSystemRenderer>();
+            rr.sharedMaterial = MaterialLibrary.Particle("Clippings", ProceduralTextures.Petal, Color.white, 0.85f);
+            rr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            ps.Play();
+            return ps;
         }
 
         ParticleSystem MakeSmoke()
@@ -285,6 +374,17 @@ namespace BlossomRally
                 var tr = skids[i];
                 if (w.grounded) { tr.transform.position = w.contact + w.normal * 0.025f; tr.transform.rotation = Quaternion.LookRotation(-w.normal); }
                 tr.emitting = sliding && amount > 0.15f;
+                // grass clippings thrown up behind the tyres
+                var cp = clippings[i];
+                bool onGrass = w.grounded && w.surface == Surface.Grass && car.SpeedKmh > 12f;
+                var cem = cp.emission;
+                cem.rateOverTime = onGrass ? Mathf.Min(140f, car.SpeedKmh * 0.9f + car.DriftIntensity * 80f + (car.throttle > 0.5f ? 20f : 0f)) : 0f;
+                if (w.grounded)
+                {
+                    cp.transform.position = w.contact + Vector3.up * 0.1f;
+                    Vector3 back = -transform.forward + Vector3.up * 0.9f + transform.right * (w.local.x > 0f ? 0.25f : -0.25f);
+                    cp.transform.rotation = Quaternion.LookRotation(back.normalized, Vector3.up);
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 // Colour comes from the mesh vertex colour (authored in Blender, sRGB); the vertex
 // colour ALPHA is the wind weight (0 = static, 1 = full sway). Casts and receives
 // real-time shadows and uses scene fog. Works with static batching (wind is world-space).
+// Low swaying plants (grass clumps, flowers) are also pushed aside by the player's car.
 Shader "BlossomRally/VertexColorWind"
 {
     Properties
@@ -19,6 +20,7 @@ Shader "BlossomRally/VertexColorWind"
         CGPROGRAM
         #pragma surface surf Standard fullforwardshadows vertex:vert addshadow
         #pragma target 3.0
+        #include "BR_Interact.cginc"
 
         struct Input
         {
@@ -43,6 +45,7 @@ Shader "BlossomRally/VertexColorWind"
                 float gust = 1.0 + _BR_WindGust.x;
                 float3 off = float3(1.0, 0.0, 0.35) * (s * _WindStrength * w * gust);
                 off.y = -abs(s) * _WindStrength * 0.25 * w * w;
+                if (w > 0.2) off += BR_Interact(wp, w) * 0.8;
                 v.vertex.xyz += mul((float3x3)unity_WorldToObject, off);
             }
         }
