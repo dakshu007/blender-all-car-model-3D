@@ -16,10 +16,9 @@ namespace BlossomRally
                 Debug.LogError("[BlossomRally] car model not found: Cars/" + spec.id);
                 return null;
             }
-            var model = Object.Instantiate(prefab, root.transform);
+            // keep the prefab's own local transform: its root holds the Blender->Unity axis rotation
+            var model = Object.Instantiate(prefab, root.transform, false);
             model.name = spec.id + "_Model";
-            model.transform.localPosition = Vector3.zero;
-            model.transform.localRotation = Quaternion.identity;
             foreach (var an in model.GetComponentsInChildren<Animator>(true)) Object.Destroy(an);
             MaterialLibrary.Remap(model, spec.id);
             foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;

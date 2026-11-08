@@ -683,9 +683,15 @@ namespace BlossomRally
         {
             var prefab = Prefab(res);
             if (prefab == null) return null;
-            var go = Instantiate(prefab, pos, Quaternion.Euler(0f, yaw, 0f), parent);
+            // Place a clean holder (Unity axes) and keep the model's own imported root transform:
+            // Unity collapses the FBX root into the prefab root, and that root carries the
+            // Blender->Unity axis rotation. Overwriting it stands every model on its end.
+            var go = new GameObject(res);
+            go.transform.SetParent(parent, false);
+            go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
             go.transform.localScale = scale;
-            go.name = res;
+            var model = Instantiate(prefab, go.transform, false);
+            model.name = res + "_Model";
             foreach (var tr in go.GetComponentsInChildren<Transform>(true))
             {
                 if (tr.name.Contains("_Petal_")) { Destroy(tr.gameObject); continue; }
