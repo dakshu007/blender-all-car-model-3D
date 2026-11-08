@@ -14,7 +14,9 @@ the 9 Blender cars.
 3. The first import takes a few minutes. When it finishes, the scene
    `Assets/BlossomRally/Scenes/BlossomValley.unity` opens automatically.
    If it doesn't, use the menu **Blossom Rally → Open Game Scene**.
-4. If Unity asks to **restart** (to enable keyboard input), click *Restart*.
+4. The first import also installs the **Input System** package (for gamepads). If Unity asks to
+   **restart** or to "enable the new input backends", choose the option that keeps **Both** input
+   systems (or click *Restart*). The setup script sets *Active Input Handling = Both* automatically.
 5. Press **Play**. The valley builds itself in a few seconds, with a loading bar.
    Pick a car and drive.
 
@@ -97,6 +99,76 @@ slide. Crashing breaks the combo.
 
 Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seconds.
 
+## Events
+
+From the title screen choose **Rally Stages & Drift Challenge**, pick an event, pick a car, drive.
+
+| Event | Road | Gold / Silver / Bronze |
+| --- | --- | --- |
+| Valley Loop | full main loop, asphalt, ~1.84 km | 61.2 / 70.4 / 82.7 s |
+| Pagoda Climb | hairpins up the mountain, ~0.69 km | 51.3 / 59.0 / 69.2 s |
+| Tea Terrace Sprint | gravel, ~0.62 km | 44.4 / 51.0 / 59.9 s |
+| Bamboo Run | dirt, ~0.68 km | 37.7 / 43.4 / 50.9 s |
+| Pagoda Drift Zone | drift points on the hairpins, ~55 s limit | 10,000 / 6,000 / 2,500 points |
+
+* Stages start with a 3-2-1-GO countdown and have red lacquer checkpoint gates (the next one glows
+  gold). They show split times against your best (green / red) and give a medal at the finish.
+* **Ghost:** beat your time and a translucent ghost of that run races you next time (saved per stage
+  and car).
+* Reset (R) puts you back at the last checkpoint (+2 s). A "Wrong way" warning shows if you turn round.
+
+## Replay and photo mode
+
+* **Instant replay (V / LB):** the last 30 seconds, with trackside, chase, helicopter, bumper and drift
+  cameras. ← → seek, ↑ ↓ speed (1×, ½×, ¼× slow motion), Space pause, C camera, Esc exit.
+* **Photo mode (O / X):** freezes time. WASD / arrows fly, Q/E down/up, Shift faster, hold the right
+  mouse button to look (or use both sticks), wheel or Z/X zoom, R/F roll.
+  * Tab opens options: filters (Natural, Warm Spring, Film, Ink, Pastel Dream, Night Blue), exposure,
+    saturation, vignette, depth of field (auto-focus on the car), letterbox and logo.
+  * Enter / Space / A takes the picture. It is saved at double resolution to the game's
+    `Screenshots` folder, and the path is shown on screen.
+
+## Living valley
+
+* **Birds:** flocks perch near the blossoms and burst into the air when you drive past.
+* **Villagers:** at the paifang gate and along Lantern Street, they turn and wave at your car.
+* **Sky:** kites fly over the meadows, and paper sky lanterns drift above the lake (much brighter at night).
+* **Lake:** koi swim under the surface, with lily pads, lotus flowers and floating lanterns.
+* **Waterfall:** where the river leaves the northern hills, with mist and spray.
+* **Foam:** water foams against the bridge arches and the pavilion stilts.
+* **Your car:**
+  * cherry petals swirl up behind it in drifts, and settle on the bonnet, roof and boot when you're
+    slow; they blow off at speed;
+  * mud and dust build up from the sills (gravel, dirt and grass each leave their own colour), and rain
+    slowly washes them off. Press X in the garage to wash the car.
+* **Sound:** a procedural guzheng / erhu soundtrack that builds up as your drift combo grows (more
+  layers at higher combos).
+  * Engine: gear-change pops, crackles on lift-off, and a turbo whistle with blow-off on the Group B cars.
+  * Road: gravel crunch, dirt rumble and grass swish.
+  * Ambience: birds by day, crickets at night, wind and rain.
+
+## Settings (title screen or Esc)
+
+* **Graphics:** quality preset (Low / Medium / High / Ultra: shadows, anti-aliasing, cull distances,
+  grass), grass density, resolution, fullscreen, V-Sync, FPS counter (also \` or F1).
+* **Audio:** master, music and effects volume.
+* **Controls:** gamepad rumble on/off, and remap every keyboard action.
+
+## Building a Mac app
+
+Menu **Blossom Rally → Build macOS App (Apple Silicon)** (or **Universal**) builds
+`Builds/BlossomRally.app` and opens the folder. This needs "Mac Build Support" in Unity Hub; it is
+installed by default with a Mac editor.
+
+## Performance
+
+* **Far trees:** each tree type is captured once into a texture at load time. Far trees then use
+  4-triangle cut-outs (impostor LODs).
+* **Grass:** thinned by the quality preset and the density setting, and fades out before its cull distance.
+* **Reflections:** the car reflection probe refreshes every few seconds, time-sliced, on High / Ultra only.
+* **Busy scenes:** valley life is merged into a few draw calls and updates less often far from the camera.
+* **If the frame rate is low:** lower Quality in Settings first.
+
 ## The cars
 
 | # | Car | Class |
@@ -138,8 +210,15 @@ Assets/BlossomRally/
   Editor/                         import settings + first-open setup
   Resources/Cars/CAR-xxx/         car FBX, livery texture, wheel data (from Blender)
   Resources/Env/                  environment FBX kit + sign/road textures (from Blender)
+  Scripts/Audio/                  procedural music, sound effects and ambience
+  Scripts/Events/                 rally stages, checkpoints, ghosts, drift challenge
+  Scripts/Camera/                 instant replay and photo mode
+  Scripts/World/                  birds, villagers, kites, lanterns, koi, lotus, waterfall
+  Scripts/Gamepad/                gamepad + rumble bridge (Input System package, own assembly)
   Resources/Shaders/              vertex-colour wind, grass (+ BR_Interact.cginc car interaction),
-                                  lantern glow, water, cloud sky, particles, glass, post FX
+                                  road (wet / puddles), car paint (livery / dirt), impostor, ghost,
+                                  koi, foam, lantern glow, water, cloud + star sky, particles,
+                                  glass, post FX (grade, filters, depth of field)
 ```
 
 ## If something looks off
@@ -155,14 +234,14 @@ Assets/BlossomRally/
 
 ## How it was checked
 
-All C# was compiled against the Unity 2021.3 reference assemblies with the .NET
-compiler: 0 errors, 0 warnings for both the game and editor assemblies. The Unity 6
-code paths differ only by Unity 6's renamed physics APIs. The drift controller was
-tuned in a 2D replica of the car physics, covering entry, holding, flicking sides,
-lift-off exit, a hairpin and normal grip cornering for both AWD and RWD. The bridge
-ramps were checked numerically (at most 10.6% grade, with the deck at least 2.4 m above
-the water). The road layout was checked
-numerically: every road is at most 10% grade, there are no self-crossings, the street
-joins the main loop, and the 2 bridges sit at the river crossings. I could not run
-Unity itself here, so the first real play test is yours. Please tell me anything you'd
-like changed.
+All C# compiles against the Unity 2021.3 reference assemblies with the .NET compiler: 0 errors and 0
+warnings for the game and editor assemblies. It also compiles with the 2022+ defines and with only the
+new Input System enabled. Unity 6 code paths differ only by Unity 6's renamed physics APIs. The
+gamepad bridge was compiled against the Input System API surface.
+
+The drift controller was tuned in a 2D replica of the car physics. The road, bridge, stage and
+waterfall layouts were checked numerically. The music and sound generators were run offline: no clicks
+at loop points, no NaNs, and balanced levels.
+
+**Not yet tested in Unity:** the shaders can't be compiled here, and nothing has been played. If
+anything renders pink or misbehaves, send me the Console message.

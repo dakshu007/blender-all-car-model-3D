@@ -2,6 +2,9 @@
 
 > **Play it:** open `UnityProject/` in Unity Hub (2021.3 / 2022.3 / Unity 6, Mac M1 OK) and press Play.
 > Controls and details: [`UnityProject/README_BLOSSOM_RALLY.md`](UnityProject/README_BLOSSOM_RALLY.md).
+> Includes free roam and rally stages with ghosts and medals, a drift challenge, time of day and
+> weather (including rain), gamepad with rumble, instant replay, photo mode, liveries, a procedural
+> soundtrack and a one-click macOS build.
 
 Original, stylised low-poly rally cars for a macOS-first Unity (URP) rally game.
 Everything is built and checked by reusable **Blender Python** scripts, with

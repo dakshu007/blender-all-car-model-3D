@@ -90,12 +90,17 @@ namespace BlossomRally
         }
 
         // ------------------------------------------------------------- runtime
+        float showFade = 1f;
+
         void Update()
         {
             if (!started || car == null) return;
             float dt = Time.deltaTime;
             if (dt <= 0f) return;   // paused (AudioListener.pause handles the sound itself)
-            float sfx = GameSettings.SfxVolume;
+            // quiet idle on the garage turntable / title screen, silent while a replay freezes the car
+            bool frozen = car.Body != null && car.Body.isKinematic;
+            showFade = Mathf.MoveTowards(showFade, frozen ? (car.enabled ? 0.25f : 0f) : 1f, dt * 2f);
+            float sfx = GameSettings.SfxVolume * showFade;
             float rpm = car.EngineRpm;
             float rpm01 = Mathf.InverseLerp(900f, 7600f, rpm);
             float thr = Mathf.Clamp01(car.throttle);

@@ -130,20 +130,10 @@ namespace BlossomRally
         {
             yield return world.Build();
             garage.Build(world);
-            CreateOptional("BlossomRally.ValleyLife");
-            CreateOptional("BlossomRally.WaterLife");
+            ValleyLife.Create(world);
+            WaterLife.Create(world);
             SpawnCar(0, garage.TablePos, Quaternion.identity);
             EnterTitle();
-        }
-
-        /// <summary>Calls the static Create(WorldBuilder) of an optional world module if it is in the project.</summary>
-        void CreateOptional(string typeName)
-        {
-            var t = typeof(GameManager).Assembly.GetType(typeName);
-            var m = t != null ? t.GetMethod("Create", new[] { typeof(WorldBuilder) }) : null;
-            if (m == null) return;
-            try { m.Invoke(null, new object[] { world }); }
-            catch (System.Exception e) { Debug.LogWarning("[BlossomRally] " + typeName + ": " + (e.InnerException ?? e).Message); }
         }
 
         // ------------------------------------------------------------------ menus

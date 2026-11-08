@@ -35,6 +35,7 @@ namespace BlossomRally
         WorldBuilder world;
         readonly System.Random rng = new System.Random(51507);
         float clock;
+        int frame;
 
         float Rand(float a, float b) { return a + (float)rng.NextDouble() * (b - a); }
 
@@ -60,6 +61,7 @@ namespace BlossomRally
             float dt = Time.deltaTime;
             if (dt <= 0f) return;          // paused
             clock += dt;
+            frame++;
             Step(dt, false);
         }
 
@@ -78,7 +80,8 @@ namespace BlossomRally
         static bool CarPos(out Vector3 p)
         {
             var gm = GameManager.Instance;
-            if (gm != null && gm.Car != null) { p = gm.Car.transform.position; return true; }
+            // only a car that is actually being driven (not the one on the garage turntable) disturbs life
+            if (gm != null && gm.IsDriving && gm.Car != null) { p = gm.Car.transform.position; return true; }
             p = Vector3.zero;
             return false;
         }
@@ -259,7 +262,9 @@ namespace BlossomRally
                     fl.cool -= dt;
                     if (hasCar && fl.cool <= 0f && (car - perches[fl.spot]).sqrMagnitude < ScareRadius * ScareRadius) TakeOff(fl, car);
                 }
-                bool near = force || (eye - perches[fl.spot]).sqrMagnitude < 150f * 150f;
+                // idle perched birds: animate when visible-ish; far ones only every third frame
+                float dEye = (eye - perches[fl.spot]).sqrMagnitude;
+                bool near = force || dEye < 60f * 60f || (dEye < 150f * 150f && (frame + f) % 3 == 0);
                 bool allLanded = true;
                 for (int i = 0; i < fl.birds.Length; i++)
                 {
@@ -438,7 +443,9 @@ namespace BlossomRally
             for (int i = 0; i < villagers.Length; i++)
             {
                 var v = villagers[i];
-                if (!force && (eye - v.pos).sqrMagnitude > 140f * 140f) continue;   // frozen when nobody can see
+                float dEye = (eye - v.pos).sqrMagnitude;
+                if (!force && dEye > 140f * 140f) continue;                          // frozen when nobody can see
+                if (!force && dEye > 60f * 60f && ((frame + i) & 3) != 0) continue;  // distant: quarter rate
                 float target = v.baseYaw, waveT = 0f;
                 if (hasCar)
                 {
@@ -471,7 +478,7 @@ namespace BlossomRally
         // ================================================================== kites
         class Kite
         {
-            public int part;
+            public int part, stake;
             public Vector3 anchor;
             public float height, dist, phase, size, tailLen, tailTip;
             public LineRenderer line, tail;
@@ -527,8 +534,7 @@ namespace BlossomRally
                 k.size = Rand(1.35f, 1.8f);
                 k.tailLen = swallow ? Rand(2.5f, 3.5f) : Rand(5f, 7f);
                 k.tailTip = swallow ? -0.8f : -0.9f;
-                int stake = kiteBatch.AddPart(stakeT);
-                kiteBatch.Set(stake, Matrix4x4.TRS(k.anchor, Quaternion.Euler(0f, Rand(0f, 360f), 0f), Vector3.one));
+                k.stake = kiteBatch.AddPart(stakeT);
                 k.linePts = new Vector3[12];
                 k.tailPts = new Vector3[10];
                 k.line = MakeLine("KiteString_" + i, k.linePts.Length, 0.04f, 0.03f, new Color(0.95f, 0.93f, 0.88f, 0.9f), new Color(0.95f, 0.93f, 0.88f, 0.9f));
@@ -537,6 +543,8 @@ namespace BlossomRally
                 kites[i] = k;
             }
             kiteBatch.Finish("Life_Kites", MaterialLibrary.VertexColorWind, transform, 0, true);
+            foreach (var k in kites)
+                kiteBatch.Set(k.stake, Matrix4x4.TRS(k.anchor, Quaternion.Euler(0f, Rand(0f, 360f), 0f), Vector3.one));
         }
 
         LineRenderer MakeLine(string name, int count, float w0, float w1, Color c0, Color c1)
@@ -564,9 +572,6 @@ namespace BlossomRally
             if (kites == null) return;
             float gust = Atmosphere.Gust;
             Vector3 side = new Vector3(-Wind.z, 0f, Wind.x);
-            Vector3 fwd = -Wind * 0.866f + Vector3.up * 0.5f;     // face upwind, leaning back 30 degrees
-            Vector3 up = Vector3.up * 0.866f + Wind * 0.5f;
-            Quaternion face = Quaternion.LookRotation(fwd, up);
             for (int i = 0; i < kites.Length; i++)
             {
                 var k = kites[i];
@@ -577,7 +582,10 @@ namespace BlossomRally
                               + Vector3.up * (k.height + Mathf.Sin(t * 0.41f) * 1.2f + gust * 2.5f)
                               + side * lateral;
                 float roll = Mathf.Sin(t * 0.9f) * (6f + 12f * gust) - Mathf.Cos(t * 0.31f) * 12f;
-                Quaternion rot = face * Quaternion.Euler(Mathf.Sin(t * 2.1f) * (2f + 4f * gust), 0f, roll);
+                // the sail faces back down its string (towards the flyer), slightly into the wind
+                Vector3 toAnchor = (k.anchor + Vector3.up * 0.72f - pos).normalized;
+                Vector3 fwd = (toAnchor * 0.7f - Wind * 0.3f).normalized;
+                Quaternion rot = Quaternion.LookRotation(fwd, Vector3.up) * Quaternion.Euler(Mathf.Sin(t * 2.1f) * (2f + 4f * gust), 0f, roll);
                 Matrix4x4 m = Matrix4x4.TRS(pos, rot, new Vector3(k.size, k.size, k.size));
                 kiteBatch.Set(k.part, m);
 
@@ -670,8 +678,10 @@ namespace BlossomRally
         {
             if (rng.NextDouble() < 0.4)
             {
-                Vector2 pc = LifeShapes.PavilionCentre;          // released from the lake pavilion
-                l.origin = new Vector3(pc.x + Rand(-2.5f, 2.5f), WorldBuilder.WaterY + Rand(3.5f, 4.5f), pc.y + Rand(-2.5f, 2.5f));
+                // released just off the lake pavilion (outside its roof, which reaches ~5 m from the centre)
+                Vector2 pc = LifeShapes.PavilionCentre;
+                float a = Rand(-0.2f, Mathf.PI + 0.2f), r = Rand(6f, 7.5f);
+                l.origin = new Vector3(pc.x + Mathf.Cos(a) * r, WorldBuilder.WaterY + Rand(2.2f, 3.2f), pc.y + Mathf.Sin(a) * r);
             }
             else
             {
@@ -940,6 +950,7 @@ namespace BlossomRally
 
         public void Set(int part, Matrix4x4 m)
         {
+            if (mats == null) return;
             mats[part] = m;
             dirty[part] = true;
             anyDirty = true;
@@ -947,12 +958,14 @@ namespace BlossomRally
 
         public void SetBend(int part, float amp, float phase)
         {
+            if (bendAmp == null) return;
             bendAmp[part] = amp;
             bendPhase[part] = phase;
         }
 
         public void SetAlpha(int part, byte a)
         {
+            if (start == null) return;
             int s = start[part], e = s + count[part];
             if (e == s || c[s].a == a) return;
             for (int i = s; i < e; i++) c[i].a = a;
@@ -1049,7 +1062,7 @@ namespace BlossomRally
             for (int i = 0; i < rings.Length - 1; i++)
             {
                 Vector4 a = rings[i + 1], b = rings[i];
-                g.Frustum(new Vector3(0f, a.y, a.x), new Vector3(0f, b.y, b.x), a.z, a.w, b.z, b.w, 6, 0f, back, back, i == rings.Length - 2, false);
+                g.Frustum(new Vector3(0f, a.y, a.x), new Vector3(0f, b.y, b.x), a.z, a.w, b.z, b.w, 5, Mathf.PI * 0.5f, back, back, i == rings.Length - 2, false);
             }
             // tail (forked for swallows)
             g.Paint = null;
@@ -1069,10 +1082,6 @@ namespace BlossomRally
                 g.Tri2(bl, br, tR, tail, tail, tail);
                 g.Tri2(bl, tR, tL, tail, tail, tail);
             }
-            // tiny legs
-            Color32 leg = C(70, 60, 56);
-            g.Frustum(new Vector3(-0.02f, 0f, 0.0f), new Vector3(-0.02f, 0.03f, 0.0f), 0.006f, 0.006f, 0.006f, 0.006f, 4, 0f, leg, leg, false, false);
-            g.Frustum(new Vector3(0.02f, 0f, 0.0f), new Vector3(0.02f, 0.03f, 0.0f), 0.006f, 0.006f, 0.006f, 0.006f, 4, 0f, leg, leg, false, false);
             return g;
         }
 
@@ -1105,22 +1114,25 @@ namespace BlossomRally
             // legs + shoes
             for (int s = -1; s <= 1; s += 2)
             {
-                g.Frustum(new Vector3(0.085f * s, 0f, 0.02f), new Vector3(0.085f * s, 0.08f, 0.02f), 0.07f, 0.1f, 0.07f, 0.1f, 6, 0f, shoe, shoe, true, true);
+                g.Frustum(new Vector3(0.085f * s, 0f, 0.02f), new Vector3(0.085f * s, 0.08f, 0.02f), 0.07f, 0.1f, 0.07f, 0.1f, 6, 0f, shoe, shoe, true, false);
                 g.Frustum(new Vector3(0.085f * s, 0.08f, 0f), new Vector3(0.085f * s, 0.55f, 0f), 0.068f, 0.072f, 0.08f, 0.085f, 6, 0f, trousers, trousers, false, false);
             }
             // long tunic, hem band, sash, collar
             g.Frustum(new Vector3(0f, 0.4f, 0f), new Vector3(0f, 1.36f, 0f), 0.25f, 0.2f, 0.175f, 0.125f, 8, oct, tunic, LifeGeo.Shade(tunic, 1.08f), true, true);
             g.Frustum(new Vector3(0f, 0.38f, 0f), new Vector3(0f, 0.47f, 0f), 0.262f, 0.212f, 0.254f, 0.206f, 8, oct, trim, trim, true, false);
             g.Frustum(new Vector3(0f, 0.86f, 0f), new Vector3(0f, 0.95f, 0f), 0.218f, 0.168f, 0.212f, 0.162f, 8, oct, trim, trim, false, false);
-            g.Box(new Vector3(0.06f, 0.8f, 0.17f), new Vector3(0.025f, 0.08f, 0.012f), trim);     // sash tail
             g.Frustum(new Vector3(0f, 1.33f, 0f), new Vector3(0f, 1.4f, 0f), 0.125f, 0.095f, 0.07f, 0.06f, 8, oct, trim, trim, false, true);
             // neck, head, eyes, hair
             g.Frustum(new Vector3(0f, 1.38f, 0f), new Vector3(0f, 1.47f, 0f), 0.05f, 0.05f, 0.05f, 0.05f, 6, 0f, skin, skin, false, false);
             g.Ellipsoid(new Vector3(0f, 1.56f, 0.005f), new Vector3(0.115f, 0.13f, 0.12f), 8, 5, skin, skin);
-            g.Box(new Vector3(-0.042f, 1.575f, 0.113f), new Vector3(0.012f, 0.016f, 0.01f), hair);
-            g.Box(new Vector3(0.042f, 1.575f, 0.113f), new Vector3(0.012f, 0.016f, 0.01f), hair);
-            g.Box(new Vector3(-0.06f, 1.53f, 0.11f), new Vector3(0.018f, 0.01f, 0.008f), C(240, 150, 140));   // rosy cheeks
-            g.Box(new Vector3(0.06f, 1.53f, 0.11f), new Vector3(0.018f, 0.01f, 0.008f), C(240, 150, 140));
+            Color32 cheek = C(240, 150, 140);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                // eyes and rosy cheeks: small quads just in front of the face
+                Vector3 e = new Vector3(0.042f * s, 1.575f, 0.124f), k = new Vector3(0.062f * s, 1.528f, 0.118f);
+                g.QuadOut(e + new Vector3(-0.011f, -0.015f, 0f), e + new Vector3(0.011f, -0.015f, 0f), e + new Vector3(0.011f, 0.015f, 0f), e + new Vector3(-0.011f, 0.015f, 0f), Vector3.forward, hair, hair, hair, hair);
+                g.QuadOut(k + new Vector3(-0.018f, -0.01f, 0f), k + new Vector3(0.018f, -0.01f, 0f), k + new Vector3(0.018f, 0.01f, 0f), k + new Vector3(-0.018f, 0.01f, 0f), Vector3.forward, cheek, cheek, cheek, cheek);
+            }
             g.Ellipsoid(new Vector3(0f, 1.6f, -0.014f), new Vector3(0.123f, 0.105f, 0.122f), 8, 4, hair, hair);
             switch (headStyle)
             {
@@ -1163,9 +1175,9 @@ namespace BlossomRally
             g.Tri2(left, top, mid, b, b, b);
             // painted centre diamond + spars
             Color32 e = C(250, 246, 236);
-            Vector3 f = new Vector3(0f, 0f, -0.005f);
-            g.Tri2(new Vector3(0f, 0.42f, 0.03f) + f, new Vector3(0.2f, 0.18f, 0.07f) + f, new Vector3(0f, -0.08f, 0.04f) + f, e, e, e);
-            g.Tri2(new Vector3(0f, 0.42f, 0.03f) + f, new Vector3(0f, -0.08f, 0.04f) + f, new Vector3(-0.2f, 0.18f, 0.07f) + f, e, e, e);
+            Vector3 et = new Vector3(0f, 0.42f, 0.075f), eb = new Vector3(0f, -0.08f, 0.085f);
+            g.Tri2(et, new Vector3(0.2f, 0.18f, 0.1f), eb, e, e, e);
+            g.Tri2(et, eb, new Vector3(-0.2f, 0.18f, 0.1f), e, e, e);
             Color32 spar = C(110, 80, 50);
             g.Frustum(new Vector3(0f, -0.9f, 0.02f), new Vector3(0f, 1f, 0.02f), 0.012f, 0.012f, 0.012f, 0.012f, 4, 0f, spar, spar, false, false);
             g.Frustum(new Vector3(-0.72f, 0.18f, 0.1f), new Vector3(0.72f, 0.18f, 0.1f), 0.012f, 0.012f, 0.012f, 0.012f, 4, 0f, spar, spar, false, false);
