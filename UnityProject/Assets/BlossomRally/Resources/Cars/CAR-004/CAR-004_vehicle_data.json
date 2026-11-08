@@ -1,0 +1,227 @@
+{
+  "car_id": "CAR-004",
+  "display_name": "Falcon Mk1 Rally",
+  "vehicle_class": "Classic RWD",
+  "fbx": "CAR-004_Export.fbx",
+  "root": "CAR-004_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.68002,
+      0.0
+    ],
+    "size": [
+      1.71814,
+      1.35997,
+      4.198
+    ]
+  },
+  "triangles": 23008,
+  "wheels": {
+    "FL": {
+      "transform": "CAR-004_Wheel_FL",
+      "blender_position": [
+        -0.68,
+        1.25,
+        0.3
+      ],
+      "unity_local_position": [
+        -0.68,
+        0.3,
+        1.25
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": true,
+      "drive": false
+    },
+    "FR": {
+      "transform": "CAR-004_Wheel_FR",
+      "blender_position": [
+        0.68,
+        1.25,
+        0.3
+      ],
+      "unity_local_position": [
+        0.68,
+        0.3,
+        1.25
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": true,
+      "drive": false
+    },
+    "RL": {
+      "transform": "CAR-004_Wheel_RL",
+      "blender_position": [
+        -0.68,
+        -1.15,
+        0.3
+      ],
+      "unity_local_position": [
+        -0.68,
+        0.3,
+        -1.15
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": false,
+      "drive": true
+    },
+    "RR": {
+      "transform": "CAR-004_Wheel_RR",
+      "blender_position": [
+        0.68,
+        -1.15,
+        0.3
+      ],
+      "unity_local_position": [
+        0.68,
+        0.3,
+        -1.15
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "FL",
+      "transform": "CAR-004_Wheel_FL",
+      "blender_position": [
+        -0.68,
+        1.25,
+        0.3
+      ],
+      "unity_local_position": [
+        -0.68,
+        0.3,
+        1.25
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "FR",
+      "transform": "CAR-004_Wheel_FR",
+      "blender_position": [
+        0.68,
+        1.25,
+        0.3
+      ],
+      "unity_local_position": [
+        0.68,
+        0.3,
+        1.25
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "RL",
+      "transform": "CAR-004_Wheel_RL",
+      "blender_position": [
+        -0.68,
+        -1.15,
+        0.3
+      ],
+      "unity_local_position": [
+        -0.68,
+        0.3,
+        -1.15
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": false,
+      "drive": true
+    },
+    {
+      "slot": "RR",
+      "transform": "CAR-004_Wheel_RR",
+      "blender_position": [
+        0.68,
+        -1.15,
+        0.3
+      ],
+      "unity_local_position": [
+        0.68,
+        0.3,
+        -1.15
+      ],
+      "radius": 0.3,
+      "width": 0.205,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 2.4,
+  "track": 1.36,
+  "steering_wheel": {
+    "transform": "CAR-004_SteeringWheel",
+    "steer_axis": "local +Z in Unity (Blender local +Y)"
+  },
+  "colliders": [
+    {
+      "name": "CAR-004_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.49136,
+        0.0
+      ],
+      "unity_size": [
+        1.56,
+        0.50273,
+        4.1
+      ]
+    },
+    {
+      "name": "CAR-004_Collider_Cabin",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        1.05136,
+        -0.0875
+      ],
+      "unity_size": [
+        1.22,
+        0.59727,
+        1.175
+      ]
+    }
+  ],
+  "textures": [
+    "CAR-004_BaseColor.png"
+  ],
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-004_Accent",
+    "M_CAR-004_Cage",
+    "M_CAR-004_Paint",
+    "M_CAR-004_Plate",
+    "M_CAR-004_Rim",
+    "M_CAR-004_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ]
+}

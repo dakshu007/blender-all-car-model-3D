@@ -1,6 +1,6 @@
 {
   "tool": "export_env_fbx.py",
-  "generated_utc": "2026-11-08T06:56:41+00:00",
+  "generated_utc": "2026-11-08T07:38:10+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",
@@ -40,7 +40,7 @@
     {
       "component": "ENV_CherryKing",
       "fbx": "ENV_CherryKing.fbx",
-      "bytes": 2197324,
+      "bytes": 2197260,
       "triangles": 59418,
       "expected": {
         "objects": 60,
@@ -59,7 +59,7 @@
     {
       "component": "ENV_CherryTree",
       "fbx": "ENV_CherryTree.fbx",
-      "bytes": 1625660,
+      "bytes": 1625676,
       "triangles": 46100,
       "expected": {
         "objects": 40,
@@ -78,7 +78,7 @@
     {
       "component": "ENV_CherryYoung",
       "fbx": "ENV_CherryYoung.fbx",
-      "bytes": 1268348,
+      "bytes": 1268300,
       "triangles": 39710,
       "expected": {
         "objects": 24,
@@ -116,7 +116,7 @@
     {
       "component": "ENV_GrassPatch",
       "fbx": "ENV_GrassPatch.fbx",
-      "bytes": 541804,
+      "bytes": 541820,
       "triangles": 16432,
       "expected": {
         "objects": 2,
@@ -253,7 +253,7 @@
     {
       "component": "ENV_LakePavilion",
       "fbx": "ENV_LakePavilion.fbx",
-      "bytes": 271596,
+      "bytes": 271580,
       "triangles": 6364,
       "expected": {
         "objects": 14,
@@ -333,7 +333,7 @@
     {
       "component": "ENV_LanternPost",
       "fbx": "ENV_LanternPost.fbx",
-      "bytes": 72636,
+      "bytes": 72620,
       "triangles": 552,
       "expected": {
         "objects": 4,
@@ -497,7 +497,7 @@
     {
       "component": "ENV_Water_Lake",
       "fbx": "ENV_Water_Lake.fbx",
-      "bytes": 84764,
+      "bytes": 84748,
       "triangles": 1750,
       "expected": {
         "objects": 3,

@@ -1,4 +1,7 @@
-# Rally Game: stylised car collection (Blender → Unity)
+# Blossom Rally: stylised Chinese-valley rally game (Blender → Unity)
+
+> **Play it:** open `UnityProject/` in Unity Hub (2021.3 / 2022.3 / Unity 6, Mac M1 OK) and press Play.
+> Controls and details: [`UnityProject/README_BLOSSOM_RALLY.md`](UnityProject/README_BLOSSOM_RALLY.md).
 
 Original, stylised low-poly rally cars for a macOS-first Unity (URP) rally game.
 Everything is built and checked by reusable **Blender Python** scripts, with
@@ -75,11 +78,9 @@ ArtPipeline/
     Documentation/           inspection report, design, plan
   Blender/Scripts/environment/   environment kit builders, diorama, renders, FBX export
   EnvironmentLibrary/            Working (.blend), Textures, Export (FBX), Previews
-UnityProject/Assets/_Game/Scripts/Vehicles/
-  VehicleDefinition.cs       ScriptableObject with gameplay stats
-  VehicleWheelVisuals.cs     WheelCollider -> visual wheel pivots
-  RallyTestDriveController.cs  minimal test driving (legacy input or Input System)
-  Editor/VehicleSetupWizard.cs Tools > Rally > Set Up Vehicle From Data
+UnityProject/                  PLAYABLE GAME: open in Unity Hub, press Play (see UnityProject/README_BLOSSOM_RALLY.md)
+  Assets/BlossomRally/Scripts  GameManager, WorldBuilder (map), ArcadeCar (drift physics), CameraRig, PetalWeather, PostFX
+  Assets/BlossomRally/Resources  9 car FBX + environment kit FBX + shaders
 ```
 
 ## Run the pipeline

@@ -1,5 +1,10 @@
 # Blender → Unity: exact steps and the FBX contract
 
+> **Update:** the playable project in `UnityProject/` now does all of this automatically. It imports
+> the FBX files from `Assets/BlossomRally/Resources`, and `CarFactory` builds each car (Rigidbody,
+> collider, arcade drift physics, wheel visuals) from `CAR-xxx_vehicle_data.json` at runtime. The
+> earlier WheelCollider wizard scripts were removed. The FBX axis contract below still applies.
+
 ## Conventions
 
 | | Blender (source of truth) | Unity |

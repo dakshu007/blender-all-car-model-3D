@@ -145,6 +145,11 @@ class EnvBuilder(vb.MeshBuilder):
                     w = wind(lp.vert.co)
                     w = w.real if isinstance(w, complex) else w
                     lp[self.col] = (c[0], c[1], c[2], max(0.0, min(1.0, w)))
+        else:  # static geometry (buildings, roads, props): wind weight 0 so the game's wind shader leaves it still
+            for f in self.bm.faces:
+                for lp in f.loops:
+                    c = lp[self.col]
+                    lp[self.col] = (c[0], c[1], c[2], 0.0)
         o = self.finish(collection, recalc=recalc)
         if not o.data.materials:
             o.data.materials.append(mat_vcol())
