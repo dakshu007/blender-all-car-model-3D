@@ -16,9 +16,10 @@ namespace BlossomRally
                 Debug.LogError("[BlossomRally] car model not found: Cars/" + spec.id);
                 return null;
             }
-            // keep the prefab's own local transform: its root holds the Blender->Unity axis rotation
             var model = Object.Instantiate(prefab, root.transform, false);
             model.name = spec.id + "_Model";
+            AxisFix.Calibrate();
+            AxisFix.Apply(model.transform);
             foreach (var an in model.GetComponentsInChildren<Animator>(true)) Object.Destroy(an);
             MaterialLibrary.Remap(model, spec.id);
             foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
@@ -85,7 +86,7 @@ namespace BlossomRally
             return car;
         }
 
-        static VehicleData LoadData(string id)
+        internal static VehicleData LoadData(string id)
         {
             var ta = Resources.Load<TextAsset>("Cars/" + id + "/" + id + "_vehicle_data");
             if (ta == null) return null;
@@ -102,6 +103,81 @@ namespace BlossomRally
                 if (r != null) return r;
             }
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Self-calibrating Blender->Unity orientation fix. Depending on the Unity version, the FBX
+    /// importer may drop the axis-conversion rotation stored on the single top node (it collapses
+    /// that node into the prefab root), which stands every model on its end. We instantiate one
+    /// car, compare where its wheel pivots really are with where the exported vehicle data says
+    /// they must be (+Z forward, +Y up), and derive the correcting rotation (snapped to 90 deg).
+    /// All Blossom Rally FBX files share the same export settings, so the same fix applies to
+    /// every car and environment model. If the import is already correct, the fix is identity.
+    /// </summary>
+    public static class AxisFix
+    {
+        static bool calibrated;
+        public static Quaternion Rotation { get; private set; } = Quaternion.identity;
+
+        public static void Calibrate()
+        {
+            if (calibrated) return;
+            calibrated = true;
+            foreach (var spec in CarCatalog.Cars)
+                if (TryCar(spec.id)) return;
+            Debug.LogWarning("[BlossomRally] axis calibration failed - using identity");
+        }
+
+        static bool TryCar(string id)
+        {
+            var prefab = Resources.Load<GameObject>("Cars/" + id + "/" + id + "_Export");
+            var data = CarFactory.LoadData(id);
+            if (prefab == null || data == null || data.wheel_list == null) return false;
+            var tmp = new GameObject("BR_AxisCalibration");
+            var m = Object.Instantiate(prefab, tmp.transform, false);
+            Transform fl = CarFactory.FindDeep(m.transform, id + "_Wheel_FL");
+            Transform fr = CarFactory.FindDeep(m.transform, id + "_Wheel_FR");
+            Transform rl = CarFactory.FindDeep(m.transform, id + "_Wheel_RL");
+            Vector3? eFL = null, eFR = null, eRL = null;
+            foreach (var w in data.wheel_list)
+            {
+                if (w.unity_local_position == null || w.unity_local_position.Length != 3) continue;
+                var v = new Vector3(w.unity_local_position[0], w.unity_local_position[1], w.unity_local_position[2]);
+                if (w.slot == "FL") eFL = v;
+                else if (w.slot == "FR") eFR = v;
+                else if (w.slot == "RL") eRL = v;
+            }
+            bool ok = fl != null && fr != null && rl != null && eFL.HasValue && eFR.HasValue && eRL.HasValue;
+            if (ok)
+            {
+                Vector3 aFL = tmp.transform.InverseTransformPoint(fl.position);
+                Vector3 aFR = tmp.transform.InverseTransformPoint(fr.position);
+                Vector3 aRL = tmp.transform.InverseTransformPoint(rl.position);
+                Vector3 fa = aFL - aRL, ra = aFR - aFL;
+                Vector3 fe = eFL.Value - eRL.Value, re = eFR.Value - eFL.Value;
+                ok = fa.sqrMagnitude > 0.01f && ra.sqrMagnitude > 0.01f;
+                if (ok)
+                {
+                    Quaternion qa = Quaternion.LookRotation(fa, Vector3.Cross(fa, ra));
+                    Quaternion qe = Quaternion.LookRotation(fe, Vector3.Cross(fe, re));
+                    Vector3 e = (qe * Quaternion.Inverse(qa)).eulerAngles;
+                    e = new Vector3(Mathf.Round(e.x / 90f) * 90f, Mathf.Round(e.y / 90f) * 90f, Mathf.Round(e.z / 90f) * 90f);
+                    Rotation = Quaternion.Euler(e);
+                    Debug.Log("[BlossomRally] axis calibration from " + id + ": correction " + e +
+                              (e == Vector3.zero ? " (import already correct)" : " (applied to all models)"));
+                }
+            }
+            Object.Destroy(tmp);
+            return ok;
+        }
+
+        /// <summary>Rotate an instantiated model (child of a holder in Unity axes) into place.</summary>
+        public static void Apply(Transform model)
+        {
+            if (Rotation == Quaternion.identity) return;
+            model.localPosition = Rotation * model.localPosition;
+            model.localRotation = Rotation * model.localRotation;
         }
     }
 

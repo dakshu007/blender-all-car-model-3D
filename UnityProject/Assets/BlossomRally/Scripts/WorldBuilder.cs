@@ -692,6 +692,8 @@ namespace BlossomRally
             go.transform.localScale = scale;
             var model = Instantiate(prefab, go.transform, false);
             model.name = res + "_Model";
+            AxisFix.Calibrate();
+            AxisFix.Apply(model.transform);
             foreach (var tr in go.GetComponentsInChildren<Transform>(true))
             {
                 if (tr.name.Contains("_Petal_")) { Destroy(tr.gameObject); continue; }
