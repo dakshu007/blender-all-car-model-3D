@@ -70,7 +70,6 @@ namespace BlossomRally
         bool panelOpen = true, hideAll;
         int row;
         float repeatAt;
-        int repeatDir;
         bool hideForCapture, capturing;
         float flash;
         string toast = "";
@@ -145,7 +144,6 @@ namespace BlossomRally
             hideForCapture = capturing = false;
             flash = 0f;
             toastTimer = 0f;
-            repeatDir = 0;
             Active = true;
             toggleFrame = Time.frameCount;
             ApplyCamera();

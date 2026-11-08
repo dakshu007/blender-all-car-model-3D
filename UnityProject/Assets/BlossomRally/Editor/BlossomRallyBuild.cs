@@ -35,7 +35,11 @@ namespace BlossomRally.EditorTools
             }
             PlayerSettings.productName = "Blossom Rally";
             PlayerSettings.companyName = "Blossom Rally";
+#if UNITY_2021_2_OR_NEWER
+            PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Standalone, "com.blossomrally.game");
+#else
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Standalone, "com.blossomrally.game");
+#endif
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
             PlayerSettings.resizableWindow = true;

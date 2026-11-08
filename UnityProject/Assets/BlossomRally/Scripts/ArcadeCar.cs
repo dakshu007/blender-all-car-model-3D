@@ -65,7 +65,7 @@ namespace BlossomRally
         }
 
         public CarSpec spec;
-        public Wheel[] wheels = new Wheel[0];
+        [System.NonSerialized] public Wheel[] wheels = new Wheel[0];
         public bool controlsEnabled = true;
 
         [HideInInspector] public float throttle, brake, steerInput, handbrake;

@@ -78,7 +78,7 @@ namespace BlossomRally
             mr.sharedMaterial = MaterialLibrary.Particle("BonnetPetal", ProceduralTextures.Petal, Color.white, 0.85f);
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 #if UNITY_2022_2_OR_NEWER
-            weather = Object.FindFirstObjectByType<PetalWeather>();
+            weather = Object.FindAnyObjectByType<PetalWeather>();
 #else
             weather = Object.FindObjectOfType<PetalWeather>();
 #endif

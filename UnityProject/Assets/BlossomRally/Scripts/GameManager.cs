@@ -64,13 +64,13 @@ namespace BlossomRally
                 new GameObject("BlossomRally").AddComponent<GameManager>();
         }
 
-        static T[] FindAll<T>() where T : Object
+        /// <summary>All loaded scene objects of a type (works the same on every Unity version, no deprecated API).</summary>
+        static T[] FindAll<T>() where T : Component
         {
-#if UNITY_2022_2_OR_NEWER
-            return Object.FindObjectsByType<T>(FindObjectsSortMode.None);
-#else
-            return Object.FindObjectsOfType<T>();
-#endif
+            var list = new System.Collections.Generic.List<T>();
+            foreach (var o in Resources.FindObjectsOfTypeAll<T>())
+                if (o != null && o.gameObject.scene.IsValid() && o.gameObject.activeInHierarchy) list.Add(o);
+            return list.ToArray();
         }
 
         void Awake()

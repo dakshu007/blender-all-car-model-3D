@@ -199,7 +199,7 @@ namespace BlossomRally
         static PetalWeather FindAnyPetals()
         {
 #if UNITY_2022_2_OR_NEWER
-            return Object.FindFirstObjectByType<PetalWeather>();
+            return Object.FindAnyObjectByType<PetalWeather>();
 #else
             return Object.FindObjectOfType<PetalWeather>();
 #endif

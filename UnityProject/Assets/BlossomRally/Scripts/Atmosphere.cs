@@ -226,7 +226,9 @@ namespace BlossomRally
             var glow = MaterialLibrary.Glow;
             if (glow != null) glow.SetFloat("_Glow", 2.2f + k.night * 3.2f);
             MaterialLibrary.SetNightLights(k.night);
+#pragma warning disable 0618   // cookieSize2D only exists in newer Unity 6 releases
             Sun.cookieSize = 520f;
+#pragma warning restore 0618
         }
 
         void Update()
