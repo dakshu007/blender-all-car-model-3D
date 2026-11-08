@@ -57,7 +57,7 @@ namespace BlossomRally
         public static void Sound(string id) { if (OnSound != null) OnSound(id); }
     }
 
-    public class MenuItem
+    public class MenuEntry
     {
         public string label;
         public System.Func<string> value;          // shown after the label (optional)
@@ -71,13 +71,13 @@ namespace BlossomRally
     {
         public string title;
         public string footer = "↑ ↓ choose   ← → change   ENTER select   ESC back";
-        public readonly List<MenuItem> items = new List<MenuItem>();
+        public readonly List<MenuEntry> items = new List<MenuEntry>();
         public int index;
         public float width = 520f;
 
-        public MenuItem Add(string label, System.Action select = null, System.Func<string> value = null, System.Action<int> change = null, System.Func<bool> visible = null)
+        public MenuEntry Add(string label, System.Action select = null, System.Func<string> value = null, System.Action<int> change = null, System.Func<bool> visible = null)
         {
-            var m = new MenuItem { label = label, select = select, value = value, change = change, visible = visible };
+            var m = new MenuEntry { label = label, select = select, value = value, change = change, visible = visible };
             items.Add(m);
             return m;
         }
