@@ -104,6 +104,72 @@ namespace BlossomRally
             });
         }
 
+        public static Material TryGet(string key)
+        {
+            Material m;
+            return cache.TryGetValue(key, out m) ? m : null;
+        }
+
+        /// <summary>Road surface with wet / puddle / rain-ring support (BR_Road).</summary>
+        public static Material Road(string key, Texture2D tex, float smooth)
+        {
+            return Get(key, () =>
+            {
+                var sh = Shader.Find("BlossomRally/Road");
+                if (sh == null) return Standard(key + "_Fallback", Color.white, smooth, 0f, tex);
+                var m = new Material(sh);
+                m.SetTexture("_MainTex", tex);
+                m.SetFloat("_Glossiness", smooth);
+                return m;
+            });
+        }
+
+        /// <summary>Per-car paint (livery recolour, patterns, dirt) - one material per car id.</summary>
+        public static Material CarPaint(string carId)
+        {
+            return Get("Paint_" + carId, () =>
+            {
+                var t = Resources.Load<Texture2D>("Cars/" + carId + "/" + carId + "_BaseColor");
+                var sh = Shader.Find("BlossomRally/CarPaint");
+                Material m;
+                if (sh == null) { m = new Material(FindShader("Standard")); m.SetFloat("_Glossiness", 0.55f); }
+                else m = new Material(sh);
+                if (t != null) m.SetTexture("_MainTex", t);
+                m.SetColor("_PaintKey", LiveryLibrary.PaintKey(carId));
+                return m;
+            });
+        }
+
+        static float nightLevel = -1f;
+        static bool brakeOn;
+
+        /// <summary>Headlights / tail lights glow brighter at night.</summary>
+        public static void SetNightLights(float night)
+        {
+            if (Mathf.Abs(night - nightLevel) < 0.01f) return;
+            nightLevel = night;
+            var h = TryGet("M_Light_Head");
+            if (h != null) h.SetColor("_EmissionColor", new Color(1.6f, 1.5f, 1.3f) * (1f + night * 3f));
+            var a = TryGet("M_Light_Aux");
+            if (a != null) a.SetColor("_EmissionColor", new Color(1.8f, 1.5f, 0.9f) * (1f + night * 2.5f));
+            ApplyTail();
+        }
+
+        public static void SetBrakeLights(bool on)
+        {
+            if (on == brakeOn) return;
+            brakeOn = on;
+            ApplyTail();
+        }
+
+        static void ApplyTail()
+        {
+            var t = TryGet("M_Light_Tail");
+            if (t == null) return;
+            float k = (1f + Mathf.Max(0f, nightLevel) * 1.5f) * (brakeOn ? 2.6f : 1f);
+            t.SetColor("_EmissionColor", new Color(1.4f, 0.1f, 0.06f) * k);
+        }
+
         static string CleanName(Material m)
         {
             return m == null ? "" : m.name.Replace(" (Instance)", "").Trim();
@@ -139,7 +205,8 @@ namespace BlossomRally
                 var t = Resources.Load<Texture2D>("Env/ENV_Road_" + n.Substring("M_Env_Road_".Length));
                 return Standard(n, Color.white, 0.12f, 0f, t);
             }
-            if (carId != null && (n.EndsWith("_Paint") || n.EndsWith("_Plate")))
+            if (carId != null && n.EndsWith("_Paint")) return CarPaint(carId);
+            if (carId != null && n.EndsWith("_Plate"))
             {
                 var t = Resources.Load<Texture2D>("Cars/" + carId + "/" + carId + "_BaseColor");
                 return Standard(n, Color.white, n.EndsWith("_Paint") ? 0.55f : 0.3f, 0f, t);

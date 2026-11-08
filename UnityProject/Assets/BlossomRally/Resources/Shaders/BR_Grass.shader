@@ -30,6 +30,8 @@ Shader "BlossomRally/Grass"
         float _FadeEnd;
         half _Translucency;
         float4 _BR_WindGust;
+        float _BR_GrassDensity;   // 0..1 from GameSettings (quality); blades above it are hidden
+        float _BR_GrassFade;      // distance where blades have fully sunk (0 = use material values)
 
         struct Input
         {
@@ -55,7 +57,10 @@ Shader "BlossomRally/Grass"
 
             // distance fade (shrink towards the root)
             float dist = distance(root, _WorldSpaceCameraPos);
-            float fade = saturate((_FadeEnd - dist) / max(_FadeEnd - _FadeStart, 1.0));
+            float fEnd = _BR_GrassFade > 1.0 ? _BR_GrassFade : _FadeEnd;
+            float fStart = _BR_GrassFade > 1.0 ? _BR_GrassFade * 0.7 : _FadeStart;
+            float fade = saturate((fEnd - dist) / max(fEnd - fStart, 1.0));
+            fade *= step(phase, _BR_GrassDensity);
             wp = root + (wp - root) * fade;
 
             // wind: rolling waves across the field + per-blade flutter

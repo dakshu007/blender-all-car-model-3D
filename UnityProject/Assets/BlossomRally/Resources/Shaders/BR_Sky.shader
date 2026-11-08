@@ -14,6 +14,8 @@ Shader "BlossomRally/Sky"
         _CloudColor ("Cloud Lit", Color) = (1.0, 0.96, 0.96, 1)
         _CloudShade ("Cloud Shade", Color) = (0.74, 0.72, 0.80, 1)
         _CloudSpeed ("Cloud Speed", Float) = 0.004
+        _Stars ("Stars", Range(0, 1)) = 0
+        _MoonDisk ("Moon", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -39,6 +41,8 @@ Shader "BlossomRally/Sky"
             fixed4 _CloudColor;
             fixed4 _CloudShade;
             float _CloudSpeed;
+            float _Stars;
+            float _MoonDisk;
 
             struct appdata
             {
@@ -109,6 +113,21 @@ Shader "BlossomRally/Sky"
                 float sd = saturate(dot(d, s));
                 float3 glow = _SunColor.rgb * (pow(sd, 6.0) * 0.35 + pow(sd, 64.0) * 0.8);
                 float3 disk = _SunColor.rgb * pow(sd, 900.0) * 3.0;
+
+                // stars (night): one candidate star per cell of a sky grid, twinkling
+                if (_Stars > 0.001 && h > 0.0)
+                {
+                    float2 suv = d.xz / (h + 0.35) * 70.0;
+                    float2 cell = floor(suv);
+                    float rnd = hash21(cell);
+                    float2 spos = cell + float2(hash21(cell + 17.3), hash21(cell + 41.9));
+                    float sdist = length(suv - spos);
+                    float star = step(0.93, rnd) * saturate(1.0 - sdist * 3.5);
+                    float tw = 0.65 + 0.35 * sin(_Time.y * (2.0 + rnd * 5.0) + rnd * 40.0);
+                    col += float3(0.9, 0.93, 1.0) * star * star * tw * _Stars * 1.6 * smoothstep(0.02, 0.25, h);
+                }
+                // moon halo
+                col += _SunColor.rgb * _MoonDisk * (pow(sd, 300.0) * 1.2 + pow(sd, 18.0) * 0.12);
 
                 float cover = 0.0;
                 if (_Clouds > 0.001 && h > 0.0)

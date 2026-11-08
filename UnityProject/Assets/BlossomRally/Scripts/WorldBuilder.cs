@@ -53,6 +53,7 @@ namespace BlossomRally
         float[] terrH;
         int terrN;
         public int GrassBlades { get; private set; }
+        readonly List<KeyValuePair<string, GameObject>> treeObjects = new List<KeyValuePair<string, GameObject>>();
 
         float Rand(float a, float b) { return a + (float)rng.NextDouble() * (b - a); }
 
@@ -193,7 +194,10 @@ namespace BlossomRally
             Status = "Planting cherry blossoms"; Progress = 0.62f;
             yield return SpawnVegetation(plan);
 
-            Status = "Finishing touches"; Progress = 0.94f;
+            Status = "Painting distant trees"; Progress = 0.93f;
+            yield return TreeImpostors.Build(treeObjects);
+
+            Status = "Finishing touches"; Progress = 0.96f;
             BuildBoundary();
             StaticBatchingUtility.Combine(staticRoot.gameObject);
             StaticBatchingUtility.Combine(grassRoot.gameObject);
@@ -383,6 +387,8 @@ namespace BlossomRally
             }
             Vector2 g = MapData.Garage;
             pads.Add(new Vector4(g.x, g.y, 10f, BaseHeight(g.x, g.y)));
+            Vector2 tt = Garage.Spot;
+            pads.Add(new Vector4(tt.x, tt.y, 6f, BaseHeight(g.x, g.y)));
             Vector2 pg = MapData.PagodaTop;
             pads.Add(new Vector4(pg.x, pg.y, 12f, BaseHeight(pg.x, pg.y) - 0.5f));
         }
@@ -406,6 +412,7 @@ namespace BlossomRally
                 if (MapData.LakeK(p) < 1.45f) return false;
                 if (MapData.InVillage(p) && margin < 30f) return false;
                 if (Mathf.Abs(p.x) > 470f || Mathf.Abs(p.y) > 470f) return false;
+                if (Vector2.Distance(p, Garage.Spot) < 9f + margin * 0.3f) return false;
                 return true;
             };
 
@@ -736,8 +743,10 @@ namespace BlossomRally
                 var list = roadSamples[r];
                 string tex = def.surface == Surface.Asphalt ? "ENV_Road_Asphalt" : def.surface == Surface.Gravel ? "ENV_Road_Gravel"
                            : def.surface == Surface.Dirt ? "ENV_Road_Dirt" : "ENV_Road_Paving";
-                var mat = MaterialLibrary.Standard("Road_" + def.surface, Color.white, def.surface == Surface.Asphalt ? 0.22f : 0.08f, 0f,
-                                                   Resources.Load<Texture2D>("Env/" + tex));
+                var mat = MaterialLibrary.Road("Road_" + def.surface, Resources.Load<Texture2D>("Env/" + tex), def.surface == Surface.Asphalt ? 0.22f : 0.08f);
+                if (def.surface == Surface.Gravel || def.surface == Surface.Dirt) mat.SetFloat("_PuddleAmount", 1f);
+                else if (def.surface == Surface.Paving) mat.SetFloat("_PuddleAmount", 0.6f);
+                else mat.SetFloat("_PuddleAmount", 0.8f);
                 float tile = def.surface == Surface.Paving ? 4f : 7f;
                 int count = list.Count + (def.closed ? 1 : 0);
                 // split into runs of <= 240 samples (bridges are part of the road surface)
@@ -1220,7 +1229,7 @@ namespace BlossomRally
                 {
                     case 3:
                         go = Spawn(pl.res, pos, pl.yaw, Vector3.one * pl.scale, staticRoot, LayerTrees);
-                        if (go != null) { var cc = go.AddComponent<CapsuleCollider>(); cc.radius = 1.1f; cc.height = 6f; cc.center = new Vector3(0, 3f, 0); }
+                        if (go != null) { var cc = go.AddComponent<CapsuleCollider>(); cc.radius = 1.1f; cc.height = 6f; cc.center = new Vector3(0, 3f, 0); treeObjects.Add(new KeyValuePair<string, GameObject>(pl.res, go)); }
                         break;
                     case 4:
                         go = Spawn(pl.res, new Vector3(pos.x, BaseHeight(pos.x, pos.z) - 0.15f, pos.z), pl.yaw, new Vector3(1f, 0.34f, 1f), staticRoot, LayerTrees);
@@ -1237,6 +1246,7 @@ namespace BlossomRally
                             cc.radius = pl.kind == 0 ? 0.55f : 0.38f;
                             cc.height = 5f;
                             cc.center = new Vector3(0, 2.5f, 0);
+                            treeObjects.Add(new KeyValuePair<string, GameObject>(pl.res, go));
                         }
                         break;
                 }

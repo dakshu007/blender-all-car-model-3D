@@ -21,23 +21,42 @@ the 9 Blender cars.
 > Tip: maximise the Game view (**Shift + Space**, or "Maximize on Play") and set its
 > aspect to 16:9.
 
+## Game flow
+
+**Title screen** (a slow flyover of the valley, with music) → **Free Roam** or **Rally Stages & Drift
+Challenge** → **Garage** (pick the car on the turntable, choose its colour and pattern) → drive.
+
 ## Controls
 
-| Key | Action |
-| --- | --- |
-| W / ↑ | Throttle |
-| S / ↓ | Brake, then reverse |
-| A D / ← → | Steer |
-| **Space + steer** | Start a drift (see below) |
-| 1 – 9 | Switch car on the spot |
-| R | Reset to the nearest road |
-| C | Camera: chase → cockpit (driver view) → hood → cinematic |
-| P | Petals: calm → spring → blossom storm |
-| G | Weather: Clear Spring → Spring Haze → Cloudy → Fog Off |
-| F | Colour grade on / off |
-| H | Help overlay |
-| **Esc** | Pause menu: weather / fog, petals, colour grade, camera, change car, help |
-| Tab | Back to car select (← → choose, Enter drive) |
+| Keyboard | Gamepad | Action |
+| --- | --- | --- |
+| W / ↑ | RT | Throttle |
+| S / ↓ | LT | Brake, then reverse |
+| A D / ← → | Left stick (analogue) | Steer |
+| **Space + steer** | **A or B + steer** | Start a drift (see below) |
+| R | Select / View | Reset to the road (in an event: back to the last checkpoint, +2 s) |
+| C | Y | Camera: chase → cockpit → hood → cinematic |
+| V | LB | Instant replay of the last 30 s |
+| O | X | Photo mode |
+| G | D-pad → | Weather |
+| T | D-pad ← | Time of day |
+| P | D-pad ↑ | Petals: calm → spring → blossom storm |
+| F | | Colour grade on / off |
+| 1 – 9 | | Switch car on the spot (free roam) |
+| Tab | | Garage |
+| **Esc** | **Start** | Pause menu |
+| H | | Help overlay |
+| \` or F1 | | FPS counter |
+
+All keyboard bindings can be changed in **Settings → Keyboard controls**. Gamepads (Xbox,
+PlayStation, MFi) work through the Input System package, which is installed automatically. Rumble
+is used for the road surface, drifting, gear changes, impacts and checkpoints, and can be turned
+off in Settings.
+
+**In the garage:** ← → car · ↑ ↓ colour · Q / E pattern · X wash the car · Enter drive · Esc back.
+Colours: Factory, Cherry Red, Jade, Imperial Gold, Ink Black, Porcelain, Sky Blue, Plum, Peach Blossom,
+Tea Green. Patterns: Plain, Racing Stripes, Two-Tone, Roundels, Blossom Sprigs. Each car remembers
+its own livery.
 
 **Drifting** is a controllable state:
 
@@ -57,16 +76,26 @@ the 9 Blender cars.
 Drift score builds with angle × speed, and the combo grows the longer you hold the
 slide. Crashing breaks the combo.
 
-**Weather** (Esc menu or G) is remembered between sessions:
+**Weather and time of day** (Esc menu, G and T) combine freely and are remembered between sessions.
 
-| Preset | Look |
+| Weather | Look |
 | --- | --- |
 | Clear Spring | Light haze, few clouds, strong sun and crisp shadows |
 | Spring Haze | The original soft pink fog with drifting mist (default) |
 | Cloudy | Overcast grey-lilac sky, moving clouds, soft shadows, thicker fog, breezier wind |
+| Rain | Rain streaks and splashes, soaked glossy roads with puddles and rain rings, tyre spray, wipers and drops on the windscreen |
+| After Rain | Sun breaking through, roads still wet and reflective, puddles, fresh mist |
 | Fog Off | No fog or mist, light clouds: see across the whole valley |
 
-Weather changes fade over about 2.5 seconds.
+| Time of day | Look |
+| --- | --- |
+| Morning | Low warm sun from the east, long shadows |
+| Spring Day | The default bright pastel day |
+| Golden Sunset | Orange sun on the horizon, rosy fog |
+| Blue Hour | Deep blue sky, lanterns and headlights glowing |
+| Night | Moonlight, stars, glowing lanterns, headlights and brake lights |
+
+Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seconds.
 
 ## The cars
 

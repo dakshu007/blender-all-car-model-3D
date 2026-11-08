@@ -81,6 +81,8 @@ namespace BlossomRally
             var car = root.AddComponent<ArcadeCar>();
             car.Init(spec, wheels.ToArray());
             root.AddComponent<CarFX>();
+            root.AddComponent<CarExtras>();
+            foreach (var t in root.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = CarExtras.CarLayer;
             root.AddComponent<EngineAudio>();
             root.transform.SetPositionAndRotation(pos, rot);
             return car;
