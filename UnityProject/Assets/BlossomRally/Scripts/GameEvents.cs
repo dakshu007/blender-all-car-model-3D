@@ -70,3 +70,17 @@ namespace BlossomRally
         public static void RaiseCheer(Vector3 p, float loud) { Safe(Cheer, p, loud); }
     }
 }
+
+namespace BlossomRally
+{
+    /// <summary>
+    /// Anything on the car that changes how it drives (damage, tyre wear, setup). ArcadeCar multiplies all
+    /// components implementing this on its GameObject: power and grip factors (1 = normal) and a steering pull (deg).
+    /// </summary>
+    public interface ICarModifier
+    {
+        float PowerFactor { get; }
+        float GripFactor { get; }
+        float SteerPullDeg { get; }
+    }
+}
