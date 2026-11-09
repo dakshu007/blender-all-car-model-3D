@@ -481,6 +481,13 @@ namespace BlossomRally
                 if (!clearOfFeatures(p, 2f) || MapData.InTeaTerraces(p)) continue;
                 plants.Add(new Plant { res = "ENV_GrassClump", pos = new Vector3(p.x, 0, p.y), yaw = Rand(0, 360), scale = Rand(0.9f, 1.7f), kind = 5 });
             }
+            // share what is taken with later modules (props, life, crowds)
+            PlacementRegistry.Clear();
+            foreach (var t in taken) PlacementRegistry.Reserve(new Vector2(t.x, t.z), t.y);
+            foreach (var hs in houseSpots) PlacementRegistry.Reserve(new Vector2(hs.x, hs.y), 9f);
+            foreach (var pd in pads) PlacementRegistry.Reserve(new Vector2(pd.x, pd.y), pd.z);
+            PlacementRegistry.Reserve(MapData.Gate, 9f);
+            PlacementRegistry.Reserve(MapData.PagodaTop, 14f);
             return plants;
         }
 

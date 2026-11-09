@@ -385,6 +385,7 @@ namespace BlossomRally
             InputReader.Rumble(0.25f, 0.4f, 0.15f);
             if (final) { Finish(false); return; }
             Sound(hasSplit && splitDelta < 0f ? "CheckpointBest" : "Checkpoint");
+            GameEvents.RaiseCheckpoint(nextGate, hasSplit ? splitDelta : float.NaN);
             Message("CHECKPOINT  " + i + " / " + course.Checkpoints, new Color(1f, 0.97f, 0.96f));
             nextGate++;
         }
@@ -438,6 +439,7 @@ namespace BlossomRally
             {
                 medalSound = true;
                 if (medal > 0) Sound(medal == 3 ? "MedalGold" : medal == 2 ? "MedalSilver" : "MedalBronze");
+                GameEvents.RaiseFinished(medal, result);
             }
             if (resultsTimer < 0.8f) return;      // don't let a held handbrake / throttle skip the screen
             if (InputReader.Down(KeyCode.R) || InputReader.ActionDown(GameAction.Reset)) { Sound("MenuSelect"); Restart(); return; }

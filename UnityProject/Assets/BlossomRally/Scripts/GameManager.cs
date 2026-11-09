@@ -47,6 +47,7 @@ namespace BlossomRally
         // drift scoring
         float driftPoints, driftCombo = 1f, driftHold, driftEndTimer, totalScore, bestDrift;
         bool drifting;
+        float peakDriftAngle;
         string lastDrift = "";
         float lastDriftTimer;
 
@@ -132,6 +133,7 @@ namespace BlossomRally
             garage.Build(world);
             ValleyLife.Create(world);
             WaterLife.Create(world);
+            WorldHooks.RaiseWorldBuilt(world);
             SpawnCar(0, garage.TablePos, Quaternion.identity);
             EnterTitle();
         }
@@ -248,6 +250,7 @@ namespace BlossomRally
             car.controlsEnabled = state == State.Drive;
             if (car.Body != null && state == State.Drive) car.Body.SetVelocity(v);
             car.OnImpact = OnImpact;
+            WorldHooks.RaiseCarSpawned(car);
             rig.target = car;
             if (state == State.Select || state == State.Title) garage.Show(car);
             ResetDrift(false);
@@ -258,6 +261,7 @@ namespace BlossomRally
             if (speed > 6f)
             {
                 rig.Shake(Mathf.Clamp01(speed / 25f));
+                if (car != null) GameEvents.RaiseImpact(speed, car.transform.position);
                 InputReader.Rumble(Mathf.Clamp01(speed / 20f), Mathf.Clamp01(speed / 30f), 0.25f);
                 if (drifting) { Toast("Drift broken!"); ResetDrift(false); }
             }
@@ -403,6 +407,7 @@ namespace BlossomRally
                 if (combo > driftCombo) InputReader.Rumble(0.1f, 0.35f, 0.12f);
                 driftCombo = combo;
                 driftPoints += Mathf.Abs(car.SlipAngle) * car.SpeedKmh * 0.06f * dt * driftCombo;
+                peakDriftAngle = Mathf.Max(peakDriftAngle, Mathf.Abs(car.SlipAngle));
             }
             else if (drifting)
             {
@@ -420,8 +425,10 @@ namespace BlossomRally
                 bestDrift = Mathf.Max(bestDrift, pts);
                 lastDrift = (pts > 3000 ? "LEGENDARY DRIFT  +" : pts > 1200 ? "GREAT DRIFT  +" : "DRIFT  +") + pts;
                 lastDriftTimer = 2.5f;
+                GameEvents.RaiseDriftBanked(pts, peakDriftAngle);
             }
             drifting = false;
+            peakDriftAngle = 0f;
             driftPoints = 0f;
             driftCombo = 1f;
             driftHold = 0f;
