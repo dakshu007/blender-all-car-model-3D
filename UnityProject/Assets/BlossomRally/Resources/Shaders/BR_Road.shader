@@ -25,6 +25,9 @@ Shader "BlossomRally/Road"
         half _PuddleAmount;
         float _BR_Wetness;
         float _BR_Rain;
+        float4 _BR_LightPools[16];      // set by Graphics/NightGlow: xyz ground centre, w radius
+        float _BR_LightPoolCount;
+        float4 _BR_LightPoolColor;
 
         struct Input
         {
@@ -71,6 +74,18 @@ Shader "BlossomRally/Road"
             float3 albedo = c.rgb * lerp(1.0, 0.58, wet);
             albedo = lerp(albedo, c.rgb * 0.30, puddle);
             o.Albedo = albedo + ring * 0.08;
+            // warm lantern glints on wet roads at night
+            if (wet > 0.05 && _BR_LightPoolCount > 0.5)
+            {
+                half3 glow = 0;
+                for (int i = 0; i < 16; i++)
+                {
+                    if (i >= (int)_BR_LightPoolCount) break;
+                    float d = distance(IN.worldPos.xz, _BR_LightPools[i].xz) / (_BR_LightPools[i].w * 1.4);
+                    glow += saturate(1.0 - d * d);
+                }
+                o.Emission = _BR_LightPoolColor.rgb * glow * wet * (0.25 + puddle * 0.6);
+            }
             o.Metallic = 0;
             o.Smoothness = lerp(lerp(_Glossiness, 0.74, wet), 0.96, puddle) - ring * 0.25;
             o.Alpha = 1;
