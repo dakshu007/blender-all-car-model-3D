@@ -36,7 +36,9 @@ namespace BlossomRally.EditorTools
 
         // ------------------------------------------------------------------ menu
         [MenuItem("Blossom Rally/Build Tester Release (Mac DMG + Windows EXE)", false, 19)]
-        static void BuildRelease()
+        static void BuildRelease() { Guarded("tester release", BuildReleaseInner); }
+
+        static void BuildReleaseInner()
         {
             string dmg = BuildMacDmg(false);
             string win = BuildWindowsZip(false);
@@ -50,10 +52,50 @@ namespace BlossomRally.EditorTools
         }
 
         [MenuItem("Blossom Rally/Build macOS DMG (Universal Intel + Apple Silicon)", false, 20)]
-        static void MenuMac() { BuildMacDmg(true); }
+        static void MenuMac() { Guarded("macOS DMG", () => BuildMacDmg(true)); }
 
         [MenuItem("Blossom Rally/Build Windows EXE (64-bit, zipped)", false, 21)]
-        static void MenuWindows() { BuildWindowsZip(true); }
+        static void MenuWindows() { Guarded("Windows EXE", () => BuildWindowsZip(true)); }
+
+        /// <summary>Never fail silently: refuse in Play mode, show progress, catch and show any exception, keep a log.</summary>
+        static void Guarded(string what, Action body)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorUtility.DisplayDialog("Blossom Rally", "Stop Play mode first (click the Play button so it is not blue), then build again.", "OK");
+                return;
+            }
+            if (EditorApplication.isCompiling)
+            {
+                EditorUtility.DisplayDialog("Blossom Rally", "Unity is still compiling scripts. Wait until the spinner at the bottom-right stops, then build again.", "OK");
+                return;
+            }
+            Directory.CreateDirectory(OutDir);
+            Log("=== build " + what + " " + BuildInfo.Version + " on Unity " + Application.unityVersion + " ===");
+            try
+            {
+                EditorUtility.DisplayProgressBar("Blossom Rally", "Preparing the " + what + " build...", 0.05f);
+                body();
+            }
+            catch (Exception e)
+            {
+                Log("EXCEPTION " + e);
+                Debug.LogException(e);
+                EditorUtility.DisplayDialog("Blossom Rally - build problem",
+                    "The " + what + " build stopped with this error:\n\n" + e.GetType().Name + ": " + e.Message +
+                    "\n\nPlease send a screenshot of this and of the Console (Window > General > Console).", "OK");
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+        }
+
+        static void Log(string line)
+        {
+            try { File.AppendAllText(Path.Combine(OutDir, "build-log.txt"), DateTime.Now.ToString("HH:mm:ss") + "  " + line + "\n"); }
+            catch (Exception) { }
+        }
 
         [MenuItem("Blossom Rally/Open Builds Folder", false, 22)]
         static void OpenFolder()
@@ -72,7 +114,7 @@ namespace BlossomRally.EditorTools
                 Fail(interactive, "Mac Build Support is not installed.\n\nUnity Hub > Installs > your Unity > Add modules > Mac Build Support (Mono).");
                 return null;
             }
-            EditorUserBuildSettings.SetPlatformSettings("Standalone", "OSXUniversal", "Architecture", "x64ARM64");
+            SetMacUniversal();
             string stage = Path.Combine(OutDir, "stage-mac");
             if (Directory.Exists(stage)) Directory.Delete(stage, true);
             Directory.CreateDirectory(stage);
@@ -132,7 +174,7 @@ namespace BlossomRally.EditorTools
         public static void CIBuildMac()
         {
             if (!Prepare(false)) EditorApplication.Exit(1);
-            EditorUserBuildSettings.SetPlatformSettings("Standalone", "OSXUniversal", "Architecture", "x64ARM64");
+            SetMacUniversal();
             bool ok = RunBuild(BuildTarget.StandaloneOSX, Path.Combine(OutDir, "ci", "mac", AppName + ".app"), false);
             EditorApplication.Exit(ok ? 0 : 1);
         }
@@ -145,6 +187,12 @@ namespace BlossomRally.EditorTools
         }
 
         // ------------------------------------------------------------------ shared
+        static void SetMacUniversal()
+        {
+            try { EditorUserBuildSettings.SetPlatformSettings("Standalone", "OSXUniversal", "Architecture", "x64ARM64"); }
+            catch (Exception e) { Log("architecture setting skipped: " + e.Message); }   // falls back to the editor default
+        }
+
         static bool Prepare(bool interactive)
         {
             BlossomRallySetup.EnsureLegacyInput();
@@ -182,7 +230,10 @@ namespace BlossomRally.EditorTools
                 targetGroup = BuildTargetGroup.Standalone,
                 options = BuildOptions.None
             };
+            Log("building " + target + " -> " + Path.GetFullPath(path));
+            EditorUtility.DisplayProgressBar("Blossom Rally", "Building " + (target == BuildTarget.StandaloneOSX ? "macOS" : "Windows") + " (several minutes)...", 0.3f);
             BuildReport report = BuildPipeline.BuildPlayer(opts);
+            Log("result " + target + ": " + report.summary.result + ", errors " + report.summary.totalErrors);
             var sum = report.summary;
             if (sum.result == BuildResult.Succeeded)
             {
@@ -216,6 +267,7 @@ namespace BlossomRally.EditorTools
         static void Fail(bool interactive, string msg)
         {
             Debug.LogError("[BlossomRally] " + msg);
+            Log("FAIL " + msg);
             if (interactive && !Application.isBatchMode) EditorUtility.DisplayDialog("Blossom Rally", msg, "OK");
         }
 
