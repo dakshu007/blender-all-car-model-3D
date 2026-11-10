@@ -115,6 +115,29 @@ namespace BlossomRally
             }
         }
 
+        // ---- manual gears (driving only; DriveSettings.ManualGears) ----
+        static int flickState;
+        static int shiftFrame = -1, shiftValue;
+
+        /// <summary>
+        /// Gear-shift request this frame: +1 up (LeftShift / E, gamepad RB or right stick flicked up),
+        /// -1 down (LeftCtrl / Q, gamepad R3 or right stick flicked down), 0 none. Safe to call several times a frame.
+        /// </summary>
+        public static int ShiftRequest()
+        {
+            if (shiftFrame == Time.frameCount) return shiftValue;
+            shiftFrame = Time.frameCount;
+            int r = 0;
+            if (Down(KeyCode.LeftShift) || Down(KeyCode.E) || GamepadBridge.ButtonDown(PadButton.RightShoulder)) r = 1;
+            else if (Down(KeyCode.LeftControl) || Down(KeyCode.Q) || GamepadBridge.ButtonDown(PadButton.RightStickPress)) r = -1;
+            float ry = GamepadBridge.RightStick.y;
+            int f = ry > 0.75f ? 1 : (ry < -0.75f ? -1 : 0);
+            if (f != 0 && flickState == 0 && r == 0) r = f;
+            if (Mathf.Abs(ry) < 0.35f) flickState = 0; else if (f != 0) flickState = f;
+            shiftValue = r;
+            return r;
+        }
+
         /// <summary>Pressed this frame: keyboard binding or its gamepad button.</summary>
         public static bool ActionDown(GameAction a)
         {

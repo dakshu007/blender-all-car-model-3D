@@ -10,7 +10,7 @@ namespace BlossomRally
         public static SettingsMenu Instance { get; private set; }
         public bool IsOpen { get; private set; }
 
-        MenuList main, controls;
+        MenuList main, controls, effects, driving;
         MenuList current;
         System.Action onClose;
         GameAction? capturing;
@@ -37,8 +37,28 @@ namespace BlossomRally
             main.Add("Music volume", null, () => Pct(GameSettings.MusicVolume), d => GameSettings.SetMusicVolume(GameSettings.MusicVolume + d * 0.1f));
             main.Add("Effects volume", null, () => Pct(GameSettings.SfxVolume), d => GameSettings.SetSfxVolume(GameSettings.SfxVolume + d * 0.1f));
             main.Add("Gamepad rumble", null, () => GameSettings.Rumble ? "On" : "Off", d => GameSettings.SetRumble(!GameSettings.Rumble));
+            main.Add("Driving & assists...", () => { current = driving; driving.index = 0; });
+            main.Add("Visual effects...", () => { current = effects; effects.index = 0; });
             main.Add("Keyboard controls...", () => { current = controls; controls.index = 0; });
             main.Add("Back", Close);
+
+            driving = new MenuList { title = "DRIVING", width = 640f, footer = "← → change   ESC back" };
+            driving.Add("Handling", null, () => DriveSettings.LevelNames[(int)DriveSettings.Level], d => DriveSettings.CycleLevel(d));
+            driving.Add("Traction control", null, () => OnOff(DriveSettings.Tcs), d => DriveSettings.SetTcs(!DriveSettings.Tcs));
+            driving.Add("Anti-lock brakes", null, () => OnOff(DriveSettings.Abs), d => DriveSettings.SetAbs(!DriveSettings.Abs));
+            driving.Add("Stability help", null, () => OnOff(DriveSettings.Stability), d => DriveSettings.SetStability(!DriveSettings.Stability));
+            driving.Add("Gearbox", null, () => DriveSettings.ManualGears ? "Manual" : "Automatic", d => DriveSettings.SetManualGears(!DriveSettings.ManualGears));
+            driving.Add("Back", () => { current = main; });
+
+            effects = new MenuList { title = "VISUAL EFFECTS", width = 640f, footer = "← → change   ESC back" };
+            effects.Add("Enhanced graphics", null, () => OnOff(GraphicsFX.Enhanced), d => GraphicsFX.Enhanced = !GraphicsFX.Enhanced);
+            effects.Add("Ink & watercolour mode", null, () => OnOff(PostFX.InkMode), d => PostFX.InkMode = !PostFX.InkMode);
+            effects.Add("Motion blur", null, () => OnOff(PostFX.MotionBlur), d => PostFX.MotionBlur = !PostFX.MotionBlur);
+            effects.Add("Lens effects", null, () => OnOff(PostFX.LensEffects), d => PostFX.LensEffects = !PostFX.LensEffects);
+            effects.Add("Slow-motion moments", null, () => OnOff(JuiceSettings.SlowMoMoments), d => JuiceSettings.SlowMoMoments = !JuiceSettings.SlowMoMoments);
+            effects.Add("Score pop-ups", null, () => OnOff(JuiceSettings.ScorePopups), d => JuiceSettings.ScorePopups = !JuiceSettings.ScorePopups);
+            effects.Add("Reduced camera motion", null, () => OnOff(JuiceSettings.ReducedMotion), d => JuiceSettings.ReducedMotion = !JuiceSettings.ReducedMotion);
+            effects.Add("Back", () => { current = main; });
 
             controls = new MenuList { title = "CONTROLS", width = 600f, footer = "ENTER rebind   ESC back   (gamepad: RT/LT/stick, A handbrake, Start pause)" };
             foreach (var a in Remappable)
@@ -49,6 +69,8 @@ namespace BlossomRally
             controls.Add("Reset to defaults", GameSettings.ResetBindings);
             controls.Add("Back", () => { current = main; });
         }
+
+        static string OnOff(bool v) { return v ? "On" : "Off"; }
 
         static string Pct(float v) { return Mathf.RoundToInt(v * 100f) + "%"; }
 
@@ -103,7 +125,7 @@ namespace BlossomRally
             if (!IsOpen || capturing.HasValue) return;
             if (current.HandleInput())
             {
-                if (current == controls) current = main;
+                if (current != main) current = main;
                 else Close();
             }
         }

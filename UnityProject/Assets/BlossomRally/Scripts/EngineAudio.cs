@@ -27,6 +27,17 @@ namespace BlossomRally
 
         enum SurfaceLoop { Grass = 0, Asphalt = 1, Gravel = 2, Dirt = 3 }
 
+        // ------------------------------------------------------------- public hooks (visual effects)
+        /// <summary>An exhaust pop / backfire was played: car, loudness 0..1 (exhaust flames, light flicker).</summary>
+        public static event System.Action<ArcadeCar, float> Backfire;
+        /// <summary>The gearbox changed gear: car, previous gear, new gear.</summary>
+        public static event System.Action<ArcadeCar, int, int> GearShift;
+
+        void RaiseBackfire(float loud)
+        {
+            if (Backfire != null && car != null) Backfire(car, Mathf.Clamp01(loud));
+        }
+
         ArcadeCar car;
         AudioSource[] engine = new AudioSource[4];      // lowOn, lowOff, highOn, highOff
         AudioSource squeal, wind, turbo, oneShot;
@@ -119,7 +130,11 @@ namespace BlossomRally
                     if (live) InputReader.Rumble(0.22f, 0.12f, 0.07f);
                 }
                 else if (gear < lastGear && thr < 0.3f && rpm > 3000f && Random.value < 0.5f * popChance)
+                {
                     PlayOne(popClips[Random.Range(0, popClips.Length)], 0.22f * sfx, Random.Range(1.0f, 1.2f));   // downshift blip
+                    RaiseBackfire(0.5f);
+                }
+                if (GearShift != null) GearShift(car, lastGear, gear);
                 lastGear = gear;
             }
             if (cutTimer > 0f) { cutTimer -= dt; gearCut = Mathf.MoveTowards(gearCut, 1f, dt * 30f); }
@@ -161,11 +176,16 @@ namespace BlossomRally
             {
                 crackles--;
                 nextCrackle = now + Random.Range(0.045f, 0.2f);
-                PlayOne(popClips[Random.Range(0, popClips.Length)], Random.Range(0.18f, 0.36f) * sfx, Random.Range(0.85f, 1.18f));
+                float popVol = Random.Range(0.18f, 0.36f);
+                PlayOne(popClips[Random.Range(0, popClips.Length)], popVol * sfx, Random.Range(0.85f, 1.18f));
+                RaiseBackfire(popVol / 0.36f);
             }
             // occasional overrun pops on a long lift at high revs
             if (thr < 0.1f && rpm > 4800f && now - liftTime > 0.4f && Random.value < dt * 1.2f * popChance * rpm01)
+            {
                 PlayOne(popClips[Random.Range(0, popClips.Length)], Random.Range(0.1f, 0.2f) * sfx, Random.Range(0.9f, 1.2f));
+                RaiseBackfire(0.35f);
+            }
             prevThrottle = thr;
             if (bovCooldown > 0f) bovCooldown -= dt;
 
