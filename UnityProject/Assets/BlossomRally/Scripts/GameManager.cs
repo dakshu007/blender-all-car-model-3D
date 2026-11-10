@@ -143,7 +143,9 @@ namespace BlossomRally
         {
             titleMenu = new MenuList { title = "BLOSSOM RALLY", width = 460f, footer = "↑ ↓ choose   ENTER select" };
             titleMenu.Add("Free Roam", () => { pendingEvent = -1; EnterSelect(); });
-            titleMenu.Add("Rally Stages & Drift Challenge", () => { activeTitleMenu = eventMenu; eventMenu.index = 0; RebuildEventMenu(); });
+            titleMenu.Add("Rally Stages & Drift Challenge", () => ValleyMap.Open(i => { pendingEvent = i; EnterSelect(); }, () => { activeTitleMenu = titleMenu; }));
+            titleMenu.Add("Event list", () => { activeTitleMenu = eventMenu; eventMenu.index = 0; RebuildEventMenu(); });
+            titleMenu.Add("Photo Album", () => PhotoAlbum.Open(null));
             titleMenu.Add("Settings", () => settings.Open(null));
             titleMenu.Add("Quit", Application.Quit);
 
@@ -160,6 +162,7 @@ namespace BlossomRally
             pauseMenu.Add("Colour grade", null, () => postFx.effectEnabled ? "On" : "Off", d => postFx.effectEnabled = !postFx.effectEnabled);
             pauseMenu.Add("Photo mode", () => { SetPaused(false); photo.Enter(); });
             pauseMenu.Add("Instant replay", () => { SetPaused(false); if (replay.HasRecording) replay.Begin(); else Toast("Nothing to replay yet"); });
+            pauseMenu.Add("Photo album", () => PhotoAlbum.Open(null));
             pauseMenu.Add("Settings", () => settings.Open(null));
             pauseMenu.Add("Garage (change car / livery)", () => { SetPaused(false); if (stages.Running) stages.Abort(); pendingEvent = -1; EnterSelect(); });
             pauseMenu.Add("Controls help", () => { showHelp = !showHelp; helpTimer = 0f; }, () => showHelp ? "Shown" : "Hidden");
@@ -195,6 +198,7 @@ namespace BlossomRally
         // ------------------------------------------------------------------ states
         void EnterTitle()
         {
+            ScorePopups.Clear();
             state = State.Title;
             activeTitleMenu = titleMenu;
             titleMenu.index = 0;
@@ -306,6 +310,7 @@ namespace BlossomRally
             if (Input2.FpsToggle) GameSettings.ShowFps = !GameSettings.ShowFps;
             if (state == State.Loading) return;
             if (settings.IsOpen) return;
+            if (ValleyMap.IsOpen || PhotoAlbum.IsOpen) return;
             if (ReplaySystem.BlockingInput || PhotoMode.BlockingInput) return;   // they own input and Esc while active (and one frame after)
 
             if (state == State.Title)
@@ -361,6 +366,7 @@ namespace BlossomRally
 
         void UpdateSelect()
         {
+            if (garage.Showroom) return;
             if (InputReader.MenuLeft) { SpawnCar(carIndex - 1, garage.TablePos, Quaternion.identity); UI.Sound("MenuMove"); }
             if (InputReader.MenuRight) { SpawnCar(carIndex + 1, garage.TablePos, Quaternion.identity); UI.Sound("MenuMove"); }
             if (InputReader.MenuUp) { garage.ChangeColour(1); UI.Sound("MenuMove"); }
@@ -450,15 +456,8 @@ namespace BlossomRally
                 UI.Panel(new Rect(0, 0, W, 60), 0.8f);
                 UI.Label(new Rect(0, 10, W, 40), "Enable Project Settings > Player > Active Input Handling = Both, then restart Unity.", UI.Mid, white);
             }
-            if (state == State.Loading)
-            {
-                UI.Panel(new Rect(0, 0, W, H), 0.55f);
-                UI.Label(new Rect(0, H * 0.36f, W, 90), "BLOSSOM RALLY", UI.Huge, pink);
-                UI.Label(new Rect(0, H * 0.47f, W, 40), world.Status + "...", UI.Mid, white);
-                UI.Bar(new Rect(W * 0.3f, H * 0.54f, W * 0.4f, 10), world.Progress, pink);
-                return;
-            }
-            if (settings.IsOpen || photo.Active || replay.Active) return;
+            if (state == State.Loading) { LoadingScreen.Draw(world.Progress, world.Status); return; }
+            if (settings.IsOpen || photo.Active || replay.Active || ValleyMap.IsOpen || PhotoAlbum.IsOpen) return;
             var spec = CarCatalog.Cars[carIndex];
             if (state == State.Title)
             {
@@ -471,7 +470,7 @@ namespace BlossomRally
             }
             if (state == State.Select)
             {
-                DrawSelect(W, H, spec);
+                if (!garage.Showroom) DrawSelect(W, H, spec);
                 return;
             }
             if (HideHud) return;
@@ -560,7 +559,7 @@ namespace BlossomRally
             UI.Label(new Rect(px + 24, ly, pw - 48, 28), "Colour   ‹ " + garage.ColourName + " ›", UI.Row, UI.Gold);
             UI.Label(new Rect(px + 24, ly + 34, pw - 48, 28), "Pattern  ‹ " + garage.PatternName + " ›", UI.Row, UI.Gold);
             UI.Label(new Rect(px + 24, ly + 76, pw - 48, 80),
-                     "← →  car (" + (carIndex + 1) + " / " + CarCatalog.Cars.Length + ")     ↑ ↓  colour\nQ / E  pattern     X  wash & repair\nENTER  drive     ESC  back", UI.Small, UI.White);
+                     "← →  car (" + (carIndex + 1) + " / " + CarCatalog.Cars.Length + ")     ↑ ↓  colour\nQ / E  pattern     X  wash & repair     V  showroom\nENTER  drive     ESC  back", UI.Small, UI.White);
             string head = pendingEvent >= 0 && pendingEvent < stages.EventCount ? stages.EventNames[pendingEvent] : "FREE ROAM";
             UI.Label(new Rect(0, 24, W, 50), "GARAGE  ·  " + head, UI.Title, UI.Pink);
         }
