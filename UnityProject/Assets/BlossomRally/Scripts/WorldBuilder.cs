@@ -212,6 +212,9 @@ namespace BlossomRally
             {
                 var def = roads[r];
                 var pts = Spline.Sample(def.points, def.closed, 2f);
+                // ease every bend to at least 1.8 x the half width, so the inner edge of a hairpin never folds over
+                for (int ease = 0; ease < 6; ease++)
+                    pts = Resample(EaseTightBends(pts, def.closed, def.width * 0.5f * 1.8f), def.closed, 2f);
                 var list = new List<RoadSample>(pts.Count);
                 float dist = 0f;
                 for (int i = 0; i < pts.Count; i++)
@@ -810,9 +813,87 @@ namespace BlossomRally
             }
         }
 
+        /// <summary>Relaxes points whose local turn radius is below rMin (open roads keep their end points).</summary>
+        static List<Vector2> EaseTightBends(List<Vector2> pts, bool closed, float rMin)
+        {
+            var p = new List<Vector2>(pts);
+            int n = p.Count;
+            if (n < 5) return p;
+            for (int pass = 0; pass < 400; pass++)
+            {
+                bool changed = false;
+                for (int i = 0; i < n; i++)
+                {
+                    if (!closed && (i < 2 || i > n - 3)) continue;
+                    Vector2 a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n];
+                    float ab = Vector2.Distance(a, b), bc = Vector2.Distance(b, c), ca = Vector2.Distance(c, a);
+                    float area2 = Mathf.Abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x));
+                    if (area2 < 1e-5f) continue;
+                    float r = ab * bc * ca / (2f * area2);
+                    if (r >= rMin) continue;
+                    p[i] = Vector2.Lerp(b, (a + c) * 0.5f, 0.5f);
+                    changed = true;
+                }
+                if (!changed) break;
+            }
+            return p;
+        }
+
+        /// <summary>Re-spaces a polyline to an even step.</summary>
+        static List<Vector2> Resample(List<Vector2> pts, bool closed, float step)
+        {
+            var src = new List<Vector2>(pts);
+            if (closed) src.Add(pts[0]);
+            var outp = new List<Vector2> { src[0] };
+            float carry = 0f;
+            for (int i = 1; i < src.Count; i++)
+            {
+                Vector2 a = src[i - 1], b = src[i];
+                float seg = Vector2.Distance(a, b);
+                float t = step - carry;
+                while (t <= seg)
+                {
+                    outp.Add(Vector2.Lerp(a, b, t / seg));
+                    t += step;
+                }
+                carry = seg - (t - step);
+            }
+            if (closed)
+            {
+                if (outp.Count > 1 && Vector2.Distance(outp[outp.Count - 1], outp[0]) < step * 0.5f) outp.RemoveAt(outp.Count - 1);
+            }
+            else if (Vector2.Distance(outp[outp.Count - 1], src[src.Count - 1]) > step * 0.25f) outp.Add(src[src.Count - 1]);
+            return outp;
+        }
+
+        /// <summary>
+        /// Points offset sideways from the centreline (positive = right). Where a bend is still tighter than the offset,
+        /// the edge would run backwards and fold; such points are held so the edge stays clean.
+        /// </summary>
+        static Vector2[] EdgePoints(List<RoadSample> run, float offsetFraction, float extra)
+        {
+            int n = run.Count;
+            var e = new Vector2[n];
+            for (int i = 0; i < n; i++)
+            {
+                var s = run[i];
+                Vector2 nrm = new Vector2(s.tangent.y, -s.tangent.x);
+                Vector2 p = s.pos + nrm * (s.halfWidth * offsetFraction + extra);
+                if (i > 0 && Vector2.Dot(p - e[i - 1], s.tangent) < 0.02f)
+                {
+                    // fold: keep the edge on the previous point, nudged forwards along the road
+                    p = e[i - 1] + s.tangent * 0.02f;
+                }
+                e[i] = p;
+            }
+            return e;
+        }
+
         void MakeRoadPiece(RoadDef def, List<RoadSample> run, Material mat, Material lineMat, float tile, int part)
         {
             int n = run.Count;
+            var leftE = EdgePoints(run, -1f, 0f);
+            var rightE = EdgePoints(run, 1f, 0f);
             var v = new Vector3[n * 3];
             var uv = new Vector2[n * 3];
             var tri = new List<int>();
@@ -822,7 +903,7 @@ namespace BlossomRally
                 var s = run[i];
                 Vector2 nrm = new Vector2(s.tangent.y, -s.tangent.x);
                 float y = s.height + RoadLift;
-                Vector2 l = s.pos - nrm * s.halfWidth, rr = s.pos + nrm * s.halfWidth;
+                Vector2 l = leftE[i], rr = rightE[i];
                 v[i * 3] = new Vector3(l.x, y, l.y);
                 v[i * 3 + 1] = new Vector3(s.pos.x, y + 0.04f, s.pos.y);
                 v[i * 3 + 2] = new Vector3(rr.x, y, rr.y);
@@ -849,11 +930,12 @@ namespace BlossomRally
             // lane markings: solid edges + dashed centre line
             var lv = new List<Vector3>();
             var lt = new List<int>();
+            var lineL = EdgePoints(run, -1f, 0.45f);
+            var lineR = EdgePoints(run, 1f, -0.45f);
             for (int i = 0; i < n - 1; i++)
             {
                 var s0 = run[i]; var s1 = run[i + 1];
                 Vector2 n0 = new Vector2(s0.tangent.y, -s0.tangent.x), n1 = new Vector2(s1.tangent.y, -s1.tangent.x);
-                float[] offs = { -(s0.halfWidth - 0.45f), s0.halfWidth - 0.45f, 0f };
                 for (int k = 0; k < 3; k++)
                 {
                     if (k == 2 && (s0.distance % 7f) > 3.5f) continue;
@@ -861,7 +943,9 @@ namespace BlossomRally
                     float lift = k == 2 ? 0.045f : 0.012f;
                     float y0 = s0.height + RoadLift + lift + 0.012f, y1 = s1.height + RoadLift + lift + 0.012f;
                     int b = lv.Count;
-                    Vector2 c0 = s0.pos + n0 * offs[k], c1 = s1.pos + n1 * offs[k];
+                    Vector2 c0 = k == 0 ? lineL[i] : k == 1 ? lineR[i] : s0.pos;
+                    Vector2 c1 = k == 0 ? lineL[i + 1] : k == 1 ? lineR[i + 1] : s1.pos;
+                    if ((c1 - c0).sqrMagnitude < 0.0004f) continue;          // held (folded) stretch: no line
                     lv.Add(new Vector3(c0.x - n0.x * w, y0, c0.y - n0.y * w));
                     lv.Add(new Vector3(c0.x + n0.x * w, y0, c0.y + n0.y * w));
                     lv.Add(new Vector3(c1.x - n1.x * w, y1, c1.y - n1.y * w));
