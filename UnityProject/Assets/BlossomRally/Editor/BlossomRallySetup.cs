@@ -58,20 +58,21 @@ namespace BlossomRally.EditorTools
             if (!File.Exists(ScenePath))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+                // Unity refuses to add a scene next to an unsaved "Untitled" scene, so the game scene replaces the
+                // open scene instead (an Untitled scene holds nothing of yours; a saved, modified scene is offered
+                // for saving first). The game scene is left open afterwards.
                 var prev = SceneManager.GetActiveScene();
-                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+                if (!string.IsNullOrEmpty(prev.path) && prev.isDirty && !Application.isBatchMode)
+                    EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
                 var go = new GameObject("BlossomRally");
                 go.AddComponent<GameManager>();
-                SceneManager.MoveGameObjectToScene(go, scene);
                 var cam = new GameObject("Main Camera");
                 cam.tag = "MainCamera";
                 cam.AddComponent<Camera>();
                 cam.AddComponent<AudioListener>();
                 cam.transform.position = new Vector3(0f, 120f, -300f);
-                SceneManager.MoveGameObjectToScene(cam, scene);
                 EditorSceneManager.SaveScene(scene, ScenePath);
-                EditorSceneManager.CloseScene(scene, true);
-                if (prev.IsValid()) SceneManager.SetActiveScene(prev);
                 AssetDatabase.Refresh();
             }
             var scenes = EditorBuildSettings.scenes.ToList();
