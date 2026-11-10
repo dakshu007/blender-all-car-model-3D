@@ -1,7 +1,7 @@
 # Builds the Blossom Rally tester release in the cloud:
 #   macOS  -> BlossomRally-<ver>-mac.dmg          (Universal: Intel + Apple Silicon, ad-hoc signed)
 #   Windows-> BlossomRally-Setup-<ver>.exe         (installer)  +  BlossomRally-<ver>-windows.zip (portable)
-# Run it from GitHub > Actions > "Build tester release" > Run workflow, or push a tag like v0.9.0
+# Run it from GitHub > Actions > "Build tester release" > Run workflow, or push a tag like v0.9.1
 # (a tag also creates a GitHub Release with the files attached).
 #
 # One-time setup - repository Settings > Secrets and variables > Actions > New repository secret:

@@ -126,6 +126,7 @@ namespace BlossomRally
         {
             SfxId s;
             if (System.Enum.TryParse(id, out s)) Sfx.Play(s);
+            Announcer.Hear(id);
         }
 
         IEnumerator Start()

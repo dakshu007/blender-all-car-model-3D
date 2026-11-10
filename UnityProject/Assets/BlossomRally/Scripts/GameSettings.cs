@@ -20,6 +20,7 @@ namespace BlossomRally
         public static bool VSync { get; private set; } = true;
         public static bool ShowFps { get; set; }
         public static bool Rumble { get; private set; } = true;
+        public static bool Announcer { get; private set; } = true;
 
         public static event System.Action Changed;
 
@@ -48,6 +49,7 @@ namespace BlossomRally
             SfxVolume = Mathf.Clamp01(GetF("BR_VolSfx", 0.9f));
             VSync = GetI("BR_VSync", 1) == 1;
             Rumble = GetI("BR_Rumble", 1) == 1;
+            Announcer = GetI("BR_Announcer", 1) == 1;
             foreach (var kv in defaults) bindings[kv.Key] = (KeyCode)GetI("BR_Key_" + kv.Key, (int)kv.Value);
             Apply();
         }
@@ -79,6 +81,7 @@ namespace BlossomRally
         public static void SetSfxVolume(float v) { SfxVolume = Mathf.Clamp01(v); SetF("BR_VolSfx", SfxVolume); Apply(); }
         public static void SetVSync(bool v) { VSync = v; SetI("BR_VSync", v ? 1 : 0); Apply(); }
         public static void SetRumble(bool v) { Rumble = v; SetI("BR_Rumble", v ? 1 : 0); Save(); }
+        public static void SetAnnouncer(bool v) { Announcer = v; SetI("BR_Announcer", v ? 1 : 0); Save(); }
 
         static void Save() { try { PlayerPrefs.Save(); } catch (System.Exception) { } }
 

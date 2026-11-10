@@ -91,6 +91,12 @@ namespace BlossomRally
         /// <summary>True from the countdown until the results screen is dismissed.</summary>
         public bool Running { get { return phase != Phase.Idle; } }
         public bool ShowingResults { get { return phase == Phase.Results; } }
+        /// <summary>The number the countdown is showing (3, 2, 1) - read by the announcer.</summary>
+        public int CountdownNumber { get { return lastCount; } }
+        /// <summary>True while the "WRONG WAY" warning is on screen.</summary>
+        public bool WrongWay { get { return phase == Phase.Running && wrongTimer > WrongWayDelay; } }
+        /// <summary>The last finished run beat the saved best.</summary>
+        public bool NewBest { get { return newBest; } }
         /// <summary>Index of the running event, -1 when none.</summary>
         public int CurrentEvent { get { return phase != Phase.Idle ? eventIndex : -1; } }
 

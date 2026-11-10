@@ -3,7 +3,7 @@ namespace BlossomRally
 {
     public static class BuildInfo
     {
-        public const string Version = "0.9.0";
+        public const string Version = "0.9.1";
         public const string Channel = "Test build";
         /// <summary>Shown under the title so testers' screenshots say which build they played.</summary>
         public const string Label = Channel + " v" + Version;

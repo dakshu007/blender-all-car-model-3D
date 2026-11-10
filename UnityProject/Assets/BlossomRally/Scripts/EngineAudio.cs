@@ -1,4 +1,4 @@
-// EngineAudio.cs - procedural car audio (no audio files): four engine loops (low/high rpm x on/off
+// EngineAudio.cs - car audio: optional recorded engine loops (Resources/Audio/Engines) over procedural layers: four engine loops (low/high rpm x on/off
 // throttle) crossfaded by rpm and load, gear-change cut + pop, lift-off backfire crackles, Group B
 // turbo whistle + blow-off valve, tyre squeal on hard surfaces, per-surface rolling noise and wind.
 // Every loop is generated once (cached in static fields, per car class for the engine) as a seamless
@@ -18,6 +18,10 @@ namespace BlossomRally
         const int HighPeriod = 132, HighCycles = 252;   // 167.0 Hz ~ 5011 rpm
         const float LowRefRpm = Rate * 30f / LowPeriod;
         const float HighRefRpm = Rate * 30f / HighPeriod;
+        // recorded engine loops (ElevenLabs pack, Resources/Audio/Engines/<Class>_Low / _High):
+        // the "low" file is a steady idle, the "high" file a steady full-throttle hold
+        public const string EngineFolder = "Audio/Engines/";
+        const float SampleLowRpm = 1100f, SampleHighRpm = 6200f;
 
         // ------------------------------------------------------------- static clip cache
         static readonly Dictionary<string, AudioClip[]> engineCache = new Dictionary<string, AudioClip[]>();
@@ -41,6 +45,8 @@ namespace BlossomRally
         ArcadeCar car;
         AudioSource[] engine = new AudioSource[4];      // lowOn, lowOff, highOn, highOff
         AudioSource squeal, wind, turbo, oneShot;
+        AudioSource sampleLow, sampleHigh;   // recorded engine loops (null = procedural only)
+        float procMix = 1f;
         AudioSource[] surface = new AudioSource[4];
         bool started;
 
@@ -71,6 +77,22 @@ namespace BlossomRally
             squeal = MakeLoop(squealClip, 0.6f);
             wind = MakeLoop(windClip, 0.1f);
             if (groupB) turbo = MakeLoop(turboClip, 0.6f);
+            // recorded engine pack for this car class, if present: it carries the character and
+            // the procedural layers stay underneath (quieter) for throttle load and texture
+            string key = groupB ? "GroupB" : classic ? "Classic" : "Group4";
+            AudioClip lo = null, hi = null;
+            try
+            {
+                lo = Resources.Load<AudioClip>(EngineFolder + key + "_Low");
+                hi = Resources.Load<AudioClip>(EngineFolder + key + "_High");
+            }
+            catch (System.Exception) { }
+            if (lo != null && hi != null)
+            {
+                sampleLow = MakeLoop(lo, 0.6f);
+                sampleHigh = MakeLoop(hi, 0.6f);
+                procMix = 0.45f;
+            }
             oneShot = gameObject.AddComponent<AudioSource>();
             Setup(oneShot, 0.6f);
             lastGear = car.Gear;
@@ -145,13 +167,25 @@ namespace BlossomRally
             float x = Mathf.InverseLerp(2700f, 5300f, rpm);
             float lowW = Mathf.Cos(x * Mathf.PI * 0.5f), highW = Mathf.Sin(x * Mathf.PI * 0.5f);
             float onW = Mathf.Sqrt(load), offW = Mathf.Sqrt(1f - load) * 0.85f;
-            float gain = 0.34f * (0.6f + 0.4f * load) * (0.78f + 0.22f * rpm01) * cutGain * sfx;
+            float gain = 0.34f * (0.6f + 0.4f * load) * (0.78f + 0.22f * rpm01) * cutGain * sfx * procMix;
             float pLow = Mathf.Clamp(rpm / LowRefRpm * classPitch, 0.3f, 2.9f);
             float pHigh = Mathf.Clamp(rpm / HighRefRpm * classPitch, 0.3f, 2.9f);
             engine[0].volume = gain * lowW * onW; engine[0].pitch = pLow;
             engine[1].volume = gain * lowW * offW; engine[1].pitch = pLow;
             engine[2].volume = gain * highW * onW; engine[2].pitch = pHigh;
             engine[3].volume = gain * highW * offW; engine[3].pitch = pHigh;
+
+            // ---- recorded engine loops: idle file below ~3000 rpm, full-throttle file above
+            if (sampleLow != null && sampleHigh != null)
+            {
+                float sx = Mathf.InverseLerp(1800f, 4200f, rpm);
+                float sLowW = Mathf.Cos(sx * Mathf.PI * 0.5f), sHighW = Mathf.Sin(sx * Mathf.PI * 0.5f);
+                float sg = 0.5f * (0.5f + 0.5f * load) * (0.8f + 0.2f * rpm01) * cutGain * sfx;
+                sampleLow.volume = sg * sLowW;
+                sampleLow.pitch = Mathf.Clamp(rpm / SampleLowRpm, 0.6f, 2.4f);
+                sampleHigh.volume = sg * sHighW;
+                sampleHigh.pitch = Mathf.Clamp(rpm / SampleHighRpm, 0.5f, 1.5f);
+            }
 
             // ---- lift-off backfire crackles
             float now = Time.time;

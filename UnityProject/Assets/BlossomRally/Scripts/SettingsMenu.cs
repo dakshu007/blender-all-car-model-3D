@@ -36,6 +36,8 @@ namespace BlossomRally
             main.Add("Master volume", null, () => Pct(GameSettings.MasterVolume), d => GameSettings.SetMasterVolume(GameSettings.MasterVolume + d * 0.1f));
             main.Add("Music volume", null, () => Pct(GameSettings.MusicVolume), d => GameSettings.SetMusicVolume(GameSettings.MusicVolume + d * 0.1f));
             main.Add("Effects volume", null, () => Pct(GameSettings.SfxVolume), d => GameSettings.SetSfxVolume(GameSettings.SfxVolume + d * 0.1f));
+            main.Add("Announcer voice", null, () => !GameSettings.Announcer ? "Off" : BlossomRally.Announcer.HasVoicePack ? "On" : "On (no voice pack)",
+                     d => GameSettings.SetAnnouncer(!GameSettings.Announcer));
             main.Add("Gamepad rumble", null, () => GameSettings.Rumble ? "On" : "Off", d => GameSettings.SetRumble(!GameSettings.Rumble));
             main.Add("Driving & assists...", () => { current = driving; driving.index = 0; });
             main.Add("Visual effects...", () => { current = effects; effects.index = 0; });

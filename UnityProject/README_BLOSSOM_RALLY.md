@@ -101,6 +101,21 @@ Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seco
 
 ## What's new in this version
 
+**0.9.1 (Thursday update).**
+* **Clean corners.** Every bend is eased to a safe radius, so hairpins no longer fold over
+  themselves, and the white edge lines stay smooth all the way round.
+* **Announcer voice** (ElevenLabs). The announcer calls the countdown (3, 2, 1, GO!), checkpoints
+  and faster splits, finish, gold/silver/bronze, new records, and Wrong way. Perfect drifts, big
+  air and near misses get the odd line too, rate-limited so the voice never gets noisy.
+  **Settings → Announcer voice** turns it on or off. It follows the Effects volume.
+* **Recorded engine sounds per car class** (Group B turbo, Group 4, Classic), crossfaded from idle
+  to full throttle by rpm. They sit on top of the procedural engine, which still adds throttle
+  load, crackles, gear cuts and the turbo.
+* **Getting the audio files:** use **Blossom Rally → Audio → ElevenLabs Voice & Engine Pack...**.
+  Paste your ElevenLabs API key (stored on your computer only) and press Generate, or import files
+  you downloaded. The files go to `Assets/BlossomRally/Resources/Audio/Voice` and `.../Engines`.
+  Without them the game plays exactly as before.
+
 **Driving (rebuilt from scratch).** Tyres grip up to a peak slide angle and then let go gradually.
 Weight moves between the wheels under braking, throttle and cornering. Each car has its own engine
 torque curve and a 5-speed gearbox (automatic, or manual: LeftShift/E up, LeftCtrl/Q down;
