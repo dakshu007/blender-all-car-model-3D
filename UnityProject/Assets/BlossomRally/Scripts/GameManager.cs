@@ -370,7 +370,10 @@ namespace BlossomRally
             if (InputReader.Down(KeyCode.X) || GamepadBridge.ButtonDown(PadButton.West))
             {
                 var ex = car != null ? car.GetComponent<CarExtras>() : null;
-                if (ex != null) { ex.Clean(); Toast("Washed and polished"); }
+                var dmg = car != null ? car.GetComponent<CarDamage>() : null;
+                if (dmg != null) dmg.Repair();
+                if (ex != null) ex.Clean();
+                Toast("Washed, repaired and polished");
             }
             if (InputReader.MenuConfirm) { UI.Sound("MenuSelect"); EnterDrive(); return; }
             if (InputReader.MenuBack) { UI.Sound("MenuBack"); pendingEvent = -1; EnterTitle(); }
@@ -557,7 +560,7 @@ namespace BlossomRally
             UI.Label(new Rect(px + 24, ly, pw - 48, 28), "Colour   ‹ " + garage.ColourName + " ›", UI.Row, UI.Gold);
             UI.Label(new Rect(px + 24, ly + 34, pw - 48, 28), "Pattern  ‹ " + garage.PatternName + " ›", UI.Row, UI.Gold);
             UI.Label(new Rect(px + 24, ly + 76, pw - 48, 80),
-                     "← →  car (" + (carIndex + 1) + " / " + CarCatalog.Cars.Length + ")     ↑ ↓  colour\nQ / E  pattern     X  wash the car\nENTER  drive     ESC  back", UI.Small, UI.White);
+                     "← →  car (" + (carIndex + 1) + " / " + CarCatalog.Cars.Length + ")     ↑ ↓  colour\nQ / E  pattern     X  wash & repair\nENTER  drive     ESC  back", UI.Small, UI.White);
             string head = pendingEvent >= 0 && pendingEvent < stages.EventCount ? stages.EventNames[pendingEvent] : "FREE ROAM";
             UI.Label(new Rect(0, 24, W, 50), "GARAGE  ·  " + head, UI.Title, UI.Pink);
         }
