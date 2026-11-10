@@ -88,12 +88,13 @@ namespace BlossomRally.EditorTools
             if (assets == null || assets.Length == 0) return;
             var so = new SerializedObject(assets[0]);
             var prop = so.FindProperty("activeInputHandler");
-            if (prop == null || prop.intValue != 1) return;   // 0 = old, 2 = both: already fine
+            // 0 = old only (no gamepad), 1 = new only (no legacy keyboard path), 2 = both: what the game wants
+            if (prop == null || prop.intValue == 2) return;
             prop.intValue = 2;
             so.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
             if (EditorUtility.DisplayDialog("Blossom Rally",
-                    "Keyboard controls need the legacy Input Manager. Active Input Handling was set to 'Both'.\n\n" +
+                    "Blossom Rally uses both input systems (keyboard + gamepad). Active Input Handling was set to 'Both'.\n\n" +
                     "Unity must restart to apply it. Restart now?", "Restart", "Later"))
                 EditorApplication.OpenProject(Directory.GetCurrentDirectory());
         }
