@@ -53,7 +53,7 @@ namespace BlossomRally.EditorTools
             }
         }
 
-        static void EnsureScene()
+        internal static void EnsureScene()
         {
             if (!File.Exists(ScenePath))
             {
@@ -82,7 +82,7 @@ namespace BlossomRally.EditorTools
             }
         }
 
-        static void EnsureLegacyInput()
+        internal static void EnsureLegacyInput()
         {
             var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
             if (assets == null || assets.Length == 0) return;

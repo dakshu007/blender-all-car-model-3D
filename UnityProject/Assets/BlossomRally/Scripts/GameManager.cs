@@ -449,6 +449,8 @@ namespace BlossomRally
             UI.Styles();
             float W = Screen.width, H = Screen.height;
             Color white = UI.White, pink = UI.Pink;
+            if (state == State.Drive && !HideHud)
+                UI.Label(new Rect(8, 4, 260, 20), BuildInfo.Label, UI.Small, new Color(1f, 1f, 1f, 0.45f));
             if (GameSettings.ShowFps)
                 UI.Label(new Rect(W - 130, 8, 120, 24), Mathf.RoundToInt(1f / Mathf.Max(0.001f, fpsSmooth)) + " fps", UI.MidRight, white);
             if (!InputReader.Legacy)
@@ -463,6 +465,8 @@ namespace BlossomRally
             {
                 UI.Label(new Rect(0, H * 0.10f, W, 100), "BLOSSOM RALLY", UI.Huge, pink);
                 UI.Label(new Rect(0, H * 0.10f + 86, W, 30), "a spring valley rally", UI.Mid, white);
+                UI.Label(new Rect(0, H * 0.10f + 118, W, 24), BuildInfo.Label.ToUpperInvariant(), UI.SmallCentre, UI.Gold);
+                UI.Label(new Rect(W - 520, 10, 510, 22), BuildInfo.FeedbackHint, new GUIStyle(UI.Small) { alignment = TextAnchor.UpperRight }, new Color(1f, 1f, 1f, 0.75f));
                 activeTitleMenu.Draw(W * 0.5f, H * 0.62f);
                 UI.Label(new Rect(0, H - 34, W, 24), InputReader.PadConnected ? "Gamepad connected" : "Keyboard  ·  plug in a gamepad for analogue steering and rumble",
                          UI.SmallCentre, new Color(1f, 1f, 1f, 0.7f));

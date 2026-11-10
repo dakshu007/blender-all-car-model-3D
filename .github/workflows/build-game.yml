@@ -1,0 +1,144 @@
+# Builds the Blossom Rally tester release in the cloud:
+#   macOS  -> BlossomRally-<ver>-mac.dmg          (Universal: Intel + Apple Silicon, ad-hoc signed)
+#   Windows-> BlossomRally-Setup-<ver>.exe         (installer)  +  BlossomRally-<ver>-windows.zip (portable)
+# Run it from GitHub > Actions > "Build tester release" > Run workflow, or push a tag like v0.9.0
+# (a tag also creates a GitHub Release with the files attached).
+#
+# One-time setup - repository Settings > Secrets and variables > Actions > New repository secret:
+#   UNITY_EMAIL     your Unity account email
+#   UNITY_PASSWORD  your Unity account password
+#   UNITY_LICENSE   the full text of your Unity licence file (Personal is fine). On your Mac it is
+#                   /Library/Application Support/Unity/Unity_lic.ulf  (open it in TextEdit, copy all)
+# Builds use GameCI (https://game.ci) Unity images for the version in UnityProject/ProjectSettings/ProjectVersion.txt.
+name: Build tester release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    name: Unity build (${{ matrix.targetPlatform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - targetPlatform: StandaloneOSX
+            method: BlossomRally.EditorTools.BlossomRallyBuild.CIBuildMac
+            out: mac
+          - targetPlatform: StandaloneWindows64
+            method: BlossomRally.EditorTools.BlossomRallyBuild.CIBuildWindows
+            out: win
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: UnityProject/Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('UnityProject/Packages/manifest.json') }}
+          restore-keys: Library-${{ matrix.targetPlatform }}-
+      - name: Build with Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: UnityProject
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildMethod: ${{ matrix.method }}
+          versioning: None
+      - name: Pack (keeps file permissions)
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" UnityProject/Builds || true
+          tar -czf build-${{ matrix.out }}.tgz -C UnityProject/Builds/ci/${{ matrix.out }} .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.out }}
+          path: build-${{ matrix.out }}.tgz
+          retention-days: 7
+
+  package-mac:
+    name: macOS DMG
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-mac
+      - name: Make the DMG
+        run: |
+          VER=$(sed -n 's/.*Version = "\(.*\)".*/\1/p' UnityProject/Assets/BlossomRally/Scripts/BuildInfo.cs | head -1)
+          mkdir -p dmgroot && tar -xzf build-mac.tgz -C dmgroot
+          APP="dmgroot/Blossom Rally.app"
+          chmod -R u+rwX,go+rX "$APP" && chmod +x "$APP"/Contents/MacOS/*
+          xattr -cr "$APP" || true
+          codesign --force --deep --sign - "$APP"
+          ln -s /Applications dmgroot/Applications
+          printf 'Drag Blossom Rally onto Applications.\nFirst launch: right-click > Open (or System Settings > Privacy & Security > Open Anyway).\nThis test build is not notarized yet.\n' > "dmgroot/HOW TO OPEN.txt"
+          hdiutil create -volname "Blossom Rally $VER" -srcfolder dmgroot -ov -format UDZO "BlossomRally-$VER-mac.dmg"
+          echo "VER=$VER" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlossomRally-mac-dmg
+          path: BlossomRally-*-mac.dmg
+
+  package-windows:
+    name: Windows installer + zip
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-win
+      - name: Unpack
+        shell: bash
+        run: |
+          VER=$(sed -n 's/.*Version = "\(.*\)".*/\1/p' UnityProject/Assets/BlossomRally/Scripts/BuildInfo.cs | head -1)
+          echo "VER=$VER" >> $GITHUB_ENV
+          mkdir -p "win/BlossomRally-$VER-windows" && tar -xzf build-win.tgz -C "win/BlossomRally-$VER-windows"
+          rm -rf "win/BlossomRally-$VER-windows/"*_BurstDebugInformation_DoNotShip
+      - name: Portable zip
+        shell: pwsh
+        run: Compress-Archive -Path "win/BlossomRally-$env:VER-windows" -DestinationPath "BlossomRally-$env:VER-windows.zip"
+      - name: Installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:VER" "/DSourceDir=$pwd\win\BlossomRally-$env:VER-windows" Installer\BlossomRally.iss
+          Move-Item "Installer\Output\BlossomRally-Setup-$env:VER.exe" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlossomRally-windows
+          path: |
+            BlossomRally-Setup-*.exe
+            BlossomRally-*-windows.zip
+
+  release:
+    name: GitHub Release (tags only)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [package-mac, package-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+          pattern: BlossomRally-*
+      - uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          name: Blossom Rally ${{ github.ref_name }} (test build)
+          files: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.zip
