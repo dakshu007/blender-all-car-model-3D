@@ -43,6 +43,7 @@ namespace BlossomRally
         float toastTimer;
         int pendingEvent = -1;           // event chosen on the title screen, started after the garage
         float fpsSmooth = 0.016f;
+        Texture2D logo;
 
         // drift scoring
         float driftPoints, driftCombo = 1f, driftHold, driftEndTimer, totalScore, bestDrift;
@@ -151,7 +152,7 @@ namespace BlossomRally
 
             eventMenu = new MenuList { title = "EVENTS", width = 640f };
 
-            pauseMenu = new MenuList { title = "PAUSED", width = 560f };
+            pauseMenu = new MenuList { title = "PAUSED", width = 560f, footer = BuildInfo.UpdateNote };
             pauseMenu.Add("Resume", () => SetPaused(false));
             pauseMenu.Add("Restart event", () => { SetPaused(false); stages.Restart(); }, null, null, () => stages != null && stages.Running);
             pauseMenu.Add("Quit event", () => { SetPaused(false); stages.Abort(); }, null, null, () => stages != null && stages.Running);
@@ -463,9 +464,22 @@ namespace BlossomRally
             var spec = CarCatalog.Cars[carIndex];
             if (state == State.Title)
             {
-                UI.Label(new Rect(0, H * 0.10f, W, 100), "BLOSSOM RALLY", UI.Huge, pink);
-                UI.Label(new Rect(0, H * 0.10f + 86, W, 30), "a spring valley rally", UI.Mid, white);
-                UI.Label(new Rect(0, H * 0.10f + 118, W, 24), BuildInfo.Label.ToUpperInvariant(), UI.SmallCentre, UI.Gold);
+                float logoBottom = H * 0.10f + 100;
+                if (logo == null) logo = Resources.Load<Texture2D>("Branding/Logo_Wordmark");
+                if (logo != null)
+                {
+                    float lh = Mathf.Min(H * 0.20f, W * 0.40f * logo.height / logo.width);
+                    float lw = lh * logo.width / logo.height;
+                    GUI.DrawTexture(new Rect((W - lw) * 0.5f, H * 0.06f, lw, lh), logo, ScaleMode.ScaleToFit, true);
+                    logoBottom = H * 0.06f + lh;
+                }
+                else UI.Label(new Rect(0, H * 0.10f, W, 100), "BLOSSOM RALLY", UI.Huge, pink);
+                UI.Label(new Rect(0, logoBottom + 4, W, 30), "a spring valley rally", UI.Mid, white);
+                UI.Label(new Rect(0, logoBottom + 36, W, 24), BuildInfo.Label.ToUpperInvariant(), UI.SmallCentre, UI.Gold);
+                // weekly update ribbon
+                float rw = Mathf.Min(W - 40f, 620f);
+                UI.Panel(new Rect((W - rw) * 0.5f, logoBottom + 64, rw, 30), 0.6f);
+                UI.Label(new Rect((W - rw) * 0.5f, logoBottom + 64, rw, 30), BuildInfo.UpdateNote.ToUpperInvariant(), UI.SmallCentre, UI.Gold);
                 UI.Label(new Rect(W - 520, 10, 510, 22), BuildInfo.FeedbackHint, new GUIStyle(UI.Small) { alignment = TextAnchor.UpperRight }, new Color(1f, 1f, 1f, 0.75f));
                 activeTitleMenu.Draw(W * 0.5f, H * 0.62f);
                 UI.Label(new Rect(0, H - 34, W, 24), InputReader.PadConnected ? "Gamepad connected" : "Keyboard  ·  plug in a gamepad for analogue steering and rumble",

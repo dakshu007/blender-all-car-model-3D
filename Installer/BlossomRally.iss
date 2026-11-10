@@ -25,6 +25,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 WizardStyle=modern
+SetupIconFile=BlossomRally.ico
 UninstallDisplayIcon={app}\BlossomRally.exe
 
 [Tasks]

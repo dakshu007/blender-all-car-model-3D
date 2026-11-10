@@ -216,7 +216,33 @@ namespace BlossomRally.EditorTools
             PlayerSettings.runInBackground = false;
             PlayerSettings.defaultScreenWidth = 1920;
             PlayerSettings.defaultScreenHeight = 1080;
+            SetAppIcon();
             return true;
+        }
+
+        /// <summary>The rally badge (Assets/BlossomRally/Branding/AppIcon.png) becomes the Mac app / Windows exe icon.</summary>
+        static void SetAppIcon()
+        {
+            const string iconPath = "Assets/BlossomRally/Branding/AppIcon.png";
+            try
+            {
+                var imp = AssetImporter.GetAtPath(iconPath) as TextureImporter;
+                if (imp != null && (imp.mipmapEnabled || imp.npotScale != TextureImporterNPOTScale.None || imp.textureCompression != TextureImporterCompression.Uncompressed))
+                {
+                    imp.mipmapEnabled = false;
+                    imp.npotScale = TextureImporterNPOTScale.None;
+                    imp.textureCompression = TextureImporterCompression.Uncompressed;
+                    imp.SaveAndReimport();
+                }
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(iconPath);
+                if (tex == null) { Log("app icon not found at " + iconPath); return; }
+#if UNITY_2021_2_OR_NEWER
+                PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, new[] { tex }, IconKind.Any);
+#else
+                PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Unknown, new[] { tex });
+#endif
+            }
+            catch (Exception e) { Log("app icon skipped: " + e.Message); }
         }
 
         static bool RunBuild(BuildTarget target, string path, bool interactive)
@@ -279,7 +305,7 @@ namespace BlossomRally.EditorTools
                    "   On macOS 15+: if it says it can't be opened, go to System Settings > Privacy & Security, scroll down and click \"Open Anyway\".\n" +
                    "   (This test build is not notarized by Apple yet - that is why macOS asks.)\n\n" +
                    "Controls: W/S drive, A/D steer, SPACE handbrake/drift, ESC menu. Gamepads work too.\n" +
-                   "F1 shows the frame rate, O takes photos. Thanks for testing!\n";
+                   "F1 shows the frame rate, O takes photos. Thanks for testing!\n\n" + BuildInfo.UpdateNote + "\n";
         }
 
         static string WindowsReadme()
@@ -290,7 +316,7 @@ namespace BlossomRally.EditorTools
                    "   If Windows SmartScreen says \"Windows protected your PC\": click \"More info\" then \"Run anyway\".\n" +
                    "   (This test build is not code-signed yet - that is why Windows asks.)\n\n" +
                    "Controls: W/S drive, A/D steer, SPACE handbrake/drift, ESC menu. Xbox / PlayStation controllers work too.\n" +
-                   "F1 shows the frame rate, O takes photos. Thanks for testing!\n";
+                   "F1 shows the frame rate, O takes photos. Thanks for testing!\n\n" + BuildInfo.UpdateNote + "\n";
         }
     }
 }

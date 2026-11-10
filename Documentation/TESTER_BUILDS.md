@@ -35,6 +35,21 @@ The workflow is in `.github/workflows/build-game.yml`. Set it up once:
 
 The cloud build uses the Unity version in `UnityProject/ProjectSettings/ProjectVersion.txt`.
 
+## Branding for the landing page
+
+The `Branding/` folder (at the repo root) has everything for the landing page and store pages:
+- `AppIcon_1024_rounded.png` (app icon, rounded corners), `AppIcon_1024_square.png` (full-bleed square)
+- `Logo_Banner_1920x1080.png` (hero image), `Logo_Social_1200x630.png` (link preview / social share image)
+- `Logo_Wordmark.png` (transparent "BLOSSOM RALLY" title with the red seal), `BlossomRally.ico` (Windows icon)
+- `render_car.py` + `compose.py` recreate them: a Blender render of the Brenner S1, then composed with Pillow
+
+The same badge is the icon of the Mac app and the Windows exe, and the wordmark is on the title screen.
+
+## Weekly updates
+
+The title screen, the pause menu and the download notes say: **"New update every Thursday at 12 PM - fresh
+improvements every week!"** Change the text in `Scripts/BuildInfo.cs` (`UpdateNote`), e.g. to add your time zone.
+
 ## What testers will see (unsigned test builds)
 
 These builds aren't code-signed or notarized yet, so both systems warn the first time. Put this on the

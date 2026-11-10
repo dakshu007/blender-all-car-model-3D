@@ -263,6 +263,41 @@ namespace BlossomRally
                 }
                 roadSamples.Add(list);
             }
+            // junctions: where a side road ends on another road, it takes that road's height (2 cm below, so the
+            // through road stays on top) and blends back over 45 m - no step for the car's body to hit
+            for (int r = 0; r < roadSamples.Count; r++)
+            {
+                if (roads[r].closed) continue;
+                var list = roadSamples[r];
+                int n = list.Count;
+                for (int end = 0; end < 2; end++)
+                {
+                    int ei = end == 0 ? 0 : n - 1;
+                    Vector2 ep = list[ei].pos;
+                    float best = float.MaxValue, hOther = 0f;
+                    for (int o = 0; o < roadSamples.Count; o++)
+                    {
+                        if (o == r) continue;
+                        foreach (var so in roadSamples[o])
+                        {
+                            float dd = (so.pos - ep).sqrMagnitude;
+                            if (dd < best) { best = dd; hOther = so.height; }
+                        }
+                    }
+                    if (best > 15f * 15f) continue;
+                    float delta = (hOther - 0.02f) - list[ei].height;
+                    float endDist = list[ei].distance;
+                    for (int j = 0; j < n; j++)
+                    {
+                        float along = Mathf.Abs(list[j].distance - endDist);
+                        if (along > 45f) continue;
+                        var sj = list[j];
+                        sj.height += delta * (1f - Spline.SmoothStep(0f, 45f, along));
+                        list[j] = sj;
+                    }
+                }
+            }
+
             // bridges where any road crosses the river: the road itself rises into a gentle stone arch
             // (part of the road mesh, so there are no seams, steps or gaps), max ~10% grade on the ramps
             for (int r = 0; r < roadSamples.Count; r++)
