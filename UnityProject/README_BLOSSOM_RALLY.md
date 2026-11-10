@@ -99,6 +99,67 @@ slide. Crashing breaks the combo.
 
 Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seconds.
 
+## What's new in this version
+
+**Driving (rebuilt from scratch).** Tyres grip up to a peak slide angle and then let go gradually.
+Weight moves between the wheels under braking, throttle and cornering. Each car has its own engine
+torque curve and a 5-speed gearbox (automatic, or manual: LeftShift/E up, LeftCtrl/Q down;
+gamepad RB up, R3 down). Brakes are ABS-style, trail braking rotates the car, and the car levels
+itself on jumps. Handbrake + steer still starts a drift, and power oversteer, Scandinavian flicks
+and lift-off oversteer now come from the physics. **Settings → Driving & assists:** Arcade /
+Balanced / Sim, traction control, ABS, stability help, automatic or manual gears.
+
+**Graphics.** Sun shafts, reflective lake and river water with shoreline foam and ripples around
+the car, valley mist at dawn and after rain, layered distant mountains, a cloud band with peaks
+poking through, lantern light pools and glowing house windows at night, motion blur and speed
+lines, dappled light under trees, colour grading per region and time of day, sun flare / lens dirt /
+raindrops on the lens, and more surface detail up close. **Settings → Visual effects:** Enhanced
+graphics (master switch), Ink & watercolour mode, Motion blur, Lens effects, Slow-motion moments,
+Score pop-ups, Reduced camera motion.
+
+**The valley.**
+* **Village:** market stalls, lantern and firecracker spans over Lantern Street, stone lions at the
+  gate, the bridges and the pagoda, a tea house on the lake, courtyard houses and moon-gate gardens,
+  parked bicycles, rickshaws, carts and trucks.
+* **Temple:** drum and bell towers that play when you drive past, plus incense burners.
+* **Water:** water wheels on the river, terraced rice paddies, brooks with stepping stones.
+* **Plants and rock:** willows, cliff pines, plum and peach blossom, rapeseed fields, karst pillars,
+  light shafts in the bamboo forest.
+* **Small life:** butterflies, dragonflies and fireflies.
+
+**Rally atmosphere.**
+* **Stages:** hay bales and tyre walls at tight corners, warning chevrons and 100/50 m boards,
+  marshals waving flags, start ramps with start lights, and finish gantries with live timing boards.
+* **People:** spectator areas whose crowds cheer and jump back, a service park, and a camera
+  helicopter during events.
+* **Valley life:** cranes, cats on rooftops, chickens, a water buffalo, farmers, monks, chess
+  players, a morning tai chi group, dragon boats with drummers, fishermen and ducks.
+* **Night:** fireworks over the lake, plus wind chimes and prayer flags.
+
+**Your car.**
+* **Crew:** an animated driver and co-driver who steer, shift, lean with the forces and read pace notes.
+* **Damage:** dents, broken headlights, a cracked windscreen and a hanging bumper, plus a bent
+  steering pull and power loss.
+* **Effects:** kicked-up stones, flapping mud flaps, exhaust flames on backfire, glowing brake
+  discs, headlight beams in fog.
+* **Glass and details:** windscreen dirt cleared by the wipers, number plates and stickers, working
+  gauges, a swinging lucky knot.
+* **Repair:** in the garage, **X washes and repairs** the car.
+
+**Game feel.**
+* **Camera:** reacts to bumps, jumps, landings and impacts.
+* **Slow motion:** a short beat on big air, perfect drifts and the finish line.
+* **Pop-ups:** "PERFECT DRIFT!", "BIG AIR!", "NEAR MISS!", "CLEAN SECTION" and "SPEED TRAP".
+* **Effects:** water splash sheets, lingering dust, petal blasts, richer rumble and sound layers.
+* **Finish:** confetti and a medal stamp at the finish.
+
+**Menus.**
+* **Loading:** ink-painting loading screens.
+* **Valley map:** an unrolling map scroll for choosing events (title → *Rally Stages*).
+* **Garage:** a full workshop with mechanics, plus a **showroom walk-around (V)**.
+* **Photo album:** in the title and pause menus.
+* **Results:** a cinematic orbit camera on the results screen.
+
 ## Events
 
 From the title screen choose **Rally Stages & Drift Challenge**, pick an event, pick a car, drive.
@@ -242,6 +303,12 @@ gamepad bridge was compiled against the Input System API surface.
 The drift controller was tuned in a 2D replica of the car physics. The road, bridge, stage and
 waterfall layouts were checked numerically. The music and sound generators were run offline: no clicks
 at loop points, no NaNs, and balanced levels.
+
+The driving physics was tuned on a test bench that runs the game's own driving code: 0–100 km/h in
+3.5–6.9 s, 100–0 km/h in 29–32 m, and no spin at full keyboard lock at 120 km/h. Every build is also
+checked against Unity's own 6.6 source for engine modules missing from the package list and for
+APIs that newer Unity 6 releases turned into hard errors (that check caught two problems before they
+reached you).
 
 **Not yet tested in Unity:** the shaders can't be compiled here, and nothing has been played. If
 anything renders pink or misbehaves, send me the Console message.
