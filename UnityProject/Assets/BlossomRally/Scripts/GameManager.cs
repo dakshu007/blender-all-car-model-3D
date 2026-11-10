@@ -478,7 +478,7 @@ namespace BlossomRally
             if (car != null)
             {
                 UI.Label(new Rect(W - 330, H - 120, 300, 60), Mathf.RoundToInt(car.SpeedKmh) + " km/h", UI.Big, white);
-                UI.Label(new Rect(W - 330, H - 60, 300, 30), spec.name + "   ·   gear " + car.Gear, UI.MidRight, pink);
+                UI.Label(new Rect(W - 330, H - 60, 300, 30), spec.name + "   ·   gear " + car.GearLabel, UI.MidRight, pink);
             }
             if (!stages.Running)
                 UI.Label(new Rect(20, H - 60, 500, 30), "Score " + Mathf.RoundToInt(totalScore) + "    Best drift " + Mathf.RoundToInt(bestDrift), UI.MidLeft, white);
