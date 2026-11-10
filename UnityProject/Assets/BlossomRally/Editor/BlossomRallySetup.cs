@@ -82,20 +82,25 @@ namespace BlossomRally.EditorTools
             }
         }
 
+        /// <summary>
+        /// Input handling: the game works with the new Input System (keyboard + gamepad through the
+        /// Input System package) and also with "Both". Only "Input Manager (Old)" (0) is fixed, by switching
+        /// to the new Input System (1) - the same thing the Input System package asks for, so the two never
+        /// fight (Unity 6.6 does not keep "Both" reliably). Name kept for older callers.
+        /// </summary>
         internal static void EnsureLegacyInput()
         {
             var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
             if (assets == null || assets.Length == 0) return;
             var so = new SerializedObject(assets[0]);
             var prop = so.FindProperty("activeInputHandler");
-            // 0 = old only (no gamepad), 1 = new only (no legacy keyboard path), 2 = both: what the game wants
-            if (prop == null || prop.intValue == 2) return;
-            prop.intValue = 2;
+            if (prop == null || prop.intValue != 0) return;      // 1 = new, 2 = both: both fine
+            prop.intValue = 1;
             so.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
-            if (EditorUtility.DisplayDialog("Blossom Rally",
-                    "Blossom Rally uses both input systems (keyboard + gamepad). Active Input Handling was set to 'Both'.\n\n" +
-                    "Unity must restart to apply it. Restart now?", "Restart", "Later"))
+            if (!Application.isBatchMode && EditorUtility.DisplayDialog("Blossom Rally",
+                    "Blossom Rally uses the new Input System (keyboard + gamepad). Active Input Handling was set to " +
+                    "'Input System Package (New)'.\n\nUnity must restart to apply it. Restart now?", "Restart", "Later"))
                 EditorApplication.OpenProject(Directory.GetCurrentDirectory());
         }
     }

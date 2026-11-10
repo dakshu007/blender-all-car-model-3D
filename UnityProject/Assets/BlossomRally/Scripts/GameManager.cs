@@ -456,7 +456,7 @@ namespace BlossomRally
             if (!InputReader.Legacy)
             {
                 UI.Panel(new Rect(0, 0, W, 60), 0.8f);
-                UI.Label(new Rect(0, 10, W, 40), "Enable Project Settings > Player > Active Input Handling = Both, then restart Unity.", UI.Mid, white);
+                UI.Label(new Rect(0, 10, W, 40), "Set Project Settings > Player > Active Input Handling = Input System Package (New), then restart Unity.", UI.Mid, white);
             }
             if (state == State.Loading) { LoadingScreen.Draw(world.Progress, world.Status); return; }
             if (settings.IsOpen || photo.Active || replay.Active || ValleyMap.IsOpen || PhotoAlbum.IsOpen) return;
