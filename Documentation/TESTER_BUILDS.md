@@ -1,6 +1,6 @@
 # Tester builds: macOS .dmg and Windows .exe
 
-Version and label: `UnityProject/Assets/BlossomRally/Scripts/BuildInfo.cs` (currently **0.9.1, "Test build"**,
+Version and label: `UnityProject/Assets/BlossomRally/Scripts/BuildInfo.cs` (currently **0.10.0, "Test build"**,
 shown on the title screen and in the corner while driving). Bump `Version` for each tester round.
 
 ## Option A: build both on your Mac (recommended, about 10 minutes)
@@ -11,9 +11,9 @@ shown on the title screen and in the corner while driving). Bump `Version` for e
 
    Restart Unity after installing.
 2. Open the project, then choose **Blossom Rally → Build Tester Release (Mac DMG + Windows EXE)**.
-3. When it finishes, Finder opens `UnityProject/Builds/Release-0.9.1/` with:
-   - `BlossomRally-0.9.1-mac.dmg`: a Universal app for Intel and Apple Silicon, with a drag-to-Applications window.
-   - `BlossomRally-0.9.1-windows.zip`: contains `BlossomRally.exe` plus its data folder (portable, no install).
+3. When it finishes, Finder opens `UnityProject/Builds/Release-0.10.0/` with:
+   - `BlossomRally-0.10.0-mac.dmg`: a Universal app for Intel and Apple Silicon, with a drag-to-Applications window.
+   - `BlossomRally-0.10.0-windows.zip`: contains `BlossomRally.exe` plus its data folder (portable, no install).
 
 Single-platform builds are also in the menu: **Build macOS DMG**, **Build Windows EXE**.
 
@@ -27,10 +27,10 @@ The workflow is in `.github/workflows/build-game.yml`. Set it up once:
    - `UNITY_LICENSE`: the whole text of `/Library/Application Support/Unity/Unity_lic.ulf` from your Mac
      (open it in TextEdit and copy everything). A Unity Personal licence works.
 2. Go to **Actions → Build tester release → Run workflow**. After about 30–60 minutes the run's **Artifacts** contain:
-   - `BlossomRally-mac-dmg`: `BlossomRally-0.9.1-mac.dmg`
-   - `BlossomRally-windows`: `BlossomRally-Setup-0.9.1.exe` (installer with Start-menu and desktop shortcuts)
-     and `BlossomRally-0.9.1-windows.zip`
-3. To make a public download page, push a tag: `git tag v0.9.1 && git push origin v0.9.1`.
+   - `BlossomRally-mac-dmg`: `BlossomRally-0.10.0-mac.dmg`
+   - `BlossomRally-windows`: `BlossomRally-Setup-0.10.0.exe` (installer with Start-menu and desktop shortcuts)
+     and `BlossomRally-0.10.0-windows.zip`
+3. To make a public download page, push a tag: `git tag v0.10.0 && git push origin v0.10.0`.
    This creates a **GitHub Release (pre-release)** with all three files attached. Link to those files from your landing page.
 
 The cloud build uses the Unity version in `UnityProject/ProjectSettings/ProjectVersion.txt`.

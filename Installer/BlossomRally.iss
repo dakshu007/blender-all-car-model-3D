@@ -1,7 +1,7 @@
 ; Inno Setup script - Windows installer (BlossomRally-Setup-<version>.exe) for the tester build.
-; Used by .github/workflows/build-game.yml:  iscc /DAppVersion=0.9.1 /DSourceDir=<folder with BlossomRally.exe> BlossomRally.iss
+; Used by .github/workflows/build-game.yml:  iscc /DAppVersion=0.10.0 /DSourceDir=<folder with BlossomRally.exe> BlossomRally.iss
 #ifndef AppVersion
-  #define AppVersion "0.9.1"
+  #define AppVersion "0.10.0"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\UnityProject\Builds\ci\win"
