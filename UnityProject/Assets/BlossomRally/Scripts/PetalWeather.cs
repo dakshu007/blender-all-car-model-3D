@@ -31,10 +31,12 @@ namespace BlossomRally
             if (petals != null) ApplyLevel();
         }
 
+        float petalRegional = 1f;
+
         void ApplyLevel()
         {
             var em = petals.emission;
-            em.rateOverTime = Rates[level];
+            em.rateOverTime = Rates[level] * petalRegional;
             var main = petals.main;
             main.maxParticles = level == 2 ? 9000 : 4000;
         }
@@ -47,6 +49,13 @@ namespace BlossomRally
             if (f.sqrMagnitude < 0.01f) f = Vector3.forward;
             f.Normalize();
             petals.transform.position = follow.position + f * 22f + Vector3.up * 16f;
+            float regional = RegionRuntime.PetalAmount;
+            if (Mathf.Abs(regional - petalRegional) > 0.02f)
+            {
+                petalRegional = regional;
+                var pem = petals.emission;
+                pem.rateOverTime = Rates[level] * regional;
+            }
             mist.transform.position = follow.position + f * 60f + Vector3.up * 3f;
             // mist amount follows the weather preset (none when fog is off)
             if (Mathf.Abs(Atmosphere.MistRate - mistRate) > 0.05f)

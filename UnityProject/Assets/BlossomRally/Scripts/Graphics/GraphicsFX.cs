@@ -17,7 +17,7 @@ namespace BlossomRally
         static bool registered, loaded, enhanced = true;
 
         /// <summary>Camera far clip needed for the horizon mountains (CameraRig sets 1100).</summary>
-        public const float FarClip = 2600f;
+        public const float FarClip = 3200f;
 
         /// <summary>Master switch for the whole graphics upgrade (saved). Off = the previous look.</summary>
         public static bool Enhanced
@@ -141,7 +141,7 @@ namespace BlossomRally
             clipTimer = 1f;
             var cam = Camera.main;
             if (cam == null) return;
-            float want = GraphicsFX.Enhanced ? GraphicsFX.FarClip : 1100f;
+            float want = GraphicsFX.Enhanced ? GraphicsFX.FarClip : 1500f;
             if (GraphicsFX.Enhanced ? cam.farClipPlane < want : cam.farClipPlane > want + 1f) cam.farClipPlane = want;
         }
 

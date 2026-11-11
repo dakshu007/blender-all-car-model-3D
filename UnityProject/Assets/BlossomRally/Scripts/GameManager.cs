@@ -157,6 +157,8 @@ namespace BlossomRally
             pauseMenu.Add("Resume", () => SetPaused(false));
             pauseMenu.Add("Restart event", () => { SetPaused(false); stages.Restart(); }, null, null, () => stages != null && stages.Running);
             pauseMenu.Add("Quit event", () => { SetPaused(false); stages.Abort(); }, null, null, () => stages != null && stages.Running);
+            pauseMenu.Add("Fast travel", () => { SetPaused(false); FastTravel(TravelOrder[(travelRegion % 6 + 6) % 6]); }, () => TravelName(travelRegion),
+                          d => travelRegion = (travelRegion + d + 6) % 6, () => stages == null || !stages.Running);
             pauseMenu.Add("Weather", null, () => atmosphere.Current.name, d => atmosphere.SetWeather(atmosphere.WeatherIndex + d));
             pauseMenu.Add("Time of day", null, () => atmosphere.CurrentTime.name, d => atmosphere.SetTimeOfDay(atmosphere.TimeIndex + d));
             pauseMenu.Add("Petals", null, () => PetalNames[petals.level], d => petals.SetLevel(petals.level + d));
@@ -180,6 +182,36 @@ namespace BlossomRally
                 eventMenu.Add(stages.EventNames[i], () => { pendingEvent = idx; EnterSelect(); }, () => stages.EventDescription(idx));
             }
             eventMenu.Add("Back", () => activeTitleMenu = titleMenu);
+        }
+
+        int travelRegion;
+
+        static readonly RegionId[] TravelOrder = { RegionId.Valley, RegionId.City, RegionId.Coast, RegionId.Mountains, RegionId.Snow, RegionId.Canyon };
+
+        string TravelName(int i)
+        {
+            var id = TravelOrder[(i % 6 + 6) % 6];
+            var reg = world != null && world.Field != null ? world.Field.RegionOf(id) : null;
+            return reg != null ? reg.Name : id.ToString();
+        }
+
+        /// <summary>Put the car on a road in another region (pause menu).</summary>
+        public void FastTravel(RegionId id)
+        {
+            if (car == null || world == null || world.Field == null) return;
+            var reg = world.Field.RegionOf(id);
+            if (reg == null) return;
+            Vector3 p; Quaternion r;
+            if (id == RegionId.Valley) { p = world.SpawnPosition; r = world.SpawnRotation; }
+            else
+            {
+                Vector3 sp = reg.SpawnPoint;
+                Vector3 fwd = Quaternion.Euler(0f, reg.SpawnYaw, 0f) * Vector3.forward;
+                if (!world.RespawnPoint(sp, fwd, out p, out r)) return;
+            }
+            RegionRuntime.ShowAll(false);
+            TeleportCar(p, r);
+            Toast("Fast travel - " + reg.Name);
         }
 
         void SetPaused(bool p)
@@ -239,7 +271,7 @@ namespace BlossomRally
                 stages.StartEvent(pendingEvent);
                 pendingEvent = -1;
             }
-            else Toast(CarCatalog.Cars[carIndex].name + " - enjoy the valley!");
+            else Toast(CarCatalog.Cars[carIndex].name + " - six regions to explore. Fast travel is in the pause menu.");
         }
 
         void SpawnCar(int index, Vector3 pos, Quaternion rot)

@@ -37,7 +37,16 @@ namespace BlossomRally
         Vector2 drift;
         float colourTimer;
         int puffCount;
-        const int MaxPuffClouds = 56;
+        const int MaxPuffClouds = 88;
+
+        // the world is a 3 x 2 km rectangle centred at (0, 500): rings are rounded rectangles around it
+        static readonly Vector2 WorldC = new Vector2(0f, 500f);
+        const float ExtraX = 980f, ExtraZ = 480f;
+
+        static Vector3 RingPoint(float rad, float ang, float y)
+        {
+            return new Vector3(WorldC.x + Mathf.Cos(ang) * (rad + ExtraX), y, WorldC.y + Mathf.Sin(ang) * (rad + ExtraZ));
+        }
 
         static float SuperRadius(float r, float p, float ang)
         {
@@ -100,9 +109,8 @@ namespace BlossomRally
                     h = Mathf.Max(h, pH[i] * bump + def.hMin * 0.2f);
                 }
                 float rad = SuperRadius(def.radius, def.superP, ang) * (1f + 0.03f * Mathf.Sin(ang * 5f + phase));
-                float x = Mathf.Cos(ang) * rad, z = Mathf.Sin(ang) * rad;
-                verts[s * 2] = new Vector3(x, -30f, z);
-                verts[s * 2 + 1] = new Vector3(x, h, z);
+                verts[s * 2] = RingPoint(rad, ang, -30f);
+                verts[s * 2 + 1] = RingPoint(rad, ang, h);
                 uvs[s * 2] = new Vector2(layer, 0f);
                 uvs[s * 2 + 1] = new Vector2(layer, 1f);
                 if (s < Segments)
@@ -146,7 +154,7 @@ namespace BlossomRally
                 for (int r = 0; r < ys.Length; r++)
                 {
                     float y = ys[r] + 18f * Mathf.Sin(ang * 3f + r) * (r == 1 ? 1f : 0.5f);
-                    verts[s * ys.Length + r] = new Vector3(Mathf.Cos(ang) * rad, y, Mathf.Sin(ang) * rad);
+                    verts[s * ys.Length + r] = RingPoint(rad, ang, y);
                     uvs[s * ys.Length + r] = new Vector2(s / (float)seg * 6f, r / (float)(ys.Length - 1));
                 }
                 if (s < seg)
@@ -183,7 +191,7 @@ namespace BlossomRally
             var tris = new List<int>();
             for (int c = 0; c < MaxPuffClouds; c++)
             {
-                Vector3 centre = new Vector3(((float)rng.NextDouble() * 2f - 1f) * 1100f, 175f + (float)rng.NextDouble() * 90f, ((float)rng.NextDouble() * 2f - 1f) * 1100f);
+                Vector3 centre = new Vector3(((float)rng.NextDouble() * 2f - 1f) * 1750f, 205f + (float)rng.NextDouble() * 110f, WorldC.y + ((float)rng.NextDouble() * 2f - 1f) * 1250f);
                 float size = 55f + (float)rng.NextDouble() * 70f;
                 int puffs = 3 + rng.Next(3);
                 float idx = (c + 0.5f) / MaxPuffClouds;
@@ -227,7 +235,7 @@ namespace BlossomRally
             int rings = q < 0 ? 0 : (q == 0 ? 3 : (q == 1 ? 4 : 5));
             for (int i = 0; i < ringRenderers.Count; i++) if (ringRenderers[i] != null) ringRenderers[i].enabled = i < rings;
             if (bandRenderer != null) bandRenderer.enabled = q >= 0;
-            puffCount = q < 1 ? 0 : (q == 1 ? 20 : (q == 2 ? 36 : MaxPuffClouds));
+            puffCount = q < 1 ? 0 : (q == 1 ? 32 : (q == 2 ? 58 : MaxPuffClouds));
             if (puffRenderer != null) puffRenderer.enabled = puffCount > 0;
         }
 

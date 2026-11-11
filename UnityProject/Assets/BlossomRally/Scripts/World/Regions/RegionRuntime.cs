@@ -19,6 +19,23 @@ namespace BlossomRally
 
         public const float StreamDistance = 720f;
 
+        /// <summary>How much of the global rain is shown at the camera (snow region snows instead, the desert stays dry).</summary>
+        public static float RainVisual
+        {
+            get { return Mathf.Clamp01(1f - presence[(int)RegionId.Snow] - 0.85f * presence[(int)RegionId.Canyon]); }
+        }
+
+        /// <summary>How many cherry petals drift at the camera (the valley is full of blossom; other regions have little or none).</summary>
+        public static float PetalAmount
+        {
+            get
+            {
+                if (Instance == null) return 1f;
+                return Mathf.Clamp01(presence[(int)RegionId.Valley] + 0.45f * presence[(int)RegionId.Coast]
+                                     + 0.35f * presence[(int)RegionId.Mountains] + 0.25f * presence[(int)RegionId.City]);
+            }
+        }
+
         WorldBuilder world;
         Region[] regions;
         bool[] active;
@@ -38,6 +55,20 @@ namespace BlossomRally
             for (int i = 0; i < regs.Length; i++) rt.active[i] = true;
             Instance = rt;
             return rt;
+        }
+
+        /// <summary>Temporarily activate every region's content (map capture); false resumes streaming.</summary>
+        public static void ShowAll(bool all)
+        {
+            var rt = Instance;
+            if (rt == null || rt.regions == null) return;
+            for (int i = 0; i < rt.regions.Length; i++)
+            {
+                var r = rt.regions[i];
+                if (r == null || r.Context == null || r.Context.Root == null) continue;
+                if (all) { r.Context.Root.gameObject.SetActive(true); rt.active[i] = true; }
+            }
+            if (!all) { rt.first = true; rt.streamT = 0f; }
         }
 
         static float RectDistance(Rect r, Vector2 p)

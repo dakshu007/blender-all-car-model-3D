@@ -118,8 +118,22 @@ namespace BlossomRally
                 wl = Mathf.Max(wl, Mathf.Clamp01((40f - dr) / 25f) * 0.6f);
             }
             float wp = Mathf.Clamp01((cam.y - 22f) / 25f) * Mathf.Clamp01((220f - Vector2.Distance(p, MapData.MountainCenter)) / 80f);
+            // outside the valley the valley's own sub-regions fade out and each region's grade takes over
+            var rw = new float[6];
+            WorldLayout.Weights(p, rw);
+            float inValley = rw[(int)RegionId.Valley];
+            wv *= inValley; wb *= inValley; wt *= inValley; wl *= inValley; wp *= inValley;
             float wsum = 1f;
             g.Add(Grade.Identity, 1f);
+            if (world != null && world.Field != null)
+                for (int i = 0; i < 6; i++)
+                {
+                    if (i == (int)RegionId.Valley || rw[i] < 1e-3f) continue;
+                    var reg = world.Field.regions[i];
+                    if (reg == null) continue;
+                    float kr = rw[i] * 1.6f;
+                    g.Add(reg.Grade, kr); wsum += kr;
+                }
             g.Add(Grade.Village, wv * 1.6f); wsum += wv * 1.6f;
             g.Add(Grade.Bamboo, wb * 1.6f); wsum += wb * 1.6f;
             g.Add(Grade.Terraces, wt * 1.2f); wsum += wt * 1.2f;

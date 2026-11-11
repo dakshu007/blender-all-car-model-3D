@@ -52,7 +52,10 @@ namespace BlossomRally
 
         // view (world metres)
         Vector2 viewC = Vector2.zero, panOffset;
-        float viewSize = 1000f, zoomMul = 1f;
+        // the map covers the whole six-region world: a square of MapSize metres centred on MapC
+        static readonly Vector2 MapC = new Vector2(0f, 500f);
+        const float MapSize = 3000f;
+        float viewSize = MapSize, zoomMul = 1f;
         bool overview;
         Rect mapRect, listRect;
         Vector2 dragStart, lastMouse;
@@ -119,8 +122,8 @@ namespace BlossomRally
             overview = false;
             zoomMul = 1f;
             panOffset = Vector2.zero;
-            viewC = Vector2.zero;
-            viewSize = 1000f;
+            viewC = MapC;
+            viewSize = MapSize;
             selectTime = Time.unscaledTime + 0.45f;    // trace starts once the scroll has unrolled
             dragging = false;
             UI.Sound("Whoosh");
@@ -199,27 +202,27 @@ namespace BlossomRally
             yield return null;
             yield return null;
             if (world == null) { rendering = false; yield break; }
-            int res = GameSettings.Quality >= 2 ? 2048 : 1024;
+            int res = GameSettings.Quality >= 2 ? 3072 : 2048;
             Color32[] src = null;
             try { src = Capture(res); }
             catch (System.Exception e) { Debug.LogException(e); src = null; }
             yield return null;
 
             // terrain heights + water on a coarse grid (main thread: WorldBuilder isn't thread-safe to call)
-            const int G = 192;
+            const int G = 384;
             var hgrid = new float[G * G];
             var wgrid = new float[G * G];
             for (int j = 0; j < G; j++)
             {
                 for (int i = 0; i < G; i++)
                 {
-                    float x = -500f + (i + 0.5f) / G * 1000f, z = -500f + (j + 0.5f) / G * 1000f;
+                    float x = MapC.x - MapSize * 0.5f + (i + 0.5f) / G * MapSize, z = MapC.y - MapSize * 0.5f + (j + 0.5f) / G * MapSize;
                     hgrid[j * G + i] = world.TerrainHeight(x, z);
                     var p = new Vector2(x, z);
                     float wd = Mathf.Min(world.RiverDistance(p) - 7f, (MapData.LakeK(p) - 1f) * 30f);
                     wgrid[j * G + i] = Mathf.Clamp01(1f - wd / 4f);
                 }
-                if ((j & 31) == 31) yield return null;
+                if ((j & 15) == 15) yield return null;
             }
             if (src != null && !LooksValid(src)) src = null;
 
@@ -260,11 +263,11 @@ namespace BlossomRally
             var cam = go.AddComponent<Camera>();
             cam.enabled = false;
             cam.orthographic = true;
-            cam.orthographicSize = 500f;
+            cam.orthographicSize = MapSize * 0.5f;
             cam.aspect = 1f;
-            cam.transform.SetPositionAndRotation(new Vector3(0f, 320f, 0f), Quaternion.Euler(90f, 0f, 0f));
+            cam.transform.SetPositionAndRotation(new Vector3(MapC.x, 900f, MapC.y), Quaternion.Euler(90f, 0f, 0f));
             cam.nearClipPlane = 1f;
-            cam.farClipPlane = 700f;
+            cam.farClipPlane = 1400f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.62f, 0.70f, 0.52f);
             cam.cullingMask = ~((1 << WorldBuilder.LayerGrass) | (1 << CarExtras.CarLayer) | (1 << 31));
@@ -279,6 +282,7 @@ namespace BlossomRally
             Texture cookie = sun != null ? sun.cookie : null;
             var rt = RenderTexture.GetTemporary(res, res, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             var prevActive = RenderTexture.active;
+            RegionRuntime.ShowAll(true);
             try
             {
                 RenderSettings.fog = false;
@@ -296,6 +300,7 @@ namespace BlossomRally
             }
             finally
             {
+                RegionRuntime.ShowAll(false);
                 RenderTexture.active = prevActive;
                 cam.targetTexture = null;
                 RenderTexture.ReleaseTemporary(rt);
@@ -326,7 +331,7 @@ namespace BlossomRally
             var inkC = new Color(0.16f, 0.12f, 0.12f);
             var sepia = new Color(0.45f, 0.32f, 0.22f);
             float cell = res / (float)G;
-            float mPerPx = 1000f / res;
+            float mPerPx = MapSize / res;
             for (int y = r0; y < r1; y++)
             {
                 for (int x = 0; x < res; x++)
@@ -537,32 +542,32 @@ namespace BlossomRally
             float ts;
             if (routes.Count == 0 || overview || Time.unscaledTime < openTime + 0.35f)
             {
-                tc = Vector2.zero;
-                ts = 1000f;
+                tc = MapC;
+                ts = MapSize;
             }
             else
             {
                 var r = routes[selected];
                 tc = (r.min + r.max) * 0.5f;
                 Vector2 ext = r.max - r.min;
-                ts = Mathf.Clamp(Mathf.Max(ext.x, ext.y) * 1.45f + 60f, 260f, 1000f);
+                ts = Mathf.Clamp(Mathf.Max(ext.x, ext.y) * 1.45f + 60f, 260f, MapSize);
             }
-            ts = Mathf.Clamp(ts * zoomMul, 120f, 1000f);
+            ts = Mathf.Clamp(ts * zoomMul, 120f, MapSize);
             tc += panOffset;
             float half = ts * 0.5f;
-            tc.x = Mathf.Clamp(tc.x, -500f + half, 500f - half);
-            tc.y = Mathf.Clamp(tc.y, -500f + half, 500f - half);
+            tc.x = Mathf.Clamp(tc.x, MapC.x - MapSize * 0.5f + half, MapC.x + MapSize * 0.5f - half);
+            tc.y = Mathf.Clamp(tc.y, MapC.y - MapSize * 0.5f + half, MapC.y + MapSize * 0.5f - half);
             panOffset = tc - (overview || routes.Count == 0 ? Vector2.zero : (routes[selected].min + routes[selected].max) * 0.5f);
             if (overview || routes.Count == 0) panOffset = tc;
             // fly: zoom out a little while travelling between distant routes
             float travel = Vector2.Distance(viewC, tc);
             float k = MenuArt.Damp(dt, 3.2f);
             viewC = Vector2.Lerp(viewC, tc, k);
-            float wantSize = Mathf.Min(1000f, ts + travel * 0.6f);
+            float wantSize = Mathf.Min(MapSize, ts + travel * 0.6f);
             viewSize = Mathf.Exp(Mathf.Lerp(Mathf.Log(viewSize), Mathf.Log(wantSize), MenuArt.Damp(dt, 2.6f)));
             float h2 = viewSize * 0.5f;
-            viewC.x = Mathf.Clamp(viewC.x, -500f + h2, 500f - h2);
-            viewC.y = Mathf.Clamp(viewC.y, -500f + h2, 500f - h2);
+            viewC.x = Mathf.Clamp(viewC.x, MapC.x - MapSize * 0.5f + h2, MapC.x + MapSize * 0.5f - h2);
+            viewC.y = Mathf.Clamp(viewC.y, MapC.y - MapSize * 0.5f + h2, MapC.y + MapSize * 0.5f - h2);
         }
 
         Vector2 W2S(Vector2 w)
@@ -580,7 +585,7 @@ namespace BlossomRally
         void DrawMap(Rect clip, float s, float now)
         {
             // texture (or paper while it is being painted)
-            float u0 = (viewC.x - viewSize * 0.5f + 500f) / 1000f, v0 = (viewC.y - viewSize * 0.5f + 500f) / 1000f, us = viewSize / 1000f;
+            float u0 = (viewC.x - viewSize * 0.5f - (MapC.x - MapSize * 0.5f)) / MapSize, v0 = (viewC.y - viewSize * 0.5f - (MapC.y - MapSize * 0.5f)) / MapSize, us = viewSize / MapSize;
             float cropTop = (clip.yMin - mapRect.yMin) / mapRect.height, cropBot = (mapRect.yMax - clip.yMax) / mapRect.height;
             Rect uv = new Rect(u0, v0 + us * cropBot, us, us * (1f - cropTop - cropBot));
             if (mapTex != null)
@@ -730,6 +735,23 @@ namespace BlossomRally
             Label(clip, MapData.P(1330, 900), "Tea Terraces", s);
             Label(clip, MapData.P(200, 600), "Bamboo Forest", s);
             Label(clip, MapData.Gate + new Vector2(14f, 4f), "Paifang Gate", s);
+            // region names (big, shown when zoomed out)
+            if (viewSize > 1300f && world != null && world.Field != null)
+                foreach (var reg in world.Field.regions)
+                {
+                    if (reg == null) continue;
+                    Vector2 c = reg.Center + new Vector2(0f, 330f);
+                    Vector2 p = W2S(c);
+                    if (!clip.Contains(p)) continue;
+                    var gc = new GUIContent(reg.Name.ToUpperInvariant());
+                    var st = MenuArt.MidL;
+                    Vector2 sz = st.CalcSize(gc);
+                    Rect r = new Rect(p.x - sz.x * 0.5f, p.y - sz.y * 0.5f, sz.x + 6f, sz.y);
+                    MenuArt.Tex(new Rect(r.x - 16f * s, r.y - 6f * s, r.width + 32f * s, r.height + 12f * s), MenuArt.Glow, MenuArt.A(MenuArt.PaperCol, 0.85f));
+                    Color acc = reg.Accent;
+                    MenuArt.Fill(new Rect(r.x, r.yMax, r.width, 3f * s), new Color(acc.r * 0.8f, acc.g * 0.8f, acc.b * 0.8f, 0.9f));
+                    MenuArt.Text(r, reg.Name.ToUpperInvariant(), st, MenuArt.A(MenuArt.Ink, 0.92f), false);
+                }
         }
 
         void Label(Rect clip, Vector2 world, string text, float s)
@@ -766,7 +788,7 @@ namespace BlossomRally
         {
             float pxPerM = mapRect.width / viewSize;
             float target = 140f * s / pxPerM;
-            float[] steps = { 25f, 50f, 100f, 200f, 250f, 500f };
+            float[] steps = { 25f, 50f, 100f, 200f, 250f, 500f, 1000f };
             float m = steps[0];
             foreach (float st in steps) if (st <= target) m = st;
             float len = m * pxPerM;
@@ -787,9 +809,9 @@ namespace BlossomRally
             MenuArt.PaperFill(r, Color.white);
             MenuArt.Outline(r, Mathf.Max(1f, 2f * s), MenuArt.Ink);
             MenuArt.Outline(new Rect(r.x + 4f * s, r.y + 4f * s, r.width - 8f * s, r.height - 8f * s), 1f, MenuArt.A(MenuArt.Ink, 0.6f));
-            MenuArt.Text(new Rect(r.x + 12f * s, r.y + 8f * s, r.width - 46f * s, 30f * s), "BLOSSOM VALLEY", MenuArt.MidL, MenuArt.Ink, false);
+            MenuArt.Text(new Rect(r.x + 12f * s, r.y + 8f * s, r.width - 46f * s, 30f * s), "BLOSSOM RALLY", MenuArt.MidL, MenuArt.Ink, false);
             var st = MenuArt.Tiny;
-            MenuArt.Text(new Rect(r.x + 12f * s, r.y + 38f * s, r.width, 22f * s), "rally stages  ·  1 km × 1 km", st, MenuArt.A(MenuArt.Ink, 0.75f), false);
+            MenuArt.Text(new Rect(r.x + 12f * s, r.y + 38f * s, r.width, 22f * s), "six regions  ·  3 km × 2 km", st, MenuArt.A(MenuArt.Ink, 0.75f), false);
             MenuArt.Tex(new Rect(r.xMax - 36f * s, r.y + 10f * s, 26f * s, 26f * s), MenuArt.Seal, Color.white);
         }
 

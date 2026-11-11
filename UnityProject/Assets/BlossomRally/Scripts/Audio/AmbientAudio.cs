@@ -74,14 +74,20 @@ namespace BlossomRally
             float dt = Time.deltaTime;
             if (dt <= 0f) return;    // paused: AudioListener.pause silences these sources
             float sfx = GameSettings.SfxVolume;
-            float rainI = Mathf.Clamp01(Atmosphere.RainIntensity);
+            float rainI = Mathf.Clamp01(Atmosphere.RainIntensity) * RegionRuntime.RainVisual;
             float night = Mathf.Clamp01(Atmosphere.NightFactor);
             float gust = Mathf.Max(0f, Atmosphere.Gust);
+            // regions: high country is windy, snow and desert have few birds, the city has no crickets
+            float pSnow = RegionRuntime.Presence(RegionId.Snow), pMtn = RegionRuntime.Presence(RegionId.Mountains);
+            float pCanyon = RegionRuntime.Presence(RegionId.Canyon), pCity = RegionRuntime.Presence(RegionId.City);
+            float windy = 1f + 1.4f * pSnow + 0.6f * pMtn + 0.4f * pCanyon + 1.2f * pSnow * Mathf.Clamp01(Atmosphere.RainIntensity);
+            float birdsHere = Mathf.Clamp01(1f - 0.85f * pSnow - 0.7f * pCanyon - 0.55f * pCity);
+            float bugsHere = Mathf.Clamp01(1f - pSnow - 0.6f * pCity);
 
-            Smooth(wind, (0.035f + 0.075f * Mathf.Min(gust, 1.5f) + 0.03f * rainI) * sfx, dt, 1.5f);
+            Smooth(wind, (0.035f + 0.075f * Mathf.Min(gust, 1.5f) + 0.03f * rainI) * windy * sfx, dt, 1.5f);
             wind.pitch = 0.85f + 0.25f * Mathf.Min(gust, 1.5f);
             Smooth(rain, 0.3f * rainI * sfx, dt, 0.8f);
-            Smooth(crickets, 0.05f * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.35f, 0.85f, night)) * (1f - 0.75f * rainI) * sfx, dt, 0.5f);
+            Smooth(crickets, 0.05f * bugsHere * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.35f, 0.85f, night)) * (1f - 0.75f * rainI) * sfx, dt, 0.5f);
 
             // water: louder near the river / lake (global and very subtle when the world is unknown)
             waterCheck -= dt;
@@ -94,7 +100,7 @@ namespace BlossomRally
 
             // birdsong by day
             float day = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.2f, 0.6f, night));
-            float birdGain = day * (1f - 0.9f * rainI);
+            float birdGain = day * (1f - 0.9f * rainI) * birdsHere;
             if (Time.time >= nextBird)
             {
                 nextBird = Time.time + Random.Range(0.7f, 4.2f) / Mathf.Max(0.3f, birdGain);

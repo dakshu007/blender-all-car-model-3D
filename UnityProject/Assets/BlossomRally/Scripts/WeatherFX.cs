@@ -91,7 +91,7 @@ namespace BlossomRally
         void LateUpdate()
         {
             if (follow == null || rain == null) return;
-            float k = Atmosphere.RainIntensity;
+            float k = Atmosphere.RainIntensity * RegionRuntime.RainVisual;
             Vector3 f = follow.forward; f.y = 0f;
             if (f.sqrMagnitude < 0.01f) f = Vector3.forward;
             f.Normalize();
@@ -154,14 +154,14 @@ namespace BlossomRally
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
             float speed = gm.Car.SpeedKmh;
-            float rain = Atmosphere.RainIntensity;
+            float rain = Atmosphere.RainIntensity * RegionRuntime.RainVisual;
             // new raindrops
             if (rain > 0.01f && Random.value < rain * 45f * dt && drops.Count < 140)
                 drops.Add(new Drop { pos = new Vector2(Random.value, Random.value * 0.85f), size = Random.Range(0.008f, 0.022f), life = Random.Range(4f, 9f) });
             // petals hitting the glass while driving under the blossoms
             var pw = FindPetals();
             int level = pw != null ? pw.level : 1;
-            if (speed > 15f && Random.value < (0.08f + level * 0.12f) * dt * Mathf.Clamp01(speed / 60f) && drops.Count < 140)
+            if (speed > 15f && Random.value < (0.08f + level * 0.12f) * dt * Mathf.Clamp01(speed / 60f) * RegionRuntime.PetalAmount && drops.Count < 140)
                 drops.Add(new Drop { pos = new Vector2(Random.Range(0.1f, 0.9f), Random.Range(0.15f, 0.75f)), size = Random.Range(0.018f, 0.03f), life = Random.Range(3f, 7f), petal = true, rot = Random.Range(0f, 360f) });
             // wiper in the rain (cockpit view)
             if (rain > 0.05f && gm.Rig.mode == CamMode.Cockpit)

@@ -66,7 +66,7 @@ namespace BlossomRally
         {
             cam = GetComponent<Camera>();
             cam.nearClipPlane = 0.08f;
-            cam.farClipPlane = 1100f;
+            cam.farClipPlane = 1500f;
             cam.allowHDR = true;
             cam.allowMSAA = true;
             ApplyCullDistances();
