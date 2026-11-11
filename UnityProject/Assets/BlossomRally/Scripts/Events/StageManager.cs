@@ -79,7 +79,7 @@ namespace BlossomRally
         {
             get
             {
-                if (names == null)
+                if (names == null || names.Length != StageDef.All.Length)
                 {
                     names = new string[StageDef.All.Length];
                     for (int i = 0; i < names.Length; i++) names[i] = StageDef.All[i].name;

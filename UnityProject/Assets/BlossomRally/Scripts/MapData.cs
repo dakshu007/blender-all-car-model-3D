@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BlossomRally
 {
-    public enum Surface { Grass = 0, Asphalt = 1, Gravel = 2, Dirt = 3, Paving = 4 }
+    public enum Surface { Grass = 0, Asphalt = 1, Gravel = 2, Dirt = 3, Paving = 4, Snow = 5, Ice = 6, Sand = 7 }
 
     public class RoadDef
     {
@@ -15,6 +15,18 @@ namespace BlossomRally
         public float width;
         public bool closed;
         public Vector2[] points;   // world XZ control points
+        public float maxGrade = 0.10f;      // steepest allowed slope (heights are clamped to it, terrain is cut / filled)
+        public float cutWidth = 9f;         // terrain blends back from the road shoulder over this many metres
+        public bool fixedHeight;            // true: the road sits at exactly heightOffset (flat city streets, causeways)
+        public float heightOffset;          // added to the sampled terrain height (or the absolute height when fixedHeight)
+        public string texture;              // road texture override (Resources/Env/...), null = by surface
+        public Color tint = Color.white;    // texture tint (snow-dusted asphalt, red sand tracks, ...)
+        public bool lines = true;           // asphalt: white edge lines + dashed centre line
+        public RegionId region = RegionId.Valley;
+        public bool connector;              // a framework road that links two regions
+        /// <summary>Stretches (x = from, y = to, metres along the road) carried on a bridge: the terrain below is left
+        /// alone (water, gorge) and the owning region builds the deck / piers. The road surface stays drivable.</summary>
+        public List<Vector2> bridgeSpans;
         public RoadDef(string n, Surface s, float w, bool c, Vector2[] p) { name = n; surface = s; width = w; closed = c; points = p; }
     }
 

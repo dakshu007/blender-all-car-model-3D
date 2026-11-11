@@ -400,6 +400,8 @@ namespace BlossomRally
                     case Surface.Gravel: rough += 1f; break;
                     case Surface.Dirt: rough += 0.8f; break;
                     case Surface.Grass: rough += 0.35f; break;
+                    case Surface.Snow: rough += 0.3f; break;
+                    case Surface.Sand: rough += 0.5f; break;
                     case Surface.Paving: rough += 0.15f; break;
                 }
             }

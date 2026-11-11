@@ -354,6 +354,9 @@ namespace BlossomRally
                 case Surface.Paving: return new Color(0.96f, 0.93f, 0.92f);
                 case Surface.Gravel: return new Color(0.86f, 0.78f, 0.62f);
                 case Surface.Dirt: return new Color(0.66f, 0.52f, 0.38f);
+                case Surface.Snow: return new Color(0.97f, 0.98f, 1f);
+                case Surface.Ice: return new Color(0.90f, 0.95f, 1f);
+                case Surface.Sand: return new Color(0.90f, 0.70f, 0.50f);
                 default: return new Color(0.62f, 0.74f, 0.45f);
             }
         }
@@ -369,7 +372,7 @@ namespace BlossomRally
                 var ps = smoke[i];
                 ps.transform.position = w.grounded ? w.contact + Vector3.up * 0.25f : transform.position;
                 var em = ps.emission;
-                bool offRoad = w.surface == Surface.Grass || w.surface == Surface.Dirt || w.surface == Surface.Gravel;
+                bool offRoad = w.surface == Surface.Grass || w.surface == Surface.Dirt || w.surface == Surface.Gravel || w.surface == Surface.Snow || w.surface == Surface.Sand;
                 em.rateOverTime = amount * (offRoad ? 70f : 55f) + (offRoad && w.grounded && car.SpeedKmh > 30f ? 6f : 0f);
                 var main = ps.main;
                 main.startColor = SmokeColor(w.surface);

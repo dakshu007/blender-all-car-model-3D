@@ -42,6 +42,9 @@ namespace BlossomRally
         static readonly SurfaceGrip gravel  = new SurfaceGrip(0.84f, 11.0f, 0.16f, 1.24f, 0.028f, 0.010f, 0.08f);
         static readonly SurfaceGrip dirt    = new SurfaceGrip(0.76f, 12.0f, 0.18f, 1.20f, 0.032f, 0.014f, 0.22f);
         static readonly SurfaceGrip grass   = new SurfaceGrip(0.62f, 10.0f, 0.15f, 1.32f, 0.050f, 0.030f, 0.28f);
+        static readonly SurfaceGrip snow    = new SurfaceGrip(0.52f, 13.0f, 0.20f, 1.18f, 0.040f, 0.012f, 0.05f);
+        static readonly SurfaceGrip ice     = new SurfaceGrip(0.30f, 9.0f, 0.10f, 1.30f, 0.012f, 0.00f, 0.10f);
+        static readonly SurfaceGrip sand    = new SurfaceGrip(0.66f, 13.0f, 0.20f, 1.18f, 0.060f, 0.034f, 0.10f);
 
         public static SurfaceGrip For(Surface s)
         {
@@ -51,11 +54,14 @@ namespace BlossomRally
                 case Surface.Paving: return paving;
                 case Surface.Gravel: return gravel;
                 case Surface.Dirt: return dirt;
+                case Surface.Snow: return snow;
+                case Surface.Ice: return ice;
+                case Surface.Sand: return sand;
                 default: return grass;
             }
         }
 
-        public static bool Loose(Surface s) { return s == Surface.Gravel || s == Surface.Dirt || s == Surface.Grass; }
+        public static bool Loose(Surface s) { return s == Surface.Gravel || s == Surface.Dirt || s == Surface.Grass || s == Surface.Snow || s == Surface.Sand; }
 
         /// <summary>Normalised force for normalised slip s (1 at s = 1).</summary>
         public static float Curve(float s, in SurfaceGrip g)

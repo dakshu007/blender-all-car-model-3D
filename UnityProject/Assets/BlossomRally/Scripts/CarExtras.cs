@@ -247,6 +247,8 @@ namespace BlossomRally
                         case Surface.Gravel: rate = 0.010f; c = new Color(0.66f, 0.58f, 0.45f); break;
                         case Surface.Dirt: rate = 0.016f; c = new Color(0.42f, 0.32f, 0.22f); break;
                         case Surface.Grass: rate = 0.006f; c = new Color(0.36f, 0.36f, 0.20f); break;
+                        case Surface.Sand: rate = 0.012f; c = new Color(0.78f, 0.56f, 0.38f); break;
+                        case Surface.Snow: rate = 0.004f; c = new Color(0.86f, 0.88f, 0.92f); break;
                         default: rate = wet > 0.3f ? 0.002f : 0f; break;
                     }
                     if (wet > 0.3f && (s == Surface.Dirt || s == Surface.Grass || s == Surface.Gravel)) { rate *= 1.8f; c *= 0.7f; c.a = 1f; }
@@ -291,6 +293,8 @@ namespace BlossomRally
                     case Surface.Gravel: lo = 0.10f * k; hi = 0.06f * k; break;
                     case Surface.Dirt: lo = 0.12f * k; hi = 0.03f * k; break;
                     case Surface.Grass: lo = 0.08f * k; hi = 0.02f * k; break;
+                    case Surface.Snow: lo = 0.06f * k; hi = 0.02f * k; break;
+                    case Surface.Sand: lo = 0.09f * k; hi = 0.03f * k; break;
                 }
                 hi = Mathf.Max(hi, car.DriftIntensity * 0.18f);
                 if (lo > 0.01f || hi > 0.01f) InputReader.RumbleContinuous(lo, hi);

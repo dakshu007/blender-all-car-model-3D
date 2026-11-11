@@ -110,14 +110,14 @@ namespace BlossomRally
         public int Vertices { get; private set; }
         public int Triangles { get; private set; }
 
-        /// <summary>Three chunks per axis across the 1 km valley (keeps draw calls low but still frustum culls).</summary>
-        static int Cell(float x) { return Mathf.Clamp(Mathf.FloorToInt((x + 500f) / 334f), 0, 2); }
+        /// <summary>World grid of 334 m chunks (three per axis across each 1 km region): few draw calls, still frustum culled.</summary>
+        static int Cell(float x) { return Mathf.Clamp(Mathf.FloorToInt((x + 1840f) / 334f), 0, 99); }
 
         public PropBucket Get(PK k, Vector3 at)
         {
             var inf = Info[(int)k];
             int cx = inf.chunked ? Cell(at.x) : 0, cz = inf.chunked ? Cell(at.z) : 0;
-            int key = (int)k * 100 + cx * 10 + cz;
+            int key = (int)k * 10000 + cx * 100 + cz;
             PropBucket b;
             if (!buckets.TryGetValue(key, out b))
             {

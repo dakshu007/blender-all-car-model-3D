@@ -258,6 +258,7 @@ namespace BlossomRally
         {
             readonly Rigidbody rb;
             static readonly Dictionary<Collider, Surface> surfaceCache = new Dictionary<Collider, Surface>();
+            static readonly HashSet<Collider> terrainCache = new HashSet<Collider>();
             const int Mask = ~((1 << CarExtras.CarLayer) | (1 << 2));     // not cars, not Ignore Raycast
 
             public UnityBody(Rigidbody r) { rb = r; }
@@ -281,15 +282,27 @@ namespace BlossomRally
                 hit.point = h.point;
                 hit.normal = h.normal;
                 hit.distance = h.distance;
-                hit.surface = SurfaceOf(h.collider);
+                hit.surface = SurfaceOf(h.collider, h.point);
                 return true;
             }
 
-            static Surface SurfaceOf(Collider c)
+            static Surface SurfaceOf(Collider c, Vector3 point)
             {
                 // keyed by the collider itself (GetInstanceID is a hard error in newer Unity 6)
                 Surface s;
+                if (terrainCache.Contains(c))
+                {
+                    var f = WorldField.Active;
+                    return f != null ? f.GroundSurface(point.x, point.z) : Surface.Grass;
+                }
                 if (surfaceCache.TryGetValue(c, out s)) return s;
+                if (c.GetComponent<TerrainSurface>() != null)
+                {
+                    if (terrainCache.Count > 4096) terrainCache.Clear();
+                    terrainCache.Add(c);
+                    var f = WorldField.Active;
+                    return f != null ? f.GroundSurface(point.x, point.z) : Surface.Grass;
+                }
                 var tag = c.GetComponent<SurfaceTag>();
                 if (tag == null && c.transform.parent != null) tag = c.transform.parent.GetComponent<SurfaceTag>();
                 s = tag != null ? tag.surface : Surface.Grass;
