@@ -140,7 +140,10 @@ namespace BlossomRally
             return regions[(int)WorldLayout.At(p)] ?? regions[0];
         }
 
-        public float BaseHeight(float x, float z)
+        public float BaseHeight(float x, float z) { return PassCorridor(new Vector2(x, z), NaturalHeight(x, z)); }
+
+        /// <summary>Blended region terrain + ridges + rim + region shaping, before the pass corridors.</summary>
+        public float NaturalHeight(float x, float z)
         {
             Vector2 p = new Vector2(x, z);
             var w = hbuf;
@@ -158,6 +161,56 @@ namespace BlossomRally
             {
                 if (w[i] < 1e-4f || regions[i] == null) continue;
                 h = regions[i].Shape(x, z, h, w[i]);
+            }
+            return h;
+        }
+
+        // ------------------------------------------------------------------ connector corridors
+        // Each cross-border road runs through a smooth valley floor that ramps evenly between the two regions'
+        // natural heights at its ends, so passes read as saddles instead of trenches cut into a ridge.
+        float[] connLen, connH0, connH1;
+
+        void PrepareCorridors()
+        {
+            var cs = WorldLayout.Connectors;
+            connLen = new float[cs.Length]; connH0 = new float[cs.Length]; connH1 = new float[cs.Length];
+            for (int c = 0; c < cs.Length; c++)
+            {
+                var pts = cs[c].points;
+                float L = 0f;
+                for (int i = 0; i < pts.Length - 1; i++) L += Vector2.Distance(pts[i], pts[i + 1]);
+                connLen[c] = L;
+                // ends: the full natural ground (regions often shape their gateways in Shape())
+                Vector2 p0 = pts[0], p1 = pts[pts.Length - 1];
+                connH0[c] = NaturalHeight(p0.x, p0.y);
+                connH1[c] = NaturalHeight(p1.x, p1.y);
+            }
+        }
+
+        float PassCorridor(Vector2 p, float h)
+        {
+            if (connLen == null) PrepareCorridors();
+            var cs = WorldLayout.Connectors;
+            for (int c = 0; c < cs.Length; c++)
+            {
+                var pts = cs[c].points;
+                float best = 1e9f, along = 0f, acc = 0f;
+                for (int i = 0; i < pts.Length - 1; i++)
+                {
+                    float t;
+                    float seg = Vector2.Distance(pts[i], pts[i + 1]);
+                    float d = Spline.DistToSegment(p, pts[i], pts[i + 1], out t);
+                    if (d < best) { best = d; along = acc + t * seg; }
+                    acc += seg;
+                }
+                if (best >= 80f) continue;
+                float u = Mathf.Clamp01(along / Mathf.Max(1f, connLen[c]));
+                // an even ramp (the gentlest possible grade); near the gateways each region's own ground takes over
+                float floorH = Mathf.Lerp(connH0[c], connH1[c], u);
+                // the corridor only flattens in the middle of the link: near the gateways each region rules
+                float mid = WorldNoise.Smooth(0f, 0.18f, u) * (1f - WorldNoise.Smooth(0.82f, 1f, u));
+                float wgt = (1f - WorldNoise.Smooth(26f, 80f, best)) * mid;
+                if (wgt > 0f) h = Mathf.Lerp(h, floorH, wgt);
             }
             return h;
         }

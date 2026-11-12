@@ -157,6 +157,7 @@ namespace BlossomRally
                     Rng = new System.Random(7919 * ((int)r.Id + 3))
                 };
                 r.Context = ctx;
+                ctx.MakeMaterials();           // GlowMaterial / WaterMaterial are ready during Build
                 float t0 = Time.realtimeSinceStartup;
                 var it = r.Build(ctx);
                 while (true)

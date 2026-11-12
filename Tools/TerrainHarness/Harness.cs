@@ -47,17 +47,17 @@ public static class Harness
             var def = field.roads[r];
             if (only != null && def.region.ToString() != only && !(def.connector && (WorldLayout.Connectors.Any(c => c.name == def.name && (c.a.ToString() == only || c.b.ToString() == only))))) continue;
             var list = field.roadSamples[r];
-            float maxG = 0, maxCut = 0, maxFill = 0, minR = 1e9f, hMin = 1e9f, hMax = -1e9f;
+            float maxG = 0, maxCut = 0, maxFill = 0, minR = 1e9f, hMin = 1e9f, hMax = -1e9f; Vector2 gAt = Vector2.zero, cutAt = Vector2.zero;
             int n = list.Count;
             for (int i = 0; i < n; i++)
             {
                 var s = list[i];
                 hMin = Math.Min(hMin, s.height); hMax = Math.Max(hMax, s.height);
-                if (i > 0) { float d = Vector2.Distance(s.pos, list[i - 1].pos); if (d > 0.01f) maxG = Math.Max(maxG, Math.Abs(s.height - list[i - 1].height) / d); }
+                if (i > 0) { float d = Vector2.Distance(s.pos, list[i - 1].pos); if (d > 0.01f) { float g = Math.Abs(s.height - list[i - 1].height) / d; if (g > maxG) { maxG = g; gAt = s.pos; } } }
                 if (!s.bridge && !def.fixedHeight)
                 {
                     float nat = field.BaseHeight(s.pos.x, s.pos.y);
-                    maxCut = Math.Max(maxCut, nat - s.height);
+                    if (nat - s.height > maxCut) { maxCut = nat - s.height; cutAt = s.pos; }
                     maxFill = Math.Max(maxFill, s.height - nat);
                 }
                 if (i > 2 && i < n - 3)
@@ -69,7 +69,7 @@ public static class Harness
                 }
                 if (!WorldLayout.InPlayable(s.pos, 6f)) { if (!bad) Console.WriteLine($"  !! {def.name} leaves the playable area at {s.pos}"); bad = true; }
             }
-            Console.WriteLine($"{def.name,-38} {def.region,-10} {def.surface,-7} {list[n - 1].distance,7:F0}  {maxG * 100,6:F1}%  {maxCut,6:F1}  {maxFill,6:F1}  {minR,7:F1}  {hMin,6:F1}..{hMax,6:F1}");
+            Console.WriteLine($"{def.name,-38} {def.region,-10} {def.surface,-7} {list[n - 1].distance,7:F0}  {maxG * 100,6:F1}%  {maxCut,6:F1}  {maxFill,6:F1}  {minR,7:F1}  {hMin,6:F1}..{hMax,6:F1}" + (maxG > 0.12f || maxCut > 6f ? $"   [grade@{gAt} cut@{cutAt}]" : ""));
         }
 
         if (prof != null)

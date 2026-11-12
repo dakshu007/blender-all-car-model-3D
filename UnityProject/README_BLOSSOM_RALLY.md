@@ -101,6 +101,17 @@ Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seco
 
 ## What's new in this version
 
+**0.10.0 (Open World update).** Blossom Valley is now one of **six regions** in a single **3 × 2 km world**,
+joined by mountain-pass roads:
+* **Jade Harbour City**: skyline towers, neon, harbour bridge and container port.
+* **Lotus Coast**: open sea, beaches, lighthouse and fishing harbour.
+* **Cloud Peak Mountains**: granite pillars, pine forests, cloud sea and monastery.
+* **Frost Summit**: snow plateau, frozen-lake ice circuit and blizzards.
+* **Red Canyon**: rainbow rocks, dunes, oasis and Silk Road ruins.
+
+The update also adds 12 new rally stages, snow, ice and sand surfaces, **Pause → Fast travel**, a world map, region
+banners, and regional weather and ambience. See `Documentation/OPEN_WORLD.md`.
+
 **0.9.1 (Thursday update).**
 * **Clean corners.** Every bend is eased to a safe radius, so hairpins no longer fold over
   themselves, and the white edge lines stay smooth all the way round.
