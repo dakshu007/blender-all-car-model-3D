@@ -53,7 +53,7 @@ namespace BlossomRally
 
             var hl = new GameObject("Headlights");
             hl.transform.SetParent(transform, false);
-            hl.transform.localPosition = new Vector3(0f, 0.75f, extents.z - 0.2f);
+            hl.transform.localPosition = new Vector3(0f, 0.75f + car.FrameExtra * 0.6f, extents.z - 0.2f);   // higher on SUVs
             hl.transform.localRotation = Quaternion.Euler(7f, 0f, 0f);
             headlight = hl.AddComponent<Light>();
             headlight.type = LightType.Spot;

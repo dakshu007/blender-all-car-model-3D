@@ -1,0 +1,357 @@
+{
+  "car_id": "CAR-030",
+  "display_name": "Lumen Arclight",
+  "tool": "build_generic.py",
+  "generated_utc": "2026-11-12T09:23:51+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "saved_file": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-030/Working/CAR-030_Working_v001.blend",
+  "reference_class": "original: futuristic low electric GT coupe with neon light strips and aero wheels",
+  "design_to_final_offset": [
+    0.0,
+    0.0177,
+    0.0
+  ],
+  "bbox": {
+    "min": [
+      -1.0238338708877563,
+      -2.5473155975341797,
+      3.3915042877197266e-05
+    ],
+    "max": [
+      1.0238338708877563,
+      2.5473155975341797,
+      1.2400000095367432
+    ],
+    "size": [
+      2.0476677417755127,
+      5.094631195068359,
+      1.2399661540985107
+    ],
+    "center": [
+      0.0,
+      0.0,
+      0.6200169324874878
+    ]
+  },
+  "total_tris": 20076,
+  "wheels": {
+    "FL": {
+      "blender": [
+        -0.83,
+        1.4323,
+        0.35
+      ],
+      "unity": [
+        -0.83,
+        0.35,
+        1.43232
+      ]
+    },
+    "FR": {
+      "blender": [
+        0.83,
+        1.4323,
+        0.35
+      ],
+      "unity": [
+        0.83,
+        0.35,
+        1.43232
+      ]
+    },
+    "RL": {
+      "blender": [
+        -0.83,
+        -1.4177,
+        0.35
+      ],
+      "unity": [
+        -0.83,
+        0.35,
+        -1.41768
+      ]
+    },
+    "RR": {
+      "blender": [
+        0.83,
+        -1.4177,
+        0.35
+      ],
+      "unity": [
+        0.83,
+        0.35,
+        -1.41768
+      ]
+    }
+  },
+  "wheel_radius": 0.35,
+  "tire_width": 0.28,
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-030_Accent",
+    "M_CAR-030_Paint",
+    "M_CAR-030_Plate",
+    "M_CAR-030_Rim",
+    "M_CAR-030_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Head",
+    "M_Light_Neon",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "objects": [
+    {
+      "name": "CAR-030_Accessories",
+      "type": "MESH",
+      "parent": "CAR-030_Exterior",
+      "tris": 352,
+      "materials": [
+        "M_Light_Neon",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-030_Body",
+      "type": "MESH",
+      "parent": "CAR-030_Root",
+      "tris": 3774,
+      "materials": [
+        "M_CAR-030_Paint",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-030_Bumper_Front",
+      "type": "MESH",
+      "parent": "CAR-030_Exterior",
+      "tris": 328,
+      "materials": [
+        "M_CAR-030_Paint",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-030_Bumper_Rear",
+      "type": "MESH",
+      "parent": "CAR-030_Exterior",
+      "tris": 328,
+      "materials": [
+        "M_CAR-030_Paint",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-030_Exterior",
+      "type": "EMPTY",
+      "parent": "CAR-030_Root",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-030_Glass",
+      "type": "MESH",
+      "parent": "CAR-030_Root",
+      "tris": 12,
+      "materials": [
+        "M_Glass_Tint"
+      ]
+    },
+    {
+      "name": "CAR-030_Interior",
+      "type": "MESH",
+      "parent": "CAR-030_Root",
+      "tris": 178,
+      "materials": [
+        "M_Interior_Dark",
+        "M_Trim_Black",
+        "M_CAR-030_Seat"
+      ]
+    },
+    {
+      "name": "CAR-030_Lights",
+      "type": "MESH",
+      "parent": "CAR-030_Root",
+      "tris": 352,
+      "materials": [
+        "M_Trim_Black",
+        "M_Light_Neon",
+        "M_Light_Head",
+        "M_Light_Tail"
+      ]
+    },
+    {
+      "name": "CAR-030_Mirrors",
+      "type": "MESH",
+      "parent": "CAR-030_Exterior",
+      "tris": 872,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome"
+      ]
+    },
+    {
+      "name": "CAR-030_Root",
+      "type": "EMPTY",
+      "parent": null,
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-030_Spoiler",
+      "type": "MESH",
+      "parent": "CAR-030_Exterior",
+      "tris": 32,
+      "materials": [
+        "M_CAR-030_Paint"
+      ]
+    },
+    {
+      "name": "CAR-030_SteeringWheel",
+      "type": "MESH",
+      "parent": "CAR-030_Interior",
+      "tris": 488,
+      "materials": [
+        "M_Trim_Black",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "CAR-030_Trim",
+      "type": "MESH",
+      "parent": "CAR-030_Exterior",
+      "tris": 432,
+      "materials": [
+        "M_Trim_Black",
+        "M_CAR-030_Accent",
+        "M_CAR-030_Plate"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_FL",
+      "type": "EMPTY",
+      "parent": "CAR-030_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-030_Wheel_FL_Rim",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_FL",
+      "tris": 1632,
+      "materials": [
+        "M_CAR-030_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_FL_Tire",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_FL",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_FR",
+      "type": "EMPTY",
+      "parent": "CAR-030_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-030_Wheel_FR_Rim",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_FR",
+      "tris": 1632,
+      "materials": [
+        "M_CAR-030_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_FR_Tire",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_FR",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_RL",
+      "type": "EMPTY",
+      "parent": "CAR-030_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-030_Wheel_RL_Rim",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_RL",
+      "tris": 1632,
+      "materials": [
+        "M_CAR-030_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_RL_Tire",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_RL",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_RR",
+      "type": "EMPTY",
+      "parent": "CAR-030_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-030_Wheel_RR_Rim",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_RR",
+      "tris": 1632,
+      "materials": [
+        "M_CAR-030_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheel_RR_Tire",
+      "type": "MESH",
+      "parent": "CAR-030_Wheel_RR",
+      "tris": 1600,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-030_Wheels",
+      "type": "EMPTY",
+      "parent": "CAR-030_Root",
+      "tris": 0,
+      "materials": []
+    }
+  ]
+}

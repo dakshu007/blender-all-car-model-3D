@@ -50,7 +50,7 @@ namespace BlossomRally
         AudioSource[] surface = new AudioSource[4];
         bool started;
 
-        bool groupB, classic;
+        bool groupB, classic, electric;
         float classPitch = 1f, popChance = 1f;
         float load, spool, gearCut, cutTimer;
         int lastGear = 1;
@@ -63,11 +63,13 @@ namespace BlossomRally
         void Start()
         {
             car = GetComponent<ArcadeCar>();
-            string cls = car.spec != null && car.spec.carClass != null ? car.spec.carClass : "Group 4";
+            // sound family: Group B / Group 4 / Classic RWD, or Electric (CarCatalog.SoundFor maps the newer classes)
+            string cls = car.spec != null && car.spec.carClass != null ? car.spec.SoundClass : "Group 4";
             groupB = cls == "Group B";
             classic = cls == "Classic RWD";
-            classPitch = groupB ? 1.04f : classic ? 0.9f : 1f;
-            popChance = groupB ? 1.3f : classic ? 0.45f : 1f;
+            electric = cls == "Electric";
+            classPitch = groupB ? 1.04f : classic ? 0.9f : electric ? 0.62f : 1f;
+            popChance = groupB ? 1.3f : classic ? 0.45f : electric ? 0f : 1f;
 
             var clips = EngineClips(cls);
             EnsureSharedClips();
@@ -81,7 +83,7 @@ namespace BlossomRally
             // the procedural layers stay underneath (quieter) for throttle load and texture
             string key = groupB ? "GroupB" : classic ? "Classic" : "Group4";
             AudioClip lo = null, hi = null;
-            try
+            if (!electric) try
             {
                 lo = Resources.Load<AudioClip>(EngineFolder + key + "_Low");
                 hi = Resources.Load<AudioClip>(EngineFolder + key + "_High");
@@ -145,7 +147,7 @@ namespace BlossomRally
             int gear = car.Gear;
             if (gear != lastGear)
             {
-                if (gear > lastGear && thr > 0.4f)
+                if (gear > lastGear && thr > 0.4f && !electric)
                 {
                     cutTimer = 0.09f;
                     PlayOne(shiftClip, 0.42f * sfx, Random.Range(0.92f, 1.08f));
@@ -300,6 +302,27 @@ namespace BlossomRally
             AudioClip[] c;
             if (engineCache.TryGetValue(cls, out c) && c != null && c[0] != null) return c;
             bool b = cls == "Group B", classic = cls == "Classic RWD";
+            if (cls == "Electric")
+            {
+                // motor whine: pure harmonics, no combustion bursts, rasp or roughness
+                var whine = new EngineProfile
+                {
+                    harm = new[] { 0.5f, 0.08f, 1f, 0.05f, 0.45f, 0.02f, 0.2f },
+                    tone = 1f, burst = 0f, burstDecay = 7f, formant = 2f, rasp = 0f, rough = 0.01f, sub = 0f, cutoff = 5200f, drive = 1.1f
+                };
+                var coast = whine; coast.harm = new[] { 0.6f, 0.05f, 0.5f, 0.02f, 0.15f }; coast.cutoff = 2600f;
+                var whineHigh = whine; whineHigh.cutoff = 7000f;
+                uint es = 0x5EED1u;
+                c = new[]
+                {
+                    ProcAudio.MakeClip("BR_Eng_LowOn", Engine(whine, LowPeriod, LowCycles, es), Rate, 1),
+                    ProcAudio.MakeClip("BR_Eng_LowOff", Engine(coast, LowPeriod, LowCycles, es + 11), Rate, 1),
+                    ProcAudio.MakeClip("BR_Eng_HighOn", Engine(whineHigh, HighPeriod, HighCycles, es + 23), Rate, 1),
+                    ProcAudio.MakeClip("BR_Eng_HighOff", Engine(coast, HighPeriod, HighCycles, es + 37), Rate, 1),
+                };
+                engineCache[cls] = c;
+                return c;
+            }
             float bright = b ? 1.2f : classic ? 0.8f : 1f;
             float rasp = b ? 1.3f : classic ? 0.7f : 1f;
             float rough = classic ? 0.7f : 1f;

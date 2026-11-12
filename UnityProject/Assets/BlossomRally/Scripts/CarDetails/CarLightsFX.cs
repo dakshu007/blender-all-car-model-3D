@@ -261,6 +261,7 @@ namespace BlossomRally
 
         void BuildExhaust(CarDetails d)
         {
+            if (a.electric) return;     // no tailpipe, no flames, no heat haze
             Vector3 ex = a.exhaust;
             tips.Add(ex);
             if (a.groupB) tips.Add(ex + Vector3.left * 0.085f);

@@ -100,7 +100,12 @@ namespace BlossomRally
                 if (r == null || id == RegionId.Valley) continue;
                 int before = roads.Count;
                 r.AddRoads(roads);
-                for (int i = before; i < roads.Count; i++) roads[i].region = id;
+                for (int i = before; i < roads.Count; i++)
+                {
+                    roads[i].region = id;
+                    // the city lines every street with its own kerbs, pavements and race barriers
+                    if (id == RegionId.City) roads[i].autoDetails = false;
+                }
             }
             Active = this;
         }
@@ -241,8 +246,12 @@ namespace BlossomRally
             return h;
         }
 
-        public float HeightAt(float x, float z)
+        public float HeightAt(float x, float z) { float e; return HeightAt(x, z, out e); }
+
+        /// <summary>Final ground height; edge = distance to the nearest road edge (99 when none within SearchReach).</summary>
+        public float HeightAt(float x, float z, out float edge)
         {
+            edge = 99f;
             Vector2 p = new Vector2(x, z);
             float h = BaseHeight(x, z);
             float dr = RiverDistance(p);
@@ -254,7 +263,9 @@ namespace BlossomRally
             RoadSample a, b;
             float da, db;
             int found = NearestTwo(p, SearchReach, out a, out da, out b, out db);
-            if (found == 0 || a.bridge) return h;
+            if (found == 0) return h;
+            edge = da - a.halfWidth;
+            if (a.bridge) return h;
             da = SquareEnds(a, da, p);
             if (found == 2) db = SquareEnds(b, db, p);
             float ea;

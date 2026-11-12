@@ -79,7 +79,8 @@ namespace BlossomRally
 
     public class VehicleDynamics
     {
-        public const float SusLen = 0.22f;          // suspension attach point above the wheel centre at rest
+        public const float SusLen = 0.22f;          // default suspension attach point above the wheel centre at rest
+                                                    // (per car: CarSpec.susTravel - long-travel off-roaders)
         const float V0 = 3.5f;                      // low-speed slip denominator (m/s)
         const float ForceHeight = 0.04f;            // side forces act this far above the contact (roll centre)
         const float LongForceHeight = 0.0f;         // drive / brake forces (anti-dive / anti-squat)
@@ -88,7 +89,7 @@ namespace BlossomRally
 
         public CarSpec spec;
         DriveWheel[] wheels;
-        float mass, restComp, maxLen;
+        float mass, restComp, maxLen, susLen = SusLen, bumpStart = 0.24f;
         float[] kSpring, cBump, cReb, kArb, share, inertiaW, staticLoad, axleGrip;
         int[] partner;
         int drivenCount;
@@ -140,6 +141,8 @@ namespace BlossomRally
         public float LandingImpactSpeed { get; private set; }
 
         public string GearLabel { get { return Reversing ? "R" : Gear.ToString(); } }
+        /// <summary>This car's suspension attach height above the wheel centre at rest (m).</summary>
+        public float SuspensionLength { get { return susLen; } }
         public int GearCount { get { return spec != null && spec.gears != null ? spec.gears.Length : 5; } }
 
         // ---- state
@@ -158,7 +161,9 @@ namespace BlossomRally
             mass = bodyMass;
             int n = w.Length;
             restComp = spec.rideComp;
-            maxLen = SusLen + restComp;
+            susLen = spec.susTravel > 0.05f ? spec.susTravel : SusLen;
+            bumpStart = 0.24f + (susLen - SusLen);      // 0.24 for the original cars
+            maxLen = susLen + restComp;
             kSpring = new float[n]; cBump = new float[n]; cReb = new float[n]; kArb = new float[n]; share = new float[n];
             inertiaW = new float[n]; staticLoad = new float[n]; axleGrip = new float[n]; partner = new int[n];
             comp = new float[n]; compRate = new float[n]; vx = new float[n]; vy = new float[n]; tanA = new float[n];
@@ -186,8 +191,8 @@ namespace BlossomRally
                 staticLoad[i] = mass * 9.81f * axleShare / onAxle;
                 kSpring[i] = staticLoad[i] / restComp;
                 float crit = 2f * Mathf.Sqrt(kSpring[i] * staticLoad[i] / 9.81f);
-                cBump[i] = 0.30f * crit;
-                cReb[i] = 0.55f * crit;
+                cBump[i] = 0.30f * crit * spec.damping;
+                cReb[i] = 0.55f * crit * spec.damping;
                 kArb[i] = kSpring[i] * (wh.front ? spec.arbFront : spec.arbRear) * 0.7f;
                 axleGrip[i] = wh.front ? spec.frontGrip : spec.rearGrip * RearMargin;   // stable at the limit: the front lets go first
                 inertiaW[i] = 0.9f + 2.2f * wh.radius * wh.radius * 4f;     // ~1.7 kg m^2 for a 0.31 m wheel incl. brakes / hub
@@ -201,7 +206,7 @@ namespace BlossomRally
                     else share[i] = 1f / Mathf.Max(1, drivenCount);
                 }
                 partner[i] = -1;
-                wh.springLength = SusLen;
+                wh.springLength = susLen;
                 wh.angularVelocity = 0f;
             }
             for (int i = 0; i < n; i++)
@@ -364,7 +369,7 @@ namespace BlossomRally
             for (int i = 0; i < n; i++)
             {
                 var w = wheels[i];
-                Vector3 attach = pos + rot * (w.local + Vector3.up * SusLen);
+                Vector3 attach = pos + rot * (w.local + Vector3.up * susLen);
                 WheelHit hit;
                 bool ok = body.CastWheel(attach, -up, maxLen + w.radius + 0.05f, out hit);
                 float rawLen = ok ? hit.distance - w.radius : maxLen;
@@ -404,7 +409,6 @@ namespace BlossomRally
                 if (!hitOk[i]) { w.load = 0f; continue; }
                 float c = comp[i];
                 float cr = compRate[i];
-                const float bumpStart = 0.24f;
                 bool bump = c > bumpStart;
                 float damp = (cr > 0f ? cBump[i] * (bump ? 3f : 1f) : cReb[i]) * cr;
                 // a damper can only stop the motion, never reverse it within one step (stable at 50 Hz too)
@@ -417,7 +421,7 @@ namespace BlossomRally
                 if (p >= 0) f += kArb[i] * (c - comp[p]);
                 f = Mathf.Clamp(f, 0f, loadCap);
                 w.load = f;
-                body.AddForceAtPosition(up * f, pos + rot * (w.local + Vector3.up * SusLen));
+                body.AddForceAtPosition(up * f, pos + rot * (w.local + Vector3.up * susLen));
             }
             GroundedWheels = grounded;
             Grounded = grounded > 0;
@@ -443,7 +447,8 @@ namespace BlossomRally
                 grip[i] = g;
                 float loadRatio = w.load / Mathf.Max(1f, staticLoad[i]);
                 float sens = Mathf.Clamp(1f - 0.13f * (loadRatio - 1f), 0.72f, 1.15f);
-                float mu = g.mu * (1f - g.wetLoss * Mathf.Clamp01(wetness)) * spec.grip * axleGrip[i] * mods.grip * sens;
+                float mu = g.mu * (1f - g.wetLoss * Mathf.Clamp01(wetness)) * spec.grip * axleGrip[i] * mods.grip * sens
+                           * spec.SurfaceGrip(hit.surface);
                 muN[i] = mu * w.load;
                 rK[i] = w.radius * w.radius * muN[i] * g.shapeC * g.shapeB / (g.peakRatio * vref);
                 w.slipAngle = Mathf.Atan(tanA[i]) * Mathf.Rad2Deg;
@@ -517,7 +522,7 @@ namespace BlossomRally
                 float capY = mCorner * Mathf.Abs(vy[i]) / dt;
                 fy = Mathf.Clamp(fy, -capY, capY);
                 var g = grip[i];
-                float roll = -g.rolling * w.load * Mathf.Clamp(vx[i] / 0.5f, -1f, 1f) - g.looseDrag * w.load * vx[i] * 0.1f;
+                float roll = -g.rolling * w.load * Mathf.Clamp(vx[i] / 0.5f, -1f, 1f) - g.looseDrag * spec.looseDrag * w.load * vx[i] * 0.1f;
                 // side force at roll-centre height (controlled roll), drive / brake force near the ground (real pitch)
                 body.AddForceAtPosition(wRight[i] * fy, hits[i].point + up * ForceHeight);
                 body.AddForceAtPosition(wFwd[i] * (fx + roll), hits[i].point + up * LongForceHeight);

@@ -1,0 +1,363 @@
+{
+  "car_id": "CAR-024",
+  "tool": "validate_vehicle.py",
+  "generated_utc": "2026-11-12T09:22:26+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "status": "FAIL",
+  "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-024/Working/CAR-024_Working_v001.blend",
+  "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-024/Export/CAR-024_Export.fbx",
+  "checks": [
+    {
+      "check": "export collection exists",
+      "status": "PASS",
+      "detail": "CAR-024"
+    },
+    {
+      "check": "body object exists",
+      "status": "PASS",
+      "detail": "CAR-024_Body"
+    },
+    {
+      "check": "root at origin, no rotation",
+      "status": "PASS",
+      "detail": "CAR-024_Root"
+    },
+    {
+      "check": "forward axis documented on root",
+      "status": "PASS",
+      "detail": "+Y"
+    },
+    {
+      "check": "wheel FL exists",
+      "status": "PASS",
+      "detail": "CAR-024_Wheel_FL"
+    },
+    {
+      "check": "wheel FL pivot at axle centre",
+      "status": "PASS",
+      "detail": "offset 3.85 mm"
+    },
+    {
+      "check": "wheel FL on correct corner (+Y fwd, -X left)",
+      "status": "PASS",
+      "detail": "(-1.050, 1.658, 0.450)"
+    },
+    {
+      "check": "wheel FR exists",
+      "status": "PASS",
+      "detail": "CAR-024_Wheel_FR"
+    },
+    {
+      "check": "wheel FR pivot at axle centre",
+      "status": "PASS",
+      "detail": "offset 3.85 mm"
+    },
+    {
+      "check": "wheel FR on correct corner (+Y fwd, -X left)",
+      "status": "PASS",
+      "detail": "(1.050, 1.658, 0.450)"
+    },
+    {
+      "check": "wheel RL exists",
+      "status": "PASS",
+      "detail": "CAR-024_Wheel_RL"
+    },
+    {
+      "check": "wheel RL pivot at axle centre",
+      "status": "PASS",
+      "detail": "offset 3.85 mm"
+    },
+    {
+      "check": "wheel RL on correct corner (+Y fwd, -X left)",
+      "status": "PASS",
+      "detail": "(-1.050, -1.702, 0.450)"
+    },
+    {
+      "check": "wheel RR exists",
+      "status": "PASS",
+      "detail": "CAR-024_Wheel_RR"
+    },
+    {
+      "check": "wheel RR pivot at axle centre",
+      "status": "PASS",
+      "detail": "offset 3.85 mm"
+    },
+    {
+      "check": "wheel RR on correct corner (+Y fwd, -X left)",
+      "status": "PASS",
+      "detail": "(1.050, -1.702, 0.450)"
+    },
+    {
+      "check": "length plausible",
+      "status": "FAIL",
+      "detail": "5.717 m (range 3.0-5.5)"
+    },
+    {
+      "check": "width plausible",
+      "status": "FAIL",
+      "detail": "2.539 m (range 1.4-2.3)"
+    },
+    {
+      "check": "height plausible",
+      "status": "FAIL",
+      "detail": "2.021 m (range 0.9-2.0)"
+    },
+    {
+      "check": "sits on ground plane",
+      "status": "PASS",
+      "detail": "min z 0.0001"
+    },
+    {
+      "check": "no zero-scale objects",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "no empty mesh objects",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "no missing material references",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "every mesh has a UV map",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "no missing texture images",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "texture paths are relative",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "check": "no duplicate / auto-suffixed names",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "check": "no hidden objects in export set",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "triangle count recorded / within budget",
+      "status": "PASS",
+      "detail": "32458 tris (target 15000-35000)"
+    },
+    {
+      "check": "collision proxies present (separate collection)",
+      "status": "PASS",
+      "detail": "CAR-024_Collision"
+    },
+    {
+      "check": "export file exists",
+      "status": "PASS",
+      "detail": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-024/Export/CAR-024_Export.fbx (758188 bytes)"
+    },
+    {
+      "check": "FBX contains every exported object",
+      "status": "PASS",
+      "detail": "all present"
+    },
+    {
+      "check": "FBX contains nothing extra",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "FBX round trip wheel FL position",
+      "status": "PASS",
+      "detail": "delta 0.00 mm"
+    },
+    {
+      "check": "FBX round trip wheel FR position",
+      "status": "PASS",
+      "detail": "delta 0.00 mm"
+    },
+    {
+      "check": "FBX round trip wheel RL position",
+      "status": "PASS",
+      "detail": "delta 0.00 mm"
+    },
+    {
+      "check": "FBX round trip wheel RR position",
+      "status": "PASS",
+      "detail": "delta 0.00 mm"
+    },
+    {
+      "check": "FBX triangle count matches",
+      "status": "PASS",
+      "detail": "32458 vs 32458"
+    },
+    {
+      "check": "raw FBX wheel FL -> Unity position",
+      "status": "PASS",
+      "detail": "unity (-1.05, 0.45, 1.658) (expected (-1.05, 0.45, 1.658))"
+    },
+    {
+      "check": "raw FBX wheel FL spin axis is lateral",
+      "status": "PASS",
+      "detail": "local X -> unity (1.0, -0.0, 0.0)"
+    },
+    {
+      "check": "raw FBX wheel FR -> Unity position",
+      "status": "PASS",
+      "detail": "unity (1.05, 0.45, 1.658) (expected (1.05, 0.45, 1.658))"
+    },
+    {
+      "check": "raw FBX wheel FR spin axis is lateral",
+      "status": "PASS",
+      "detail": "local X -> unity (1.0, -0.0, 0.0)"
+    },
+    {
+      "check": "raw FBX wheel RL -> Unity position",
+      "status": "PASS",
+      "detail": "unity (-1.05, 0.45, -1.702) (expected (-1.05, 0.45, -1.702))"
+    },
+    {
+      "check": "raw FBX wheel RL spin axis is lateral",
+      "status": "PASS",
+      "detail": "local X -> unity (1.0, -0.0, 0.0)"
+    },
+    {
+      "check": "raw FBX wheel RR -> Unity position",
+      "status": "PASS",
+      "detail": "unity (1.05, 0.45, -1.702) (expected (1.05, 0.45, -1.702))"
+    },
+    {
+      "check": "raw FBX wheel RR spin axis is lateral",
+      "status": "PASS",
+      "detail": "local X -> unity (1.0, -0.0, 0.0)"
+    }
+  ],
+  "dimensions_m": {
+    "width": 2.539219856262207,
+    "length": 5.7170000076293945,
+    "height": 2.0214085578918457
+  },
+  "triangles": 32458,
+  "wheels": {
+    "FL": [
+      -1.0499999523162842,
+      1.658499836921692,
+      0.44999998807907104
+    ],
+    "FR": [
+      1.0499999523162842,
+      1.658499836921692,
+      0.44999998807907104
+    ],
+    "RL": [
+      -1.0499999523162842,
+      -1.7015001773834229,
+      0.44999998807907104
+    ],
+    "RR": [
+      1.0499999523162842,
+      -1.7015001773834229,
+      0.44999998807907104
+    ]
+  },
+  "fbx_round_trip": {
+    "FL": {
+      "blend": [
+        -1.05,
+        1.6585,
+        0.45
+      ],
+      "fbx_reimport": [
+        -1.05,
+        1.6585,
+        0.45
+      ],
+      "unity_expected": [
+        -1.05,
+        0.45,
+        1.6585
+      ],
+      "unity_from_raw_fbx": [
+        -1.05,
+        0.45,
+        1.6585
+      ]
+    },
+    "FR": {
+      "blend": [
+        1.05,
+        1.6585,
+        0.45
+      ],
+      "fbx_reimport": [
+        1.05,
+        1.6585,
+        0.45
+      ],
+      "unity_expected": [
+        1.05,
+        0.45,
+        1.6585
+      ],
+      "unity_from_raw_fbx": [
+        1.05,
+        0.45,
+        1.6585
+      ]
+    },
+    "RL": {
+      "blend": [
+        -1.05,
+        -1.7015,
+        0.45
+      ],
+      "fbx_reimport": [
+        -1.05,
+        -1.7015,
+        0.45
+      ],
+      "unity_expected": [
+        -1.05,
+        0.45,
+        -1.7015
+      ],
+      "unity_from_raw_fbx": [
+        -1.05,
+        0.45,
+        -1.7015
+      ]
+    },
+    "RR": {
+      "blend": [
+        1.05,
+        -1.7015,
+        0.45
+      ],
+      "fbx_reimport": [
+        1.05,
+        -1.7015,
+        0.45
+      ],
+      "unity_expected": [
+        1.05,
+        0.45,
+        -1.7015
+      ],
+      "unity_from_raw_fbx": [
+        1.05,
+        0.45,
+        -1.7015
+      ]
+    }
+  }
+}

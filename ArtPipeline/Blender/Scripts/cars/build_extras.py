@@ -56,7 +56,7 @@ def build(B):
         x = g["w1"] - rk.get("inset", 0.02)
         z = z1 + h
         r = 0.016
-        mb.tube_path([(-x, ya, z), (x, ya, z), (x, yb, z), (-x, yb, z), (-x, ya, z)], r, mat)
+        mb.tube_path([(-x, ya, z), (x, ya, z), (x, yb, z), (-x, yb, z), (-x, ya, z)], r, mat, seg=6)
         n = rk.get("bars", 4)
         for i in range(1, n + 1):
             y = ya + (yb - ya) * i / (n + 1)
@@ -66,7 +66,7 @@ def build(B):
                 mb.box((sx * (x - 0.01), y, z1 + h / 2), (0.04, 0.06, h), M["trim"])
         if rk.get("basket", True):
             zt = z + rk.get("rail", 0.07)
-            mb.tube_path([(-x, ya, zt), (x, ya, zt), (x, yb, zt), (-x, yb, zt), (-x, ya, zt)], r * 0.8, mat)
+            mb.tube_path([(-x, ya, zt), (x, ya, zt), (x, yb, zt), (-x, yb, zt), (-x, ya, zt)], r * 0.8, mat, seg=6)
             for t in range(5):
                 y = ya + (yb - ya) * t / 4
                 for sx in (-1, 1):
@@ -293,7 +293,7 @@ def build(B):
         mb.box((0, rf["y"] - 0.06, z), (w, 0.30, 0.03), M["trim"], rot=Euler((math.radians(-10), 0, 0)).to_quaternion())
         for i in range(5):
             x = -w / 2 + w * (i + 0.5) / 5
-            mb.box((x, rf["y"] - 0.08, z - 0.05), (0.012, 0.24, 0.09), M["trim"])
+            mb.box((x, rf["y"] - 0.08, z + 0.02), (0.012, 0.22, 0.05), M["trim"])
     hs = acc.get("hood_scoop")
     if hs:
         y = hs.get("y", (S.y_max + g["yF0"]) / 2)
@@ -304,7 +304,7 @@ def build(B):
 
     if mb.bm.faces:
         o = mb.finish(B.cols["Exterior"], recalc=False)
-        vb.add_bevel(o, width=0.004, segments=1, angle=35)
+        vb.add_bevel(o, width=0.004, segments=1, angle=50)
         objs.append(vb.apply_modifiers(o))
     else:
         mb.bm.free()

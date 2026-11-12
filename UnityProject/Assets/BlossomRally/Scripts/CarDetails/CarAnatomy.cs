@@ -14,7 +14,7 @@ namespace BlossomRally
         public ArcadeCar car;
         public Transform root;
         public string id;
-        public bool groupB, rearEngine;
+        public bool groupB, rearEngine, electric;
         /// <summary>Half width, top height, half length (same convention as CarExtras / the paint shader).</summary>
         public Vector3 ext = new Vector3(0.9f, 1.35f, 2.1f);
         public Bounds bodyBounds = new Bounds(new Vector3(0f, 0.7f, 0f), new Vector3(1.8f, 1.3f, 4.1f));
@@ -61,9 +61,11 @@ namespace BlossomRally
         {
             var a = new CarAnatomy { car = car, root = car.transform };
             a.id = car.spec != null ? car.spec.id : car.name;
-            string cls = car.spec != null && car.spec.carClass != null ? car.spec.carClass : "";
+            // sound family: the new classes map onto Group B / Group 4 / Classic RWD / Electric (CarCatalog.SoundFor)
+            string cls = car.spec != null ? car.spec.SoundClass : "";
             a.groupB = cls == "Group B";
-            a.rearEngine = a.id == "CAR-008" || a.id == "CAR-019";
+            a.electric = cls == "Electric";
+            a.rearEngine = a.id == "CAR-008" || a.id == "CAR-019" || a.id == "CAR-025";
             var box = car.GetComponent<BoxCollider>();
             if (box != null)
                 a.ext = new Vector3(box.size.x / 0.92f * 0.5f, box.center.y + box.size.y * 0.5f, box.size.z / 0.95f * 0.5f);

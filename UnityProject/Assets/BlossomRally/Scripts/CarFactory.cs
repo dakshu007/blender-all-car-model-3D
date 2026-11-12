@@ -21,7 +21,9 @@ namespace BlossomRally
             AxisFix.Calibrate();
             AxisFix.Apply(model.transform);
             foreach (var an in model.GetComponentsInChildren<Animator>(true)) Object.Destroy(an);
+            var neon = NeonSlots(model);
             MaterialLibrary.Remap(model, spec.id);
+            ApplyNeon(neon, spec.id);
             foreach (var r in model.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
 
             // wheels from the exported vehicle data (falls back to the wheel pivots in the model)
@@ -64,8 +66,18 @@ namespace BlossomRally
                     b.center = root.transform.InverseTransformPoint(b.center);
                 }
             }
+            // open-frame cars (buggy): the roll cage is the roof
+            var cage = FindDeep(model.transform, spec.id + "_Cage");
+            var cr = cage != null ? cage.GetComponent<Renderer>() : null;
+            if (cr != null)
+            {
+                Bounds cb = cr.bounds;
+                cb.center = root.transform.InverseTransformPoint(cb.center);
+                b.Encapsulate(new Vector3(b.center.x, cb.max.y, b.center.z));
+            }
             var box = root.AddComponent<BoxCollider>();
-            float bottom = 0.36f;
+            // tall off-roaders: keep the collider bottom just under the floor, not dragging below it
+            float bottom = Mathf.Max(0.36f, b.min.y + 0.06f);
             box.center = new Vector3(b.center.x, (bottom + b.max.y) * 0.5f, b.center.z);
             box.size = new Vector3(b.size.x * 0.92f, Mathf.Max(0.4f, b.max.y - bottom), b.size.z * 0.95f);
 #if UNITY_6000_0_OR_NEWER
@@ -79,6 +91,11 @@ namespace BlossomRally
 
             root.AddComponent<Rigidbody>();
             var car = root.AddComponent<ArcadeCar>();
+            if (data != null && data.driver_eye != null && data.driver_eye.Length == 3)
+                car.DriverEye = new Vector3(data.driver_eye[0], data.driver_eye[1], data.driver_eye[2]);
+            if (data != null && data.hood_cam != null && data.hood_cam.Length == 3)
+                car.HoodCam = new Vector3(data.hood_cam[0], data.hood_cam[1], data.hood_cam[2]);
+            car.FrameExtra = Mathf.Max(0f, b.max.y - 1.5f);
             car.Init(spec, wheels.ToArray());
             root.AddComponent<CarFX>();
             root.AddComponent<CarExtras>();
@@ -86,6 +103,34 @@ namespace BlossomRally
             root.AddComponent<EngineAudio>();
             root.transform.SetPositionAndRotation(pos, rot);
             return car;
+        }
+
+        // ---- neon light strips (M_Light_Neon in the FBX, CAR-030): glowing, in the colour the model carries
+        struct NeonSlot { public Renderer r; public int index; public Color c; }
+
+        static List<NeonSlot> NeonSlots(GameObject model)
+        {
+            var list = new List<NeonSlot>();
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                    if (mats[i] != null && mats[i].name.StartsWith("M_Light_Neon"))
+                        list.Add(new NeonSlot { r = r, index = i, c = mats[i].HasProperty("_Color") ? mats[i].color : new Color(0.2f, 0.9f, 1f) });
+            }
+            return list;
+        }
+
+        static void ApplyNeon(List<NeonSlot> slots, string carId)
+        {
+            foreach (var n in slots)
+            {
+                var mats = n.r.sharedMaterials;
+                if (n.index >= mats.Length) continue;
+                Color c = n.c;
+                mats[n.index] = MaterialLibrary.Standard("M_Light_Neon_" + carId, c, 0.8f, 0f, null, new Color(c.r * 2.4f, c.g * 2.4f, c.b * 2.4f));
+                n.r.sharedMaterials = mats;
+            }
         }
 
         internal static VehicleData LoadData(string id)

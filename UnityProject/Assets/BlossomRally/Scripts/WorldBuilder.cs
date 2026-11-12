@@ -10,13 +10,13 @@ using UnityEngine.Rendering;
 
 namespace BlossomRally
 {
-    public class WorldBuilder : MonoBehaviour
+    public partial class WorldBuilder : MonoBehaviour
     {
         public const int LayerGrass = 8;
         public const int LayerTrees = 9;
         const float TerrainCell = 4f;
-        const int ChunkCells = 50;                      // terrain chunk = 200 m
-        const float RoadLift = 0.05f;
+        const int ChunkCells = 64;                      // terrain chunk = 256 m (LOD grids of 4, 8, 16 and 32 m)
+        const float RoadLift = WorldField.RoadLift;
         public const float WaterY = WorldField.WaterY;
 
         WorldField field;
@@ -111,7 +111,10 @@ namespace BlossomRally
             Status = "Painting distant trees"; Progress = 0.56f;
             yield return TreeImpostors.Build(treeObjects);
 
-            yield return BuildRegions(0.58f, 0.97f);
+            yield return BuildRegions(0.58f, 0.96f);
+
+            Status = "Dressing the roadsides"; Progress = 0.96f;
+            yield return BuildRoadDetails();
 
             Status = "Finishing touches"; Progress = 0.97f;
             BuildBoundary();
@@ -315,83 +318,7 @@ namespace BlossomRally
             blossomSpots.Add(new Vector3(p.x, p.y, r * 1.25f));
         }
 
-        // ------------------------------------------------------------------ terrain
-        IEnumerator BuildTerrain()
-        {
-            terrX0 = WorldLayout.MinX - WorldLayout.TerrainPad;
-            terrZ0 = WorldLayout.MinZ - WorldLayout.TerrainPad;
-            int cx = Mathf.CeilToInt((WorldLayout.Size.x + 2f * WorldLayout.TerrainPad) / (TerrainCell * ChunkCells));
-            int cz = Mathf.CeilToInt((WorldLayout.Size.y + 2f * WorldLayout.TerrainPad) / (TerrainCell * ChunkCells));
-            int nx = cx * ChunkCells + 1, nz = cz * ChunkCells + 1;
-            terrNx = nx; terrNz = nz;
-            var h = new float[nx * nz];
-            float tStart = Time.realtimeSinceStartup;
-            for (int j = 0; j < nz; j++)
-            {
-                float z = terrZ0 + j * TerrainCell;
-                for (int i = 0; i < nx; i++) h[j * nx + i] = field.HeightAt(terrX0 + i * TerrainCell, z);
-                if (j % 12 == 0) { Progress = 0.09f + 0.13f * j / nz; yield return null; }
-            }
-            terrH = h;
-            // normals from the whole grid, so chunk seams are invisible
-            var nrm = new Vector3[nx * nz];
-            for (int j = 0; j < nz; j++)
-                for (int i = 0; i < nx; i++)
-                {
-                    float hl = h[j * nx + Mathf.Max(0, i - 1)], hr = h[j * nx + Mathf.Min(nx - 1, i + 1)];
-                    float hd = h[Mathf.Max(0, j - 1) * nx + i], hu = h[Mathf.Min(nz - 1, j + 1) * nx + i];
-                    nrm[j * nx + i] = new Vector3(hl - hr, 2f * TerrainCell, hd - hu).normalized;
-                }
-            yield return null;
-            var root = new GameObject("World_Terrain").transform;
-            int built = 0;
-            int m = ChunkCells + 1;
-            var tris = new int[ChunkCells * ChunkCells * 6];
-            int t = 0;
-            for (int j = 0; j < ChunkCells; j++)
-                for (int i = 0; i < ChunkCells; i++)
-                {
-                    int a = j * m + i, b = a + 1, c = a + m, d = c + 1;
-                    tris[t++] = a; tris[t++] = c; tris[t++] = b;
-                    tris[t++] = b; tris[t++] = c; tris[t++] = d;
-                }
-            for (int bz = 0; bz < cz; bz++)
-                for (int bx = 0; bx < cx; bx++)
-                {
-                    var verts = new Vector3[m * m];
-                    var norms = new Vector3[m * m];
-                    var cols = new Color32[m * m];
-                    for (int j = 0; j < m; j++)
-                        for (int i = 0; i < m; i++)
-                        {
-                            int gi = bx * ChunkCells + i, gj = bz * ChunkCells + j;
-                            int g = gj * nx + gi;
-                            float x = terrX0 + gi * TerrainCell, z = terrZ0 + gj * TerrainCell;
-                            verts[j * m + i] = new Vector3(x, h[g], z);
-                            norms[j * m + i] = nrm[g];
-                            cols[j * m + i] = field.GroundColor(x, z, h[g], nrm[g]);
-                        }
-                    var mesh = new Mesh { name = "Terrain_" + bx + "_" + bz };
-                    mesh.vertices = verts;
-                    mesh.normals = norms;
-                    mesh.colors32 = cols;
-                    mesh.triangles = tris;
-                    mesh.RecalculateBounds();
-                    var go = new GameObject(mesh.name);
-                    go.transform.SetParent(root, false);
-                    go.AddComponent<MeshFilter>().sharedMesh = mesh;
-                    var mr = go.AddComponent<MeshRenderer>();
-                    mr.sharedMaterial = MaterialLibrary.Terrain;
-                    mr.shadowCastingMode = ShadowCastingMode.On;
-                    go.AddComponent<MeshCollider>().sharedMesh = mesh;
-                    go.AddComponent<TerrainSurface>();
-                    if (++built % 6 == 0) { Progress = 0.22f + 0.08f * built / (cx * cz); yield return null; }
-                }
-            Debug.Log("[BlossomRally] terrain " + nx + " x " + nz + " vertices in " + (cx * cz) + " chunks, "
-                      + ((Time.realtimeSinceStartup - tStart) * 1000f).ToString("0") + " ms");
-            Progress = 0.30f;
-        }
-
+        // ------------------------------------------------------------------ terrain (see WorldBuilder.Terrain.cs)
         /// <summary>Height of the actual terrain mesh (same triangulation), so grass and props sit exactly on it.</summary>
         public float TerrainHeight(float x, float z)
         {
@@ -414,6 +341,9 @@ namespace BlossomRally
         {
             var root = new GameObject("World_GrassBlades").transform;
             var mat = MaterialLibrary.Grass;
+            // low-end devices: build fewer blades (the shader thins them to the same look anyway); none when switched off
+            float keep = GameSettings.GrassDensity <= 0.01f ? 0f : new[] { 0.4f, 0.7f, 1f, 1f }[Mathf.Clamp(GameSettings.Quality, 0, 3)];
+            if (keep <= 0f) { GrassBlades = 0; yield break; }
             var grng = new System.Random(4242);
             System.Func<float> R01 = () => (float)grng.NextDouble();
             const float chunk = 40f, lo = -470f;
@@ -469,7 +399,7 @@ namespace BlossomRally
                             bool onPad = false;
                             foreach (var pad in pads)
                                 if ((new Vector2(pad.x, pad.y) - p).sqrMagnitude < pad.z * pad.z) { onPad = true; break; }
-                            if (onPad) continue;
+                            if (onPad || (keep < 1f && R01() > keep)) continue;
                             AddTuft(p, edge, spotK, meadow, R01, verts, cols, uvs, nrms, tris);
                         }
                     if (verts.Count > 0)
@@ -542,7 +472,7 @@ namespace BlossomRally
                                 }
                                 float dens = reg.GrassDensity(px, pz, edge);
                                 if (dens <= 0f || R01() > dens * 0.35f) continue;
-                                if (field.OnPad(p)) continue;
+                                if ((keep < 1f && R01() > keep) || field.OnPad(p)) continue;
                                 AddRegionTuft(reg, p, edge, R01, verts, cols, uvs, nrms, tris);
                             }
                         if (verts.Count > 0)
@@ -645,157 +575,7 @@ namespace BlossomRally
             }
         }
 
-        // ------------------------------------------------------------------ roads + water
-        void BuildRoadMeshes()
-        {
-            var lineMat = MaterialLibrary.Standard("RoadLine", new Color(0.95f, 0.94f, 0.9f), 0.35f, 0f);
-            for (int r = 0; r < roads.Count; r++)
-            {
-                var def = roads[r];
-                var list = roadSamples[r];
-                string tex = def.texture;
-                Color tint = def.tint;
-                if (string.IsNullOrEmpty(tex))
-                    switch (def.surface)
-                    {
-                        case Surface.Asphalt: tex = "ENV_Road_Asphalt"; break;
-                        case Surface.Gravel: tex = "ENV_Road_Gravel"; break;
-                        case Surface.Dirt: tex = "ENV_Road_Dirt"; break;
-                        case Surface.Snow: tex = "ENV_Road_Gravel"; if (tint == Color.white) tint = new Color(1.35f, 1.4f, 1.5f); break;
-                        case Surface.Ice: tex = "ENV_Road_Asphalt"; if (tint == Color.white) tint = new Color(1.25f, 1.38f, 1.55f); break;
-                        case Surface.Sand: tex = "ENV_Road_Dirt"; if (tint == Color.white) tint = new Color(1.3f, 1.12f, 0.86f); break;
-                        default: tex = "ENV_Road_Paving"; break;
-                    }
-                bool smoothTop = def.surface == Surface.Asphalt || def.surface == Surface.Ice;
-                string key = "Road_" + def.surface + "_" + tex + (tint == Color.white ? "" : "_" + ColorUtility.ToHtmlStringRGB(tint * 0.5f));
-                var mat = MaterialLibrary.Road(key, Resources.Load<Texture2D>("Env/" + tex), def.surface == Surface.Ice ? 0.55f : smoothTop ? 0.22f : 0.08f);
-                if (tint != Color.white) mat.SetColor("_Color", tint);
-                if (def.surface == Surface.Gravel || def.surface == Surface.Dirt || def.surface == Surface.Sand) mat.SetFloat("_PuddleAmount", 1f);
-                else if (def.surface == Surface.Paving) mat.SetFloat("_PuddleAmount", 0.6f);
-                else if (def.surface == Surface.Snow || def.surface == Surface.Ice) mat.SetFloat("_PuddleAmount", 0.2f);
-                else mat.SetFloat("_PuddleAmount", 0.8f);
-                float tile = def.surface == Surface.Paving ? 4f : 7f;
-                int count = list.Count + (def.closed ? 1 : 0);
-                // split into runs of <= 240 samples (bridges are part of the road surface)
-                var run = new List<RoadSample>();
-                int part = 0;
-                for (int i = 0; i < count; i++)
-                {
-                    var s = list[i % list.Count];
-                    if (run.Count >= 240)
-                    {
-                        MakeRoadPiece(def, run, mat, lineMat, tile, part++);
-                        var last = run[run.Count - 1];
-                        run.Clear();
-                        run.Add(last);
-                    }
-                    run.Add(s);
-                }
-                if (run.Count > 1) MakeRoadPiece(def, run, mat, lineMat, tile, part++);
-            }
-        }
-
-        /// <summary>
-        /// Points offset sideways from the centreline (positive = right). Where a bend is still tighter than the offset,
-        /// the edge would run backwards and fold; such points are held so the edge stays clean.
-        /// </summary>
-        static Vector2[] EdgePoints(List<RoadSample> run, float offsetFraction, float extra)
-        {
-            int n = run.Count;
-            var e = new Vector2[n];
-            for (int i = 0; i < n; i++)
-            {
-                var s = run[i];
-                Vector2 nrm = new Vector2(s.tangent.y, -s.tangent.x);
-                Vector2 p = s.pos + nrm * (s.halfWidth * offsetFraction + extra);
-                if (i > 0 && Vector2.Dot(p - e[i - 1], s.tangent) < 0.02f)
-                {
-                    // fold: keep the edge on the previous point, nudged forwards along the road
-                    p = e[i - 1] + s.tangent * 0.02f;
-                }
-                e[i] = p;
-            }
-            return e;
-        }
-
-        void MakeRoadPiece(RoadDef def, List<RoadSample> run, Material mat, Material lineMat, float tile, int part)
-        {
-            int n = run.Count;
-            var leftE = EdgePoints(run, -1f, 0f);
-            var rightE = EdgePoints(run, 1f, 0f);
-            var v = new Vector3[n * 3];
-            var uv = new Vector2[n * 3];
-            var tri = new List<int>();
-            float startDist = run[0].distance;
-            for (int i = 0; i < n; i++)
-            {
-                var s = run[i];
-                Vector2 nrm = new Vector2(s.tangent.y, -s.tangent.x);
-                float y = s.height + RoadLift;
-                Vector2 l = leftE[i], rr = rightE[i];
-                v[i * 3] = new Vector3(l.x, y, l.y);
-                v[i * 3 + 1] = new Vector3(s.pos.x, y + 0.04f, s.pos.y);
-                v[i * 3 + 2] = new Vector3(rr.x, y, rr.y);
-                float vv = (s.distance - startDist) / tile;
-                if (vv < 0) vv += 1000f;
-                uv[i * 3] = new Vector2(0f, vv); uv[i * 3 + 1] = new Vector2(0.5f, vv); uv[i * 3 + 2] = new Vector2(1f, vv);
-                if (i < n - 1)
-                {
-                    int a = i * 3;
-                    tri.AddRange(new[] { a, a + 3, a + 1, a + 1, a + 3, a + 4, a + 1, a + 4, a + 2, a + 2, a + 4, a + 5 });
-                }
-            }
-            var mesh = new Mesh { name = def.name + "_" + part, vertices = v, uv = uv };
-            mesh.SetTriangles(tri, 0);
-            FixWinding(mesh);
-            mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-            var go = new GameObject(def.name + "_" + part);
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
-            go.AddComponent<MeshCollider>().sharedMesh = mesh;
-            go.AddComponent<SurfaceTag>().surface = def.surface;
-            if (def.surface != Surface.Asphalt || !def.lines) return;
-            // lane markings: solid edges + dashed centre line
-            var lv = new List<Vector3>();
-            var lt = new List<int>();
-            var lineL = EdgePoints(run, -1f, 0.45f);
-            var lineR = EdgePoints(run, 1f, -0.45f);
-            for (int i = 0; i < n - 1; i++)
-            {
-                var s0 = run[i]; var s1 = run[i + 1];
-                Vector2 n0 = new Vector2(s0.tangent.y, -s0.tangent.x), n1 = new Vector2(s1.tangent.y, -s1.tangent.x);
-                for (int k = 0; k < 3; k++)
-                {
-                    if (k == 2 && (s0.distance % 7f) > 3.5f) continue;
-                    float w = k == 2 ? 0.08f : 0.1f;
-                    float lift = k == 2 ? 0.045f : 0.012f;
-                    float y0 = s0.height + RoadLift + lift + 0.012f, y1 = s1.height + RoadLift + lift + 0.012f;
-                    int b = lv.Count;
-                    Vector2 c0 = k == 0 ? lineL[i] : k == 1 ? lineR[i] : s0.pos;
-                    Vector2 c1 = k == 0 ? lineL[i + 1] : k == 1 ? lineR[i + 1] : s1.pos;
-                    if ((c1 - c0).sqrMagnitude < 0.0004f) continue;          // held (folded) stretch: no line
-                    lv.Add(new Vector3(c0.x - n0.x * w, y0, c0.y - n0.y * w));
-                    lv.Add(new Vector3(c0.x + n0.x * w, y0, c0.y + n0.y * w));
-                    lv.Add(new Vector3(c1.x - n1.x * w, y1, c1.y - n1.y * w));
-                    lv.Add(new Vector3(c1.x + n1.x * w, y1, c1.y + n1.y * w));
-                    lt.AddRange(new[] { b, b + 2, b + 1, b + 1, b + 2, b + 3 });
-                }
-            }
-            if (lv.Count == 0) return;
-            var lm = new Mesh { name = def.name + "_Lines_" + part, indexFormat = IndexFormat.UInt32 };
-            lm.SetVertices(lv);
-            lm.SetTriangles(lt, 0);
-            FixWinding(lm);
-            lm.RecalculateNormals();
-            var lgo = new GameObject(def.name + "_Lines_" + part);
-            lgo.AddComponent<MeshFilter>().sharedMesh = lm;
-            var lr = lgo.AddComponent<MeshRenderer>();
-            lr.sharedMaterial = lineMat;
-            lr.shadowCastingMode = ShadowCastingMode.Off;
-            lgo.transform.SetParent(go.transform, true);
-        }
-
+        // ------------------------------------------------------------------ roads (see WorldBuilder.Roads.cs) + water
         /// <summary>Make every triangle face up (+Y) regardless of how the strip was wound.</summary>
         static void FixWinding(Mesh m)
         {
@@ -1191,6 +971,8 @@ namespace BlossomRally
                         if (go != null) AddBox(go, new Vector3(0f, 0.9f, 5.2f), new Vector3(16f, 1.8f, 10.4f));
                         break;
                     case 5:
+                        // grass clumps: every one on High / Ultra, 2 in 3 on Medium, 1 in 3 on Low
+                        if (GameSettings.Quality < 2 && (count % 3) >= GameSettings.Quality + 1) { go = null; break; }
                         go = Spawn(pl.res, pos, pl.yaw, Vector3.one * pl.scale, grassRoot, LayerGrass, false);
                         break;
                     default:

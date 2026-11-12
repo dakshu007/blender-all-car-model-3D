@@ -73,7 +73,7 @@ public static class Harness
             Console.WriteLine($"{def.name,-38} {def.region,-10} {def.surface,-7} {list[n - 1].distance,7:F0}  {maxG * 100,6:F1}%  {maxCut,6:F1}  {maxFill,6:F1}  {minR,7:F1}  {hMin,6:F1}..{hMax,6:F1}" + (maxG > 0.12f || maxCut > 6f ? $"   [grade@{gAt} cut@{cutAt}]" : ""));
         }
 
-        if (!noStats) RoadStats.Run(field, only);
+        if (!noStats) { RoadStats.Run(field, only); JunctionCheck.Run(field, only, outDir); }
 
         if (prof != null)
         {

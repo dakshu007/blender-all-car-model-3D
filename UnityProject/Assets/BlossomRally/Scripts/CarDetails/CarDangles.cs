@@ -57,8 +57,8 @@ namespace BlossomRally
                 seg[i] = batch.AddPart(batch.AddTemplate(g));
             }
 
-            // spinning roof vent on the Group B cars
-            if (a.groupB)
+            // spinning roof vent on the Group B cars (not on open-frame cars: no roof)
+            if (a.groupB && a.glass != null)
             {
                 float vz = Mathf.Lerp(a.roofMinZ, a.roofMaxZ, 0.6f);
                 ventPos = new Vector3(0f, a.SurfaceY(0f, vz, 0.1f) - 0.006f, vz);

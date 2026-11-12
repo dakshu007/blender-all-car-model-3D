@@ -27,19 +27,19 @@ public static class RoadStats
     {
         if (step == 1) return GridH(i, j);
         float h = GridH(i, j);
-        if (WorldBuilderLodRule(i, j))
+        if (WorldBuilderLodRule(i, j, step))
         {
-            int r = step / 2;
+            int r = step;
             for (int dj = -r; dj <= r; dj++)
                 for (int di = -r; di <= r; di++) h = Math.Min(h, GridH(i + di, j + dj));
         }
         return h;
     }
 
-    static bool WorldBuilderLodRule(int i, int j)
+    static bool WorldBuilderLodRule(int i, int j, int step)
     {
         float e = F.EdgeDistance(new Vector2(gx0 + i * Cell, gz0 + j * Cell));
-        return e < 10f;
+        return e < step * Cell + 2f;
     }
 
     /// <summary>Height of the terrain mesh (same triangulation as WorldBuilder.TerrainHeight) on a grid of step cells.</summary>

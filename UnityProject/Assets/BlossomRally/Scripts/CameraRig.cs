@@ -213,9 +213,10 @@ namespace BlossomRally
             {
                 orbit += dt * 14f;
                 Quaternion q = Quaternion.Euler(0f, orbit, 0f);
-                Vector3 pos = t.position + q * new Vector3(0f, 1.6f, -7.2f);
+                float tall = target != null ? target.FrameExtra : 0f;   // taller cars (SUVs, trucks)
+                Vector3 pos = t.position + q * new Vector3(0f, 1.6f + tall * 0.6f, -7.2f - tall * 1.4f);
                 basePos = Vector3.Lerp(basePos, pos, dt * 3f);
-                baseRot = Quaternion.LookRotation(t.position + Vector3.up * 0.7f - basePos);
+                baseRot = Quaternion.LookRotation(t.position + Vector3.up * (0.7f + tall * 0.5f) - basePos);
                 cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 42f, dt * 3f);
             }
             else
@@ -240,13 +241,14 @@ namespace BlossomRally
                         rollTarget = reduced ? 0f : slipSide * drift * 3.5f;
 
                         // smooth, speed-dependent follow distance
-                        float distTarget = 6.4f + Mathf.Clamp01(speed / 55f) * 1.9f + drift * 0.5f + airPull * 0.9f;
+                        float tall = target.FrameExtra;   // 0 for the classic cars, ~0.4 m for SUVs / trucks
+                        float distTarget = 6.4f + Mathf.Clamp01(speed / 55f) * 1.9f + drift * 0.5f + airPull * 0.9f + tall * 1.6f;
                         followDist = Mathf.SmoothDamp(followDist, distTarget, ref distVel, 0.6f);
 
                         Vector3 right = Vector3.Cross(Vector3.up, smoothDir).normalized;
                         Vector3 desired = t.position - smoothDir * followDist + right * swing
-                                          + Vector3.up * (2.2f + Mathf.Clamp01(speed / 60f) * 0.4f + airPull * 0.45f);
-                        Vector3 look = t.position + Vector3.up * 1.05f + flatV * (0.06f + 0.04f * drift);
+                                          + Vector3.up * (2.2f + Mathf.Clamp01(speed / 60f) * 0.4f + airPull * 0.45f + tall * 0.9f);
+                        Vector3 look = t.position + Vector3.up * (1.05f + tall * 0.7f) + flatV * (0.06f + 0.04f * drift);
                         // keep the camera out of hills and buildings
                         RaycastHit hit;
                         Vector3 dir = desired - look;
@@ -264,7 +266,7 @@ namespace BlossomRally
                     }
                     case CamMode.Cockpit:
                     {
-                        Vector3 seat = new Vector3(-0.36f, 1.06f, 0.05f);
+                        Vector3 seat = target.DriverEye;
                         basePos = t.TransformPoint(seat);
                         baseRot = Quaternion.LookRotation(t.forward, t.up) * Quaternion.Euler(4f, target.SteerAngle * 0.15f, 0f);
                         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 72f, dt * 4f);
@@ -273,7 +275,7 @@ namespace BlossomRally
                     }
                     case CamMode.Hood:
                     {
-                        basePos = t.TransformPoint(new Vector3(0f, 1.25f, 1.1f));
+                        basePos = t.TransformPoint(target.HoodCam);
                         baseRot = Quaternion.LookRotation(t.forward, t.up) * Quaternion.Euler(3f, 0f, 0f);
                         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 66f, dt * 4f);
                         offsetScale = 0.6f;
@@ -283,7 +285,7 @@ namespace BlossomRally
                     {
                         orbit += dt * 9f;
                         Quaternion q = Quaternion.Euler(0f, orbit, 0f);
-                        Vector3 pos = t.position + q * new Vector3(0f, 1.3f, -9f);
+                        Vector3 pos = t.position + q * new Vector3(0f, 1.3f + target.FrameExtra * 0.6f, -9f - target.FrameExtra);
                         basePos = Vector3.Lerp(basePos, pos, dt * 2f);
                         baseRot = Quaternion.LookRotation(t.position + Vector3.up * 0.9f - basePos);
                         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, 38f, dt * 2f);

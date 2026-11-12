@@ -22,7 +22,8 @@ from mathutils import Vector  # noqa: E402
 
 import pipeline_common as pc  # noqa: E402
 
-DIM_RANGE = {"length": (3.0, 5.5), "width": (1.4, 2.3), "height": (0.9, 2.0)}
+# ranges cover the classic rally cars and the SUVs / trucks / buggy of CAR-020..031 (roof racks, tents, wide trophy truck)
+DIM_RANGE = {"length": (3.0, 6.0), "width": (1.4, 2.6), "height": (0.9, 2.6)}
 TRI_BUDGET = (15000, 35000)
 PIVOT_TOL = 0.005
 ROUNDTRIP_TOL = 0.002

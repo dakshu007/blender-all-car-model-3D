@@ -13,7 +13,7 @@ ARGS=()
 while [ $# -gt 0 ]; do
   if [ "$1" = "--only" ]; then ONLY="$2"; shift 2; else ARGS+=("$1"); shift; fi
 done
-FILES="$S/WorldField.cs $S/MapData.cs $S/Spline.cs $S/Events/StageDef.cs"
+FILES="$S/World/RoadMesh.cs $S/WorldField.cs $S/MapData.cs $S/Spline.cs $S/Events/StageDef.cs"
 for f in "$S"/World/Regions/*.cs; do case "$f" in *.Build.cs|*RegionRuntime.cs) ;; *) FILES="$FILES $f";; esac; done
 for R in City Coast Mountains Snow Canyon; do
   if [ -z "$ONLY" ] || [ "$ONLY" = "$R" ]; then
@@ -27,7 +27,7 @@ for f in $DOTNET_ROOT/packs/Microsoft.NETCore.App.Ref/*/ref/net10.0/*.dll; do RE
 BIN=$(mktemp -d)
 mkdir -p "$HERE/out"
 $DOTNET_ROOT/dotnet $DOTNET_ROOT/sdk/*/Roslyn/bincore/csc.dll -nologo -noconfig -nostdlib -langversion:9.0 -optimize+ -target:exe \
-  -nowarn:1701,1702,0649,0414,0162,0219 -out:"$BIN/harness.dll" $REFS "$HERE/UnityStub.cs" "$HERE/Harness.cs" "$HERE/RoadStats.cs" $FILES
+  -nowarn:1701,1702,0649,0414,0162,0219 -out:"$BIN/harness.dll" $REFS "$HERE/UnityStub.cs" "$HERE/Harness.cs" "$HERE/RoadStats.cs" "$HERE/JunctionCheck.cs" $FILES
 VER=$(ls $DOTNET_ROOT/shared/Microsoft.NETCore.App/ | head -1)
 cat > "$BIN/harness.runtimeconfig.json" <<JSON
 { "runtimeOptions": { "tfm": "net10.0", "framework": { "name": "Microsoft.NETCore.App", "version": "$VER" } } }

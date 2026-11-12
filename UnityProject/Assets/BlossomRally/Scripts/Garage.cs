@@ -356,7 +356,7 @@ namespace BlossomRally
             Quaternion rot;
             float fov;
             if (showroom) ShowroomPose(gm, dt, out pos, out rot, out fov);
-            else GaragePose(out pos, out rot, out fov);
+            else GaragePose(out pos, out rot, out fov, gm != null && gm.Car != null ? gm.Car.FrameExtra : 0f);
 
             float k = (Time.unscaledTime - transStart) / Mathf.Max(0.01f, transDur);
             if (k < 1f)
@@ -373,18 +373,18 @@ namespace BlossomRally
             }
         }
 
-        void GaragePose(out Vector3 pos, out Quaternion rot, out float fov)
+        void GaragePose(out Vector3 pos, out Quaternion rot, out float fov, float tall)
         {
             // slow cinematic drift in front of the workshop, framing the car slightly left of centre;
             // a car swap kicks the camera back and round, then it settles again
             float st = Time.unscaledTime - swapT;
             float kick = st >= 0f && st < 1.3f ? Mathf.Sin(Mathf.Clamp01(st / 1.3f) * Mathf.PI) * (1f - st / 1.3f * 0.3f) : 0f;
             float ang = 16f + Mathf.Sin(camT * 0.12f) * 22f + kick * 16f;
-            float d = 7.4f + Mathf.Sin(camT * 0.21f) * 0.5f + kick * 1.4f;
+            float d = 7.4f + Mathf.Sin(camT * 0.21f) * 0.5f + kick * 1.4f + tall * 1.5f;   // tall = SUVs / trucks
             Vector3 dir = Quaternion.Euler(0f, ang, 0f) * Vector3.forward;
-            pos = TablePos + dir * d + Vector3.up * (1.45f + Mathf.Sin(camT * 0.17f) * 0.22f + kick * 0.5f);
+            pos = TablePos + dir * d + Vector3.up * (1.45f + Mathf.Sin(camT * 0.17f) * 0.22f + kick * 0.5f + tall * 0.5f);
             pos = ClampToWorkshop(pos);
-            Vector3 look = TablePos + Vector3.up * 0.6f + Quaternion.Euler(0f, ang, 0f) * Vector3.left * 0.9f;
+            Vector3 look = TablePos + Vector3.up * (0.6f + tall * 0.5f) + Quaternion.Euler(0f, ang, 0f) * Vector3.left * 0.9f;
             rot = Quaternion.LookRotation(look - pos, Vector3.up);
             fov = 40f;
         }
@@ -397,7 +397,7 @@ namespace BlossomRally
                 iyaw = Mathf.Lerp(iyaw, iyawT, k);
                 ipitch = Mathf.Lerp(ipitch, ipitchT, k);
                 Transform ct = gm.Car.transform;
-                pos = ct.TransformPoint(new Vector3(-0.36f, 1.06f, 0.05f));
+                pos = ct.TransformPoint(gm.Car.DriverEye);
                 rot = ct.rotation * Quaternion.Euler(ipitch, iyaw, 0f);
                 fov = 70f;
                 return;
@@ -405,10 +405,11 @@ namespace BlossomRally
             yaw = Mathf.LerpAngle(yaw, yawT, k);
             pitch = Mathf.Lerp(pitch, pitchT, k);
             dist = Mathf.Lerp(dist, distT, k);
-            Vector3 look = TablePos + Vector3.up * 0.55f;
+            float tall = gm != null && gm.Car != null ? gm.Car.FrameExtra : 0f;
+            Vector3 look = TablePos + Vector3.up * (0.55f + tall * 0.5f);
             float pr = pitch * Mathf.Deg2Rad;
             Vector3 dir = Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, Mathf.Sin(pr), Mathf.Cos(pr));
-            pos = ClampToWorkshop(look + dir * dist);
+            pos = ClampToWorkshop(look + dir * (dist + tall * 1.4f));
             rot = Quaternion.LookRotation(look - pos, Vector3.up);
             fov = 44f;
         }

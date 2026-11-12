@@ -24,6 +24,9 @@ namespace BlossomRally
         public bool lines = true;           // asphalt: white edge lines + dashed centre line
         public RegionId region = RegionId.Valley;
         public bool connector;              // a framework road that links two regions
+        /// <summary>Generic roadside detail (guard rails on drop-offs, retaining walls in deep cuts, apex kerbs, gravel
+        /// shoulders) is added where nothing else stands. False for roads whose region dresses them completely.</summary>
+        public bool autoDetails = true;
         /// <summary>Stretches (x = from, y = to, metres along the road) carried on a bridge: the terrain below is left
         /// alone (water, gorge) and the owning region builds the deck / piers. The road surface stays drivable.</summary>
         public List<Vector2> bridgeSpans;

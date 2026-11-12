@@ -1,0 +1,377 @@
+{
+  "car_id": "CAR-031",
+  "display_name": "Bramble Wagon 84",
+  "tool": "build_generic.py",
+  "generated_utc": "2026-11-12T09:25:22+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "saved_file": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-031/Working/CAR-031_Working_v001.blend",
+  "reference_class": "original: 1980s boxy two-tone 4x4 wagon with chrome bumpers",
+  "design_to_final_offset": [
+    0.0,
+    -0.1095,
+    0.0
+  ],
+  "bbox": {
+    "min": [
+      -0.9695491194725037,
+      -2.4205000400543213,
+      9.131431579589844e-05
+    ],
+    "max": [
+      0.9695491194725037,
+      2.4205000400543213,
+      2.010319948196411
+    ],
+    "size": [
+      1.9390982389450073,
+      4.841000080108643,
+      2.0102286338806152
+    ],
+    "center": [
+      0.0,
+      0.0,
+      1.0052056312561035
+    ]
+  },
+  "total_tris": 30294,
+  "wheels": {
+    "FL": {
+      "blender": [
+        -0.8,
+        1.4895,
+        0.39
+      ],
+      "unity": [
+        -0.8,
+        0.39,
+        1.4895
+      ]
+    },
+    "FR": {
+      "blender": [
+        0.8,
+        1.4895,
+        0.39
+      ],
+      "unity": [
+        0.8,
+        0.39,
+        1.4895
+      ]
+    },
+    "RL": {
+      "blender": [
+        -0.8,
+        -1.2705,
+        0.39
+      ],
+      "unity": [
+        -0.8,
+        0.39,
+        -1.2705
+      ]
+    },
+    "RR": {
+      "blender": [
+        0.8,
+        -1.2705,
+        0.39
+      ],
+      "unity": [
+        0.8,
+        0.39,
+        -1.2705
+      ]
+    }
+  },
+  "wheel_radius": 0.39,
+  "tire_width": 0.27,
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-031_Accent",
+    "M_CAR-031_Cage",
+    "M_CAR-031_Paint",
+    "M_CAR-031_Plate",
+    "M_CAR-031_Rim",
+    "M_CAR-031_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "objects": [
+    {
+      "name": "CAR-031_Accessories",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 1644,
+      "materials": [
+        "M_Chrome",
+        "M_Trim_Black",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "CAR-031_Body",
+      "type": "MESH",
+      "parent": "CAR-031_Root",
+      "tris": 4248,
+      "materials": [
+        "M_CAR-031_Paint",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-031_Bumper_Front",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 328,
+      "materials": [
+        "M_Chrome",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-031_Bumper_Rear",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 328,
+      "materials": [
+        "M_Chrome",
+        "M_Trim_Black"
+      ]
+    },
+    {
+      "name": "CAR-031_Exterior",
+      "type": "EMPTY",
+      "parent": "CAR-031_Root",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-031_Glass",
+      "type": "MESH",
+      "parent": "CAR-031_Root",
+      "tris": 16,
+      "materials": [
+        "M_Glass_Tint"
+      ]
+    },
+    {
+      "name": "CAR-031_Interior",
+      "type": "MESH",
+      "parent": "CAR-031_Root",
+      "tris": 982,
+      "materials": [
+        "M_Interior_Dark",
+        "M_Trim_Black",
+        "M_CAR-031_Seat",
+        "M_CAR-031_Cage"
+      ]
+    },
+    {
+      "name": "CAR-031_Lights",
+      "type": "MESH",
+      "parent": "CAR-031_Root",
+      "tris": 3072,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Light_Head",
+        "M_Light_Indicator",
+        "M_Light_Aux",
+        "M_Light_Tail"
+      ]
+    },
+    {
+      "name": "CAR-031_Mirrors",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 1096,
+      "materials": [
+        "M_Trim_Black",
+        "M_Chrome"
+      ]
+    },
+    {
+      "name": "CAR-031_MudFlaps",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 176,
+      "materials": [
+        "M_CAR-031_Accent"
+      ]
+    },
+    {
+      "name": "CAR-031_Root",
+      "type": "EMPTY",
+      "parent": null,
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-031_SpareWheel",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 3496,
+      "materials": [
+        "M_Tire_Rubber",
+        "M_CAR-031_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-031_SteeringWheel",
+      "type": "MESH",
+      "parent": "CAR-031_Interior",
+      "tris": 488,
+      "materials": [
+        "M_Trim_Black",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "CAR-031_Trim",
+      "type": "MESH",
+      "parent": "CAR-031_Exterior",
+      "tris": 596,
+      "materials": [
+        "M_Chrome",
+        "M_Trim_Black",
+        "M_CAR-031_Accent",
+        "M_CAR-031_Plate"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_FL",
+      "type": "EMPTY",
+      "parent": "CAR-031_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-031_Wheel_FL_Rim",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_FL",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-031_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_FL_Tire",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_FL",
+      "tris": 1728,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_FR",
+      "type": "EMPTY",
+      "parent": "CAR-031_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-031_Wheel_FR_Rim",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_FR",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-031_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_FR_Tire",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_FR",
+      "tris": 1728,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_RL",
+      "type": "EMPTY",
+      "parent": "CAR-031_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-031_Wheel_RL_Rim",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_RL",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-031_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_RL_Tire",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_RL",
+      "tris": 1728,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_RR",
+      "type": "EMPTY",
+      "parent": "CAR-031_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "CAR-031_Wheel_RR_Rim",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_RR",
+      "tris": 1728,
+      "materials": [
+        "M_CAR-031_Rim",
+        "M_Trim_Black",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheel_RR_Tire",
+      "type": "MESH",
+      "parent": "CAR-031_Wheel_RR",
+      "tris": 1728,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "CAR-031_Wheels",
+      "type": "EMPTY",
+      "parent": "CAR-031_Root",
+      "tris": 0,
+      "materials": []
+    }
+  ]
+}

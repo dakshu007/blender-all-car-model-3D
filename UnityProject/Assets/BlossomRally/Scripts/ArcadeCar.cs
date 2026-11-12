@@ -95,6 +95,15 @@ namespace BlossomRally
         public int GroundedWheels { get { return dyn.GroundedWheels; } }
         public float RedlineRpm { get { return spec != null ? spec.limiterRpm : 7600f; } }
 
+        // ---- camera framing (set by CarFactory from the vehicle data; defaults = the original cars)
+        /// <summary>Driver's eye point in car space (cockpit / interior cameras).</summary>
+        [System.NonSerialized] public Vector3 DriverEye = new Vector3(-0.36f, 1.06f, 0.05f);
+        /// <summary>Bonnet camera point in car space.</summary>
+        [System.NonSerialized] public Vector3 HoodCam = new Vector3(0f, 1.25f, 1.1f);
+        /// <summary>How much taller than a classic rally car this one is (m, 0 for the original cars):
+        /// chase / showroom cameras lift and pull back by this.</summary>
+        [System.NonSerialized] public float FrameExtra;
+
         Rigidbody rb;
         readonly VehicleDynamics dyn = new VehicleDynamics();
         UnityBody body;
@@ -238,7 +247,7 @@ namespace BlossomRally
             foreach (var w in wheels)
             {
                 if (w.visual == null) continue;
-                Vector3 attach = transform.TransformPoint(w.local + Vector3.up * VehicleDynamics.SusLen);
+                Vector3 attach = transform.TransformPoint(w.local + Vector3.up * dyn.SuspensionLength);
                 Vector3 centre = attach - transform.up * w.springLength;
                 w.spin = Mathf.Repeat(w.spin + w.angularVelocity * Mathf.Rad2Deg * dt, 360f);
                 float steer = w.front ? SteerAngle : 0f;

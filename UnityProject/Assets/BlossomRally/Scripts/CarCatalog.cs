@@ -1,4 +1,4 @@
-// CarCatalog.cs - the nine Blossom Rally cars and their handling.
+// CarCatalog.cs - the Blossom Rally cars (the original nine + twelve for the six-region world) and their handling.
 //
 // The first constructor arguments (power, vmax, grip, driftGrip, yaw) are the garage display stats.
 // The physics personality lives in the chained setters: engine (torque curve), gearbox, chassis (mass
@@ -63,6 +63,12 @@ namespace BlossomRally
         public float downforce = 0.9f;       // N per (m/s)^2
         // ---- character
         public float driftAngle = 1f;        // scales the drift angle the inputs ask for
+        // ---- off-road / per-car extras (the defaults keep the original nine cars exactly as they were)
+        public float susTravel = VehicleDynamics.SusLen;   // bump travel above the rest position (m)
+        public float damping = 1f;           // damper rate scale
+        public float gripTarmac = 1f, gripLoose = 1f, gripSnow = 1f, gripSand = 1f;   // tyre compound per surface
+        public float looseDrag = 1f;         // scales the ploughing drag on gravel / dirt / grass / snow / sand
+        public string soundClass;            // engine sound family (null = derived from carClass)
 
         public CarSpec(string id, string name, string cls, string era, Drive d, float mass, float power, float vmax,
                        float grip, float driftGrip, float yaw)
@@ -108,6 +114,38 @@ namespace BlossomRally
             return this;
         }
 
+        /// <summary>Long-travel suspension and the tyre compound: travel (m), damper scale, grip multiplier per
+        /// surface group (asphalt + paving, gravel + dirt + grass, snow + ice, sand) and loose-surface drag.</summary>
+        public CarSpec OffRoad(float travel, float damper, float tarmac, float loose, float snow, float sand, float ploughDrag = 1f)
+        {
+            susTravel = travel; damping = damper; gripTarmac = tarmac; gripLoose = loose; gripSnow = snow; gripSand = sand;
+            looseDrag = ploughDrag;
+            return this;
+        }
+
+        public CarSpec Sound(string family) { soundClass = family; return this; }
+
+        public CarSpec Brakes(float front, float handbrake)
+        {
+            brakeTorque = front; handbrakeTorque = handbrake;
+            return this;
+        }
+
+        /// <summary>Per-car tyre compound multiplier for a surface (1 for the original cars).</summary>
+        public float SurfaceGrip(Surface s)
+        {
+            switch (s)
+            {
+                case Surface.Asphalt: case Surface.Paving: return gripTarmac;
+                case Surface.Snow: case Surface.Ice: return gripSnow;
+                case Surface.Sand: return gripSand;
+                default: return gripLoose;
+            }
+        }
+
+        /// <summary>Engine sound family: "Group B", "Group 4", "Classic RWD" or "Electric".</summary>
+        public string SoundClass { get { return !string.IsNullOrEmpty(soundClass) ? soundClass : CarCatalog.SoundFor(carClass); } }
+
         /// <summary>Normalised engine torque (0..1) at an rpm, full throttle.</summary>
         public float TorqueCurve(float rpm)
         {
@@ -141,10 +179,25 @@ namespace BlossomRally
         public string car_id;
         public string display_name;
         public WheelData[] wheel_list;
+        public float[] driver_eye;   // optional (CAR-020+): driver's eye point, car space
+        public float[] hood_cam;     // optional (CAR-020+): bonnet camera point, car space
     }
 
     public static class CarCatalog
     {
+        /// <summary>Maps a car class to one of the engine sound families EngineAudio synthesises.</summary>
+        public static string SoundFor(string cls)
+        {
+            switch (cls)
+            {
+                case "Group B": case "Group 4": case "Classic RWD": return cls;
+                case "Electric GT": return "Electric";
+                case "Rally Raid": case "Trophy Truck": case "Dune Buggy": case "Modern Rally": case "Snow Rally": return "Group B";
+                case "Trail 4x4": case "Overland": case "Retro 4x4": case "Luxury SUV": return "Classic RWD";
+                default: return "Group 4";   // Coupe SUV, Super Saloon and anything new
+            }
+        }
+
         //          Engine(Nm, peak rpm, limiter, low, high, turbo, launch)   Gearbox(final, shift s, ratios...)
         //          Chassis(front share, cg height, inertia, lock)           Tyres(front, rear, lsd, centre, AWD split)
         //          Suspension(static comp, ARB front, ARB rear)             Character(drift angle, drag, downforce)
@@ -195,6 +248,81 @@ namespace BlossomRally
                 .Engine(178f, 6000f, 8200f, 0.6f, 0.82f, 0f, 3700f).Gearbox(5.2f, 0.14f, 3.0f, 2.05f, 1.55f, 1.22f, 1.0f)
                 .Chassis(0.45f, 0.39f, 0.85f, 36f).Tyres(1.0f, 0.98f, 0.85f)
                 .Suspension(0.085f, 0.65f, 0.78f).Character(1.2f, 0.38f, 0.75f),
+
+            // ===================== the six-region cars (CAR-020..031) =====================
+            //          OffRoad(travel m, damper, grip: tarmac, loose, snow+ice, sand, ploughing drag)   Brakes(front Nm, handbrake Nm)
+            // Mountains hero: compact two-door 4x4 - diesel-like low-down shove, long travel, all-terrain tyres
+            new CarSpec("CAR-020", "Talus Crag", "Trail 4x4", "compact two-door 4x4", Drive.AWD, 1580f, 10200f, 168f, 1.06f, 0.66f, 2.3f)
+                .Engine(410f, 3400f, 6200f, 0.82f, 0.70f, 0.15f, 2600f).Gearbox(5.55f, 0.16f, 3.6f, 2.3f, 1.6f, 1.22f, 1.0f)
+                .Chassis(0.52f, 0.56f, 1.05f, 36f).Tyres(1.0f, 1.0f, 0.70f, 0.65f, 0.45f)
+                .Suspension(0.12f, 1.05f, 0.85f).Character(0.9f, 0.56f, 0.6f)
+                .OffRoad(0.34f, 1.15f, 0.94f, 1.12f, 1.10f, 1.15f, 0.7f).Brakes(3600f, 3800f),
+            // City / mountain: big luxury SUV - twin-turbo V8 torque, heavy and serene, planted everywhere
+            new CarSpec("CAR-021", "Halvard Citadel", "Luxury SUV", "full-size luxury SUV", Drive.AWD, 2350f, 14800f, 205f, 1.04f, 0.70f, 2.0f)
+                .Engine(640f, 3600f, 6600f, 0.80f, 0.78f, 0.35f, 3000f).Gearbox(5.0f, 0.12f, 3.4f, 2.2f, 1.55f, 1.2f, 1.0f)
+                .Chassis(0.53f, 0.58f, 1.25f, 34f).Tyres(1.0f, 1.0f, 0.60f, 0.55f, 0.42f)
+                .Suspension(0.11f, 1.15f, 0.95f).Character(0.85f, 0.62f, 0.7f)
+                .OffRoad(0.30f, 1.1f, 1.0f, 1.04f, 1.02f, 1.04f, 0.85f).Brakes(4600f, 4400f),
+            // City: sleek coupe-SUV - quick on tarmac, still happy on a gravel road
+            new CarSpec("CAR-022", "Velina Arc", "Coupe SUV", "modern coupe-SUV", Drive.AWD, 1720f, 12600f, 225f, 1.08f, 0.66f, 2.3f)
+                .Engine(560f, 4200f, 7000f, 0.70f, 0.80f, 0.35f, 3600f).Gearbox(4.5f, 0.10f, 3.2f, 2.1f, 1.55f, 1.22f, 1.0f)
+                .Chassis(0.54f, 0.50f, 1.1f, 34f).Tyres(1.0f, 1.0f, 0.60f, 0.50f, 0.40f)
+                .Suspension(0.09f, 1.0f, 0.8f).Character(0.95f, 0.50f, 1.0f)
+                .OffRoad(0.26f, 1.05f, 1.05f, 0.98f, 0.94f, 0.92f, 0.95f).Brakes(3800f, 3600f),
+            // Desert: rally-raid crew-cab pickup - long travel, floats over sand and ruts
+            new CarSpec("CAR-023", "Sabka Dunecrew", "Rally Raid", "rally-raid pickup", Drive.AWD, 1850f, 12400f, 185f, 1.08f, 0.64f, 2.3f)
+                .Engine(560f, 3800f, 6200f, 0.78f, 0.74f, 0.30f, 3000f).Gearbox(5.3f, 0.13f, 3.5f, 2.25f, 1.6f, 1.22f, 1.0f)
+                .Chassis(0.50f, 0.60f, 1.2f, 35f).Tyres(1.0f, 1.0f, 0.70f, 0.60f, 0.45f)
+                .Suspension(0.14f, 1.05f, 0.85f).Character(0.95f, 0.60f, 0.6f)
+                .OffRoad(0.40f, 1.2f, 0.92f, 1.14f, 1.08f, 1.25f, 0.6f).Brakes(4200f, 4200f),
+            // Desert hero: trophy truck - big V8, huge travel, wide track, flies over dunes and lands soft
+            new CarSpec("CAR-024", "Simoon T1", "Trophy Truck", "desert trophy truck", Drive.AWD, 1650f, 13600f, 200f, 1.10f, 0.60f, 2.4f)
+                .Engine(640f, 4600f, 7000f, 0.72f, 0.80f, 0f, 3600f).Gearbox(5.9f, 0.12f, 3.3f, 2.15f, 1.55f, 1.2f, 1.0f)
+                .Chassis(0.48f, 0.58f, 1.15f, 36f).Tyres(1.0f, 1.02f, 0.75f, 0.50f, 0.30f)
+                .Suspension(0.17f, 0.95f, 0.75f).Character(1.05f, 0.58f, 0.5f)
+                .OffRoad(0.46f, 1.3f, 0.90f, 1.15f, 1.02f, 1.32f, 0.55f).Brakes(3900f, 3800f),
+            // Desert / beach: dune buggy - featherweight, paddle tyres, tail-happy, long-travel arms
+            new CarSpec("CAR-025", "Skink DB", "Dune Buggy", "open-frame dune buggy", Drive.RWD, 780f, 6200f, 165f, 1.04f, 0.56f, 2.7f)
+                .Engine(255f, 5200f, 7600f, 0.68f, 0.80f, 0f, 3600f).Gearbox(7.3f, 0.12f, 3.2f, 2.1f, 1.55f, 1.2f, 1.0f)
+                .Chassis(0.40f, 0.46f, 0.85f, 38f).Tyres(1.0f, 1.04f, 0.85f)
+                .Suspension(0.15f, 0.75f, 0.60f).Character(1.15f, 0.40f, 0.4f)
+                .OffRoad(0.42f, 1.2f, 0.85f, 1.10f, 1.0f, 1.40f, 0.5f).Brakes(2000f, 2300f),
+            // Snow hero: studded-tyre rally 4x4 - the best grip there is on snow and ice
+            new CarSpec("CAR-026", "Ermine S4", "Snow Rally", "raised snow rally 4x4", Drive.AWD, 1380f, 9600f, 190f, 1.08f, 0.68f, 2.4f)
+                .Engine(430f, 4400f, 7200f, 0.62f, 0.80f, 0.55f, 4200f).Gearbox(5.0f, 0.10f, 3.1f, 2.1f, 1.58f, 1.25f, 1.03f)
+                .Chassis(0.55f, 0.48f, 1.0f, 34f).Tyres(1.0f, 1.0f, 0.65f, 0.50f, 0.40f)
+                .Suspension(0.10f, 0.95f, 0.75f).Character(1.0f, 0.46f, 0.9f)
+                .OffRoad(0.28f, 1.05f, 0.90f, 1.06f, 1.40f, 0.95f, 0.8f).Brakes(2600f, 2800f),
+            // Snow / mountains: expedition wagon - low gearing and torque that winches it up anything
+            new CarSpec("CAR-027", "Muskeg Expedition", "Overland", "expedition overland wagon", Drive.AWD, 2250f, 13000f, 160f, 1.05f, 0.72f, 2.0f)
+                .Engine(600f, 2800f, 5200f, 0.88f, 0.70f, 0.25f, 2400f).Gearbox(5.0f, 0.16f, 4.0f, 2.5f, 1.65f, 1.22f, 1.0f)
+                .Chassis(0.52f, 0.62f, 1.3f, 34f).Tyres(1.0f, 1.0f, 0.75f, 0.75f, 0.48f)
+                .Suspension(0.13f, 1.15f, 0.95f).Character(0.8f, 0.70f, 0.5f)
+                .OffRoad(0.36f, 1.2f, 0.94f, 1.12f, 1.14f, 1.15f, 0.7f).Brakes(4600f, 4600f),
+            // City / all-round: modern top-class rally hatch - turbo, wide arches, big wing, sharp on every surface
+            new CarSpec("CAR-028", "Vireo Apex", "Modern Rally", "modern rally hatchback", Drive.AWD, 1230f, 9300f, 200f, 1.12f, 0.66f, 2.4f)
+                .Engine(450f, 4800f, 7600f, 0.55f, 0.82f, 0.50f, 4600f).Gearbox(4.5f, 0.07f, 2.9f, 2.0f, 1.55f, 1.25f, 1.05f)
+                .Chassis(0.56f, 0.40f, 0.95f, 35f).Tyres(1.0f, 1.0f, 0.65f, 0.45f, 0.40f)
+                .Suspension(0.09f, 0.85f, 0.70f).Character(1.0f, 0.44f, 1.3f)
+                .OffRoad(0.26f, 1.05f, 1.02f, 1.08f, 1.05f, 1.0f, 0.9f).Brakes(2300f, 2600f),
+            // City hero: four-door super saloon - rear-biased AWD, six gears, fastest car on asphalt
+            new CarSpec("CAR-029", "Corvane Nocturne", "Super Saloon", "four-door super saloon", Drive.AWD, 1650f, 12800f, 245f, 1.12f, 0.62f, 2.4f)
+                .Engine(600f, 5000f, 7400f, 0.65f, 0.82f, 0.45f, 4200f).Gearbox(4.6f, 0.08f, 3.0f, 2.0f, 1.5f, 1.2f, 1.0f, 0.84f)
+                .Chassis(0.53f, 0.42f, 1.1f, 33f).Tyres(1.0f, 1.0f, 0.75f, 0.40f, 0.32f)
+                .Suspension(0.075f, 0.95f, 0.80f).Character(1.0f, 0.40f, 1.4f)
+                .OffRoad(0.22f, 1.0f, 1.08f, 0.95f, 0.85f, 0.85f, 1.0f).Brakes(3600f, 3200f),
+            // City night: electric GT - instant flat torque, two-speed box, silent whine
+            new CarSpec("CAR-030", "Lumen Arclight", "Electric GT", "electric GT coupe", Drive.AWD, 1780f, 14200f, 250f, 1.12f, 0.64f, 2.3f)
+                .Engine(700f, 5000f, 13000f, 1.0f, 0.45f, 0f, 1800f).Gearbox(6.85f, 0.05f, 1.75f, 1.0f)
+                .Chassis(0.50f, 0.38f, 1.05f, 33f).Tyres(1.0f, 1.0f, 0.70f, 0.60f, 0.42f)
+                .Suspension(0.075f, 0.95f, 0.85f).Character(0.95f, 0.36f, 1.5f)
+                .OffRoad(0.22f, 1.0f, 1.10f, 0.92f, 0.85f, 0.80f, 1.0f).Brakes(3800f, 3400f),
+            // Retro mountain climber: 1980s two-tone 4x4 wagon - lazy big-bore torque, soft and sure-footed
+            new CarSpec("CAR-031", "Bramble Wagon 84", "Retro 4x4", "1980s 4x4 wagon", Drive.AWD, 1700f, 9800f, 160f, 1.04f, 0.70f, 2.2f)
+                .Engine(420f, 3000f, 5400f, 0.85f, 0.72f, 0f, 2400f).Gearbox(4.95f, 0.18f, 3.8f, 2.4f, 1.6f, 1.2f, 1.0f)
+                .Chassis(0.52f, 0.58f, 1.15f, 35f).Tyres(1.0f, 1.0f, 0.70f, 0.70f, 0.45f)
+                .Suspension(0.13f, 1.05f, 0.85f).Character(0.9f, 0.62f, 0.5f)
+                .OffRoad(0.34f, 1.15f, 0.95f, 1.10f, 1.10f, 1.08f, 0.75f).Brakes(3800f, 3800f),
         };
     }
 }
