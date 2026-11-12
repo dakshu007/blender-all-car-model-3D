@@ -21,10 +21,11 @@ class Atlas:
     PLATE_FRONT_RECT = (0.875, 0.010, 0.995, 0.040)
     PLATE_REAR_RECT = (0.875, 0.060, 0.995, 0.090)
 
-    def __init__(self, y_min, y_max, half_w):
+    def __init__(self, y_min, y_max, half_w, z_top=1.45):
         self.U_Y0 = y_min - 0.12
         span = (y_max - y_min) + 0.24
-        self.S_SIDE = min(1.0 / span, 0.2326)
+        # tall vehicles: shrink the side scale so a side (0..z_top) still fits its 0.345-high band
+        self.S_SIDE = min(1.0 / span, 0.2326, 0.345 / max(1.45, z_top))
         self.half_w = half_w + 0.06
         self.S_TOP = min(0.300 / (2 * self.half_w), 0.645 / span)
         self.UV_FUNCS = {"right": self.uv_right, "left": self.uv_left, "top": self.uv_top,
@@ -96,8 +97,8 @@ class CarSpec:
         fl = d.get("flares")
         if fl:
             self.half_w = max(self.half_w, fl["lip"])
-        self.atlas = Atlas(self.y_min, self.y_max, self.half_w)
         self.gh = d["glasshouse"]
+        self.atlas = Atlas(self.y_min, self.y_max, self.half_w, self.gh["z1"] + 0.05)
 
     def wdims(self, slot):
         """(radius, tyre width, rim radius, arch radius, |x|) of the wheel in this slot."""

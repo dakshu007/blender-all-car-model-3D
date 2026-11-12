@@ -7,7 +7,12 @@
 // samples via StageCourse), with start / finish flags, checkpoints, best medals and times, an
 // animated trace of the selected route and a camera that flies / zooms to each route.
 //
-// API:  ValleyMap.Open(i => ..., () => ...)   ValleyMap.IsOpen   ValleyMap.Close()
+// World mode (ValleyMap.OpenWorld, M while driving; the game is paused): free pan / zoom over the whole world with
+// every marker (MapMarkers: you, stage starts, garage, fast travel, passes, landmarks, region names), a legend and an
+// info card; click / A sets or clears a GPS waypoint (RoadRoute.Gps: road route drawn here and on the minimap), and
+// X / F fast-travels to a region point or starts the event under the cursor.
+//
+// API:  ValleyMap.Open(i => ..., () => ...)   ValleyMap.OpenWorld(onClose, travel, race)   ValleyMap.IsOpen   ValleyMap.Close()
 // Input: up/down (stick, d-pad, W/S) choose, ENTER / A race, ESC / B back, mouse wheel / +- / LT RT zoom,
 //        drag or right stick to pan, TAB / Y whole-valley overview, click a route or card to select, click again to race.
 using System.Collections;
@@ -17,13 +22,15 @@ using UnityEngine;
 namespace BlossomRally
 {
     [DefaultExecutionOrder(950)]
-    public class ValleyMap : MonoBehaviour
+    public partial class ValleyMap : MonoBehaviour
     {
         public static ValleyMap Instance { get; private set; }
         public static bool IsOpen { get { return Instance != null && Instance.open; } }
         /// <summary>True once the painted map texture exists.</summary>
         public static bool Ready { get { return Instance != null && Instance.mapTex != null; } }
         public static Texture2D MapTexture { get { return Instance != null ? Instance.mapTex : null; } }
+        /// <summary>True while the free-roam world map (not the event chooser) is open.</summary>
+        public static bool WorldOpen { get { return Instance != null && Instance.open && Instance.worldMode; } }
 
         class Route
         {
@@ -106,13 +113,18 @@ namespace BlossomRally
 
         public static void Close()
         {
-            if (Instance != null && Instance.open) { Instance.open = false; Instance.closeTime = Time.unscaledTime; }
+            if (Instance != null && Instance.open)
+            {
+                if (Instance.worldMode) { Instance.CloseWorld(null); return; }
+                Instance.open = false; Instance.closeTime = Time.unscaledTime;
+            }
         }
 
         void DoOpen(System.Action<int> pick, System.Action back)
         {
             if (world == null && WorldHooks.World != null) OnWorld(WorldHooks.World);
             else if (routes.Count == 0 && world != null) BuildRoutes();
+            worldMode = false;
             onPick = pick;
             onBack = back;
             open = true;
@@ -435,6 +447,7 @@ namespace BlossomRally
             if (!open || Time.frameCount == openFrame) return;
             if (SettingsMenu.Instance != null && SettingsMenu.Instance.IsOpen) return;
             float dt = Time.unscaledDeltaTime;
+            if (worldMode) { UpdateWorld(dt); return; }
             if (routes.Count > 0)
             {
                 if (InputReader.MenuUp) Select(selected - 1);
@@ -458,7 +471,7 @@ namespace BlossomRally
             float now = Time.unscaledTime;
             bool closing = !open && now - closeTime < 0.35f;
             if (!open && !closing) return;
-            GUI.depth = -10;
+            GUI.depth = worldMode ? -13 : -10;     // world map: above the stage HUD (-10) and score pop-ups (-12)
             MenuArt.Styles();
             float W = Screen.width, H = Screen.height, s = MenuArt.S;
             float openK = open ? MenuArt.EaseOut((now - openTime) / 0.7f) : 1f - MenuArt.Ease((now - closeTime) / 0.35f);
@@ -510,12 +523,17 @@ namespace BlossomRally
 
             // ---- list ----
             float listA = open ? MenuArt.Ease((now - openTime - 0.2f) / 0.45f) : openK;
-            if (listA > 0.01f) DrawList(listRect, s, listA, now);
+            if (listA > 0.01f)
+            {
+                if (worldMode) DrawWorldPanel(listRect, s, listA, now);
+                else DrawList(listRect, s, listA, now);
+            }
 
             if (open)
             {
-                HandleMouse(e);
-                if (mouseMoved && !dragging) hoverRoute = mapRect.Contains(e.mousePosition) ? RouteAt(e.mousePosition, 14f * s) : -1;
+                if (worldMode) HandleMouseWorld(e);
+                else HandleMouse(e);
+                if (!worldMode && mouseMoved && !dragging) hoverRoute = mapRect.Contains(e.mousePosition) ? RouteAt(e.mousePosition, 14f * s) : -1;
                 // nothing underneath (title menu) may react to clicks while the map is up
                 if (e.type == EventType.MouseDown || e.type == EventType.MouseUp || e.type == EventType.ScrollWheel) e.Use();
             }
@@ -538,6 +556,7 @@ namespace BlossomRally
         void Animate()
         {
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+            if (worldMode) { AnimateWorld(dt); return; }
             Vector2 tc;
             float ts;
             if (routes.Count == 0 || overview || Time.unscaledTime < openTime + 0.35f)
@@ -600,6 +619,7 @@ namespace BlossomRally
                 MenuArt.Text(new Rect(clip.x, clip.center.y - 20f * s, clip.width, 40f * s), world == null ? "The valley is still loading..." : "Painting the valley...",
                              MenuArt.Mid, MenuArt.A(MenuArt.Ink, 0.55f + 0.25f * Mathf.Sin(now * 3f)), false);
             }
+            if (worldMode) { DrawWorld(clip, s, now); return; }
             if (routes.Count == 0) return;
 
             // ---- routes (GL) ----

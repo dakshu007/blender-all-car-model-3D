@@ -3,7 +3,7 @@
 # livery -> build -> inspect -> previews -> FBX export -> validation.
 #
 #   BLENDER=/Applications/Blender.app/Contents/MacOS/Blender ./run_car_pipeline.sh CAR-002 [CAR-008 ...]
-#   BPY_PYTHON=/path/to/venv/bin/python ./run_car_pipeline.sh all
+#   BPY_PYTHON=/path/to/venv/bin/python ./run_car_pipeline.sh all      (or: new = CAR-020..031)
 #
 # Env: VERSION=v001  SAMPLES=32  OVERWRITE=1 (replace an existing working file)
 # (CAR-009 has its own dedicated script: run_car009_pipeline.sh)
@@ -27,6 +27,8 @@ run_blender() {
 CARS=("$@")
 if [[ "${#CARS[@]}" -eq 0 || "${CARS[0]}" == "all" ]]; then
   read -r -a CARS <<< "$(cd "$HERE/cars" && python3 -c 'from collection_specs import ORDER; print(" ".join(ORDER))')"
+elif [[ "${CARS[0]}" == "new" ]]; then   # CAR-020..031
+  read -r -a CARS <<< "$(cd "$HERE/cars" && python3 -c 'from collection_specs import NEW_ORDER; print(" ".join(NEW_ORDER))')"
 fi
 
 for CAR in "${CARS[@]}"; do

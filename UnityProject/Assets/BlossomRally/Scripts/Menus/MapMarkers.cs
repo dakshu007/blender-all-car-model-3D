@@ -32,6 +32,17 @@ namespace BlossomRally
         public bool landmark;
         public float labelW = -1f, labelH;    // cached label size (MenuArt.Tiny) for the current resolution
         public int labelStyleH;
+        string kindLine;
+        /// <summary>"Temple  ·  Lotus Coast" (cached).</summary>
+        public string KindLine
+        {
+            get
+            {
+                if (kindLine == null) kindLine = (eventIndex >= 0 ? (icon == MapIcon.Drift ? "Drift challenge" : "Rally stage · time attack") : MapMarkers.IconName(icon))
+                                                 + "  ·  " + MapMarkers.RegionName(region);
+                return kindLine;
+            }
+        }
     }
 
     public static class MapMarkers
@@ -552,8 +563,8 @@ namespace BlossomRally
     /// <summary>Immediate-mode GL triangles in GUI coordinates (y down): on screen (OnGUI Repaint) or into a RenderTexture.</summary>
     public static class MapGL
     {
-        static Material col, tex;
-        static bool tried, linear, batching;
+        static Material col, colPre, tex;
+        static bool tried, linear, batching, premul;
         static float H;
         static Rect clip;
         static RenderTexture prevRT;
@@ -574,6 +585,9 @@ namespace BlossomRally
                         col.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
                         col.SetInt("_ZWrite", 0);
                         col.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
+                        // render-texture pass: premultiplied colours keep the target's alpha at 1 under translucent lines
+                        colPre = new Material(col) { name = "BR_MapGLPremul", hideFlags = HideFlags.HideAndDontSave };
+                        colPre.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
                     }
                     Shader ts = Shader.Find("Sprites/Default");
                     if (ts == null) ts = Shader.Find("UI/Default");
@@ -592,6 +606,7 @@ namespace BlossomRally
             if (Event.current == null || Event.current.type != EventType.Repaint || !Ready) return false;
             clip = clipRect;
             linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
+            premul = false;
             H = Screen.height;
             col.SetPass(0);
             GL.PushMatrix();
@@ -613,6 +628,7 @@ namespace BlossomRally
         {
             if (rt == null || !Ready) return false;
             linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
+            premul = true;
             prevRT = RenderTexture.active;
             RenderTexture.active = rt;
             GL.PushMatrix();
@@ -632,13 +648,14 @@ namespace BlossomRally
             GL.PopMatrix();
             RenderTexture.active = prevRT;
             prevRT = null;
+            premul = false;
         }
 
         /// <summary>Start a run of coloured primitives (inside BeginTarget).</summary>
         public static void Colored()
         {
             if (batching) return;
-            col.SetPass(0);
+            (premul ? colPre : col).SetPass(0);
             GL.Begin(GL.TRIANGLES);
             batching = true;
         }
@@ -651,7 +668,7 @@ namespace BlossomRally
             tex.mainTexture = t;
             tex.SetPass(0);
             GL.Begin(GL.QUADS);
-            GL.Color(Lin(c));
+            GL.Color(Lin(c));         // Sprites/Default premultiplies in its shader
             GL.TexCoord2(u0.x, u0.y); V(p0);
             GL.TexCoord2(u1.x, u1.y); V(p1);
             GL.TexCoord2(u2.x, u2.y); V(p2);
@@ -660,7 +677,12 @@ namespace BlossomRally
         }
 
         static Color Lin(Color c) { return linear ? new Color(c.linear.r, c.linear.g, c.linear.b, c.a) : c; }
-        static void C(Color c) { GL.Color(Lin(c)); }
+        static void C(Color c)
+        {
+            Color l = Lin(c);
+            if (premul) l = new Color(l.r * l.a, l.g * l.a, l.b * l.a, l.a);
+            GL.Color(l);
+        }
         static void V(Vector2 p) { GL.Vertex3(p.x, H - p.y, 0f); }
 
         public static void Seg(Vector2 a, Vector2 b, float width, Color c)

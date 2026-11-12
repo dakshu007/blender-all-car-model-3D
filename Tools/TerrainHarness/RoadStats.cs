@@ -102,7 +102,7 @@ public static class RoadStats
             }
             // cut / fill faces and poke-through
             float maxSlope = 0f, poke4 = -9f, poke8 = -9f, poke16 = -9f, gap = 0f;
-            int made = 0;
+            int made = 0; Vector2 pokeAt = Vector2.zero; float pokeLat = 0f;
             for (int i = 0; i < n; i += 3)
             {
                 var s = L[i];
@@ -121,7 +121,15 @@ public static class RoadStats
                         float hq = F.HeightAt(q.x, q.y), nq = F.BaseHeight(q.x, q.y);
                         float sl = SlopeDeg(hq - hp, 2f), nsl = SlopeDeg(nq - np, 2f);
                         if (sl > maxSlope) maxSlope = sl;
-                        if (sl > 45f && nsl < 40f) made++;
+                        if (sl > 45f && nsl < 40f)
+                        {
+                            made++;
+                            if (Environment.GetEnvironmentVariable("DEBUGROAD") == def.name && made < 6)
+                            {
+                                Console.WriteLine($"   made@{q} e={e} side={side} s={s.distance:F0} road h={s.height:F1}");
+                                for (float ee = 0; ee <= 30; ee += 2f) { Vector2 qq = s.pos + rt * side * (s.halfWidth + ee); Console.WriteLine($"      e{ee,3}: final {F.HeightAt(qq.x, qq.y),7:F2} base {F.BaseHeight(qq.x, qq.y),7:F2}"); }
+                            }
+                        }
                         hp = hq; np = nq;
                     }
                 }
@@ -131,11 +139,12 @@ public static class RoadStats
                     float lat = s.halfWidth * k / 4f;
                     Vector2 q = s.pos + rt * lat;
                     RoadSample o;
-                    F.NearestRoad(q, out o, 20f);
-                    if (o.road != r && Math.Abs(k) < 4) { }      // another road on top here: it has its own check
+                    float dO = F.NearestRoad(q, out o, 20f);
+                    if (o.road != r && dO < o.halfWidth + 0.3f) continue;     // inside another road (clipped there)
                     if (o.bridge) continue;
                     float surf = s.SurfaceAt(lat);
-                    poke4 = Math.Max(poke4, MeshH(q.x, q.y, 1) - surf);
+                    float pk = MeshH(q.x, q.y, 1) - surf;
+                    if (pk > poke4) { poke4 = pk; pokeAt = q; pokeLat = lat; }
                     if (i % 6 == 0)
                     {
                         poke8 = Math.Max(poke8, MeshH(q.x, q.y, 2) - surf);
@@ -148,6 +157,17 @@ public static class RoadStats
                     gap = Math.Max(gap, s.SurfaceAt(side * s.halfWidth) - MeshH(q.x, q.y, 1));
                 }
             }
+            if (poke4 > 0.02f) Console.WriteLine($"   poke {poke4 * 100:F0} cm at {pokeAt} lat {pokeLat:F1}");
+            // layout shift: how far the final centreline moved from the designer's Catmull-Rom line
+            var orig = Spline.Sample(def.points, def.closed, 1f);
+            float shift = 0f;
+            for (int i = 0; i < n; i += 2)
+            {
+                float bd = 1e9f;
+                for (int j = 0; j < orig.Count; j++) bd = Math.Min(bd, (orig[j] - L[i].pos).sqrMagnitude);
+                shift = Math.Max(shift, (float)Math.Sqrt(bd));
+            }
+            if (shift > 1.5f) Console.WriteLine($"   layout shift {shift:F1} m");
             totalMade += made; totalFolds += folds;
             worstPoke = Math.Max(worstPoke, poke4); worstKink = Math.Max(worstKink, maxTurn); worstSlope = Math.Max(worstSlope, maxSlope);
             Console.WriteLine($"{def.name,-38} {maxTurn,5:F1} {maxDK * 1000,6:F1} {spMin,4:F2}..{spMax,4:F2} {folds,5}  {maxSlope,8:F1}  {made,7}  {maxBank * 100,5:F1}  {poke4 * 100,7:F0} {poke8 * 100,6:F0} {poke16 * 100,6:F0}  {gap * 100,6:F0}");
@@ -229,6 +249,10 @@ public static class RoadStats
                     }
             }
         foreach (var l in lines) Console.WriteLine(l);
+        Console.WriteLine("WorldField junctions (slave <- master):");
+        foreach (var j in field.junctions)
+            if (only == null || field.roads[j.slave].region.ToString() == only || field.roads[j.master].region.ToString() == only)
+                Console.WriteLine($"  {field.roads[j.slave].name,-30} <- {field.roads[j.master].name,-30} {(j.endToEnd ? "end-to-end" : "T")} slaveEnd {j.slaveEnd} mouth {j.mouth}");
         Console.WriteLine($"junction ends: {count}, crossings: {xs}, worst mouth mismatch {worst * 100:F0} cm");
     }
 

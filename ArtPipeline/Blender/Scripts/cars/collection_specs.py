@@ -346,3 +346,8 @@ SPECS["CAR-019"] = {
 }
 
 ORDER = ["CAR-002", "CAR-008", "CAR-016", "CAR-004", "CAR-017", "CAR-006", "CAR-018", "CAR-019"]
+
+# CAR-020..031: the twelve cars for the six-region world (snow, desert, city, mountains)
+from collection_specs_new import NEW_ORDER, NEW_SPECS  # noqa: E402
+
+SPECS.update(NEW_SPECS)

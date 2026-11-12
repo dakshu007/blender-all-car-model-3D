@@ -105,6 +105,10 @@ namespace BlossomRally
             stages = gameObject.AddComponent<StageManager>();
             replay = gameObject.AddComponent<ReplaySystem>();
             photo = gameObject.AddComponent<PhotoMode>();
+            gameObject.AddComponent<Minimap>().useGUILayout = false;
+            // none of these use GUILayout: skip the IMGUI layout pass and its per-frame garbage
+            useGUILayout = false;
+            garage.useGUILayout = settings.useGUILayout = stages.useGUILayout = replay.useGUILayout = photo.useGUILayout = false;
             foreach (var l in FindAll<Light>())
                 if (l != Atmosphere.Sun && l.type == LightType.Directional) l.enabled = false;
 
@@ -159,6 +163,7 @@ namespace BlossomRally
             pauseMenu.Add("Quit event", () => { SetPaused(false); stages.Abort(); }, null, null, () => stages != null && stages.Running);
             pauseMenu.Add("Fast travel", () => { SetPaused(false); FastTravel(TravelOrder[(travelRegion % 6 + 6) % 6]); }, () => TravelName(travelRegion),
                           d => travelRegion = (travelRegion + d + 6) % 6, () => stages == null || !stages.Running);
+            pauseMenu.Add("World map", () => { SetPaused(false); OpenWorldMap(); });
             pauseMenu.Add("Weather", null, () => atmosphere.Current.name, d => atmosphere.SetWeather(atmosphere.WeatherIndex + d));
             pauseMenu.Add("Time of day", null, () => atmosphere.CurrentTime.name, d => atmosphere.SetTimeOfDay(atmosphere.TimeIndex + d));
             pauseMenu.Add("Petals", null, () => PetalNames[petals.level], d => petals.SetLevel(petals.level + d));
@@ -193,6 +198,17 @@ namespace BlossomRally
             var id = TravelOrder[(i % 6 + 6) % 6];
             var reg = world != null && world.Field != null ? world.Field.RegionOf(id) : null;
             return reg != null ? reg.Name : id.ToString();
+        }
+
+        /// <summary>Full-screen world map (M / d-pad down): pauses the game; waypoint + GPS, fast travel and event starts.</summary>
+        void OpenWorldMap()
+        {
+            bool racing = stages != null && stages.Running;
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
+            ValleyMap.OpenWorld(() => { Time.timeScale = 1f; AudioListener.pause = false; },
+                                racing ? (System.Action<RegionId>)null : FastTravel,
+                                racing ? (System.Action<int>)null : (i => stages.StartEvent(i)));
         }
 
         /// <summary>Put the car on a road in another region (pause menu).</summary>
@@ -341,6 +357,7 @@ namespace BlossomRally
         void Update()
         {
             fpsSmooth = Mathf.Lerp(fpsSmooth, Time.unscaledDeltaTime, 0.05f);
+            FpsCounter.Tick();
             if (Input2.FpsToggle) GameSettings.ShowFps = !GameSettings.ShowFps;
             if (state == State.Loading) return;
             if (settings.IsOpen) return;
@@ -383,6 +400,7 @@ namespace BlossomRally
                 Toast("Nothing to replay yet");
             }
             if (InputReader.ActionDown(GameAction.Photo)) { photo.Enter(); return; }
+            if (InputReader.ActionDown(GameAction.Map) && !results) { OpenWorldMap(); return; }
             if (InputReader.Down(KeyCode.P) || GamepadBridge.ButtonDown(PadButton.DpadUp)) { petals.CycleLevel(); Toast("Petals: " + PetalNames[petals.level]); }
             if (InputReader.Down(KeyCode.G) || GamepadBridge.ButtonDown(PadButton.DpadRight)) { atmosphere.CycleWeather(); Toast("Weather: " + atmosphere.Current.name); }
             if (InputReader.Down(KeyCode.T) || GamepadBridge.ButtonDown(PadButton.DpadLeft)) { atmosphere.CycleTimeOfDay(); Toast("Time of day: " + atmosphere.CurrentTime.name); }
@@ -485,8 +503,7 @@ namespace BlossomRally
             Color white = UI.White, pink = UI.Pink;
             if (state == State.Drive && !HideHud)
                 UI.Label(new Rect(8, 4, 260, 20), BuildInfo.Label, UI.Small, new Color(1f, 1f, 1f, 0.45f));
-            if (GameSettings.ShowFps)
-                UI.Label(new Rect(W - 130, 8, 120, 24), Mathf.RoundToInt(1f / Mathf.Max(0.001f, fpsSmooth)) + " fps", UI.MidRight, white);
+            FpsCounter.Draw();
             if (!InputReader.Legacy)
             {
                 UI.Panel(new Rect(0, 0, W, 60), 0.8f);
@@ -513,7 +530,7 @@ namespace BlossomRally
                 float rw = Mathf.Min(W - 40f, 620f);
                 UI.Panel(new Rect((W - rw) * 0.5f, logoBottom + 64, rw, 30), 0.6f);
                 UI.Label(new Rect((W - rw) * 0.5f, logoBottom + 64, rw, 30), BuildInfo.UpdateNote.ToUpperInvariant(), UI.SmallCentre, UI.Gold);
-                UI.Label(new Rect(W - 520, 10, 510, 22), BuildInfo.FeedbackHint, new GUIStyle(UI.Small) { alignment = TextAnchor.UpperRight }, new Color(1f, 1f, 1f, 0.75f));
+                UI.Label(new Rect(W - 520, 10, 510, 22), BuildInfo.FeedbackHint, UI.SmallRight, new Color(1f, 1f, 1f, 0.75f));
                 activeTitleMenu.Draw(W * 0.5f, H * 0.62f);
                 UI.Label(new Rect(0, H - 34, W, 24), InputReader.PadConnected ? "Gamepad connected" : "Keyboard  ·  plug in a gamepad for analogue steering and rumble",
                          UI.SmallCentre, new Color(1f, 1f, 1f, 0.7f));
@@ -528,11 +545,24 @@ namespace BlossomRally
             // ---- driving HUD ----
             if (car != null)
             {
-                UI.Label(new Rect(W - 330, H - 120, 300, 60), Mathf.RoundToInt(car.SpeedKmh) + " km/h", UI.Big, white);
-                UI.Label(new Rect(W - 330, H - 60, 300, 30), spec.name + "   ·   gear " + car.GearLabel, UI.MidRight, pink);
+                // HUD strings are rebuilt only when the shown value changes (no garbage per frame)
+                int kmh = Mathf.RoundToInt(car.SpeedKmh);
+                if (kmh != hudKmh || hudSpeed == null) { hudKmh = kmh; hudSpeed = kmh + " km/h"; }
+                UI.Label(new Rect(W - 330, H - 120, 300, 60), hudSpeed, UI.Big, white);
+                int gk = car.IsReversing ? -1 : car.Gear;          // GearLabel would allocate every frame
+                if (hudGear == null || gk != hudGearV || !ReferenceEquals(spec.name, hudCarFor))
+                {
+                    hudGear = spec.name + "   ·   gear " + car.GearLabel;
+                    hudGearV = gk; hudCarFor = spec.name;
+                }
+                UI.Label(new Rect(W - 330, H - 60, 300, 30), hudGear, UI.MidRight, pink);
             }
             if (!stages.Running)
-                UI.Label(new Rect(20, H - 60, 500, 30), "Score " + Mathf.RoundToInt(totalScore) + "    Best drift " + Mathf.RoundToInt(bestDrift), UI.MidLeft, white);
+            {
+                int sc = Mathf.RoundToInt(totalScore), bd = Mathf.RoundToInt(bestDrift);
+                if (sc != hudScoreV || bd != hudBestV || hudScore == null) { hudScoreV = sc; hudBestV = bd; hudScore = "Score " + sc + "    Best drift " + bd; }
+                UI.Label(new Rect(20, Mathf.Min(H - 60, Minimap.TopEdge - 30), 500, 30), hudScore, UI.MidLeft, white);
+            }
             if (car != null && car.IsDrifting)
             {
                 float bw = 280f, bx = (W - bw) * 0.5f, by = H - 46f;
@@ -543,14 +573,21 @@ namespace BlossomRally
                 GUI.color = white;
                 GUI.DrawTexture(new Rect(bx + bw * Mathf.Clamp01(car.DriftTargetAngle / 60f) - 1.5f, by - 4, 3, 18), Texture2D.whiteTexture);
                 GUI.color = oc;
-                UI.Label(new Rect(0, by - 34, W, 28), (car.DriftDirection > 0 ? "DRIFT  >  " : "<  DRIFT  ") + Mathf.RoundToInt(car.DriftAngle) + "°", UI.Mid, white);
+                int ang = Mathf.RoundToInt(car.DriftAngle);
+                bool right = car.DriftDirection > 0;
+                int dk = ang * 2 + (right ? 1 : 0);
+                if (dk != hudDriftV || hudDrift == null) { hudDriftV = dk; hudDrift = (right ? "DRIFT  >  " : "<  DRIFT  ") + ang + "°"; }
+                UI.Label(new Rect(0, by - 34, W, 28), hudDrift, UI.Mid, white);
             }
             if (!stages.Running)
             {
                 if (drifting && driftPoints > 10f)
                 {
-                    UI.Label(new Rect(0, 70, W, 40), "DRIFT  x" + driftCombo.ToString("0"), UI.Mid, pink);
-                    UI.Label(new Rect(0, 104, W, 50), Mathf.RoundToInt(driftPoints).ToString(), UI.Title, white);
+                    int cb = Mathf.RoundToInt(driftCombo), dp = Mathf.RoundToInt(driftPoints);
+                    if (cb != hudComboV || hudCombo == null) { hudComboV = cb; hudCombo = "DRIFT  x" + cb; }
+                    if (dp != hudPtsV || hudPts == null) { hudPtsV = dp; hudPts = dp.ToString(); }
+                    UI.Label(new Rect(0, 70, W, 40), hudCombo, UI.Mid, pink);
+                    UI.Label(new Rect(0, 104, W, 50), hudPts, UI.Title, white);
                 }
                 else if (lastDriftTimer > 0f)
                     UI.Label(new Rect(0, 90, W, 50), lastDrift, UI.Title, new Color(pink.r, pink.g, pink.b, Mathf.Clamp01(lastDriftTimer)));
@@ -559,7 +596,37 @@ namespace BlossomRally
             if (showHelp && !paused)
             {
                 UI.Panel(new Rect(16, 16, 430, 352), 0.45f);
-                UI.Label(new Rect(30, 26, 410, 340),
+                if (helpText == null || Time.frameCount >= helpCheck)
+                {
+                    helpCheck = Time.frameCount + 30;                  // key bindings can change in the settings
+                    int st = BindingStamp();
+                    if (helpText == null || st != helpStamp) { helpStamp = st; helpText = BuildHelp(); }
+                }
+                UI.Label(new Rect(30, 26, 410, 340), helpText, UI.Small, white);
+            }
+            if (paused)
+            {
+                UI.Panel(new Rect(0, 0, W, H), 0.3f);
+                pauseMenu.Draw(W * 0.5f, H * 0.5f);
+            }
+        }
+
+        // ---- cached HUD text (rebuilt only when the value changes)
+        int hudKmh = int.MinValue, hudScoreV = int.MinValue, hudBestV = int.MinValue, hudDriftV = int.MinValue, hudComboV = int.MinValue, hudPtsV = int.MinValue;
+        int hudGearV = int.MinValue;
+        string hudSpeed, hudGear, hudCarFor, hudScore, hudDrift, hudCombo, hudPts, helpText;
+        int helpCheck, helpStamp;
+
+        static int BindingStamp()
+        {
+            int h = 17;
+            for (int a = 0; a <= (int)GameAction.Photo; a++) h = h * 31 + (int)GameSettings.Binding((GameAction)a);
+            return h;
+        }
+
+        static string BuildHelp()
+        {
+            return
                       Key(GameAction.Throttle) + " / ↑ throttle     " + Key(GameAction.Brake) + " / ↓ brake, reverse\n" +
                       Key(GameAction.SteerLeft) + " " + Key(GameAction.SteerRight) + " / ← → steer     " + Key(GameAction.Handbrake) + " handbrake\n\n" +
                       "DRIFT: hold " + Key(GameAction.Handbrake) + " + steer to kick the tail out\n" +
@@ -568,14 +635,8 @@ namespace BlossomRally
                       "   " + Key(GameAction.Handbrake) + " + steer the other way = switch sides\n\n" +
                       Key(GameAction.Reset) + " reset    " + Key(GameAction.Camera) + " camera    " + Key(GameAction.Replay) + " replay    " + Key(GameAction.Photo) + " photo\n" +
                       "G weather    T time of day    P petals    F grade\n" +
-                      "1 - 9 switch car    TAB garage    ESC pause    H help\n" +
-                      "Gamepad: RT/LT drive, stick steer, A/B handbrake,\nY camera, X photo, LB replay, Select reset, Start pause", UI.Small, white);
-            }
-            if (paused)
-            {
-                UI.Panel(new Rect(0, 0, W, H), 0.3f);
-                pauseMenu.Draw(W * 0.5f, H * 0.5f);
-            }
+                      "1 - 9 switch car    TAB garage    M map    ESC pause    H help\n" +
+                      "Gamepad: RT/LT drive, stick steer, A/B handbrake,\nY camera, X photo, LB replay, Select reset, Start pause";
         }
 
         static string Key(GameAction a)

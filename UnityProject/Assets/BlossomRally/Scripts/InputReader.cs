@@ -148,6 +148,7 @@ namespace BlossomRally
                 case GameAction.Camera: return GamepadBridge.ButtonDown(PadButton.North);
                 case GameAction.Photo: return GamepadBridge.ButtonDown(PadButton.West);
                 case GameAction.Replay: return GamepadBridge.ButtonDown(PadButton.LeftShoulder);
+                case GameAction.Map: return GamepadBridge.ButtonDown(PadButton.DpadDown);
                 default: return false;
             }
         }

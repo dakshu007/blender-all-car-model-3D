@@ -32,6 +32,20 @@ namespace BlossomRally
         }
     }
 
+    /// <summary>A road (slave) ending on another road (master): a T junction, or an end-to-end joint.</summary>
+    public sealed class RoadJunction
+    {
+        public int slave, master;
+        /// <summary>0 = the slave's first sample touches the master, 1 = its last.</summary>
+        public int slaveEnd;
+        /// <summary>The master ends here too (masterEnd 0 / 1), e.g. a connector running into a region road.</summary>
+        public bool endToEnd;
+        public int masterEnd = -1;
+        public Vector2 point;
+        /// <summary>First slave sample outside the master's footprint.</summary>
+        public int mouth = -1;
+    }
+
     public sealed class BridgeInfo { public int road; public List<int> idx; public float sHit, span, arch, total; }
 
     public sealed class WorldField
@@ -54,7 +68,6 @@ namespace BlossomRally
         public readonly Region[] regions = new Region[6];
         public bool RoadsReady { get; private set; }
 
-        readonly Dictionary<long, List<int>> roadGrid = new Dictionary<long, List<int>>();
         readonly Dictionary<long, List<int>> riverGrid = new Dictionary<long, List<int>>();
         readonly float[] wbuf = new float[6];
         readonly float[] hbuf = new float[6];
@@ -237,19 +250,95 @@ namespace BlossomRally
             float k = MapData.LakeK(p);
             if (k < 1.4f) h = Mathf.Lerp(-2.8f, h, Spline.SmoothStep(0.92f, 1.4f, k));
             h = ApplyPads(p, h);
-            RoadSample rs;
-            float dist = NearestRoad(p, out rs, 44f);
-            if (dist < 44f && !rs.bridge)
+            if (!RoadsReady) return h;
+            RoadSample a, b;
+            float da, db;
+            int found = NearestTwo(p, SearchReach, out a, out da, out b, out db);
+            if (found == 0 || a.bridge) return h;
+            da = SquareEnds(a, da, p);
+            if (found == 2) db = SquareEnds(b, db, p);
+            float ea;
+            float ha = RoadProfile(a, da, p, h, out ea);
+            if (found == 1 || b.bridge || db >= ProfileReach(b)) return ha;
+            // two stretches of road (a junction, two hairpin legs, parallel roads): blend their profiles by edge
+            // distance, so the ground between them is a continuous ramp instead of a step at the half-way line
+            float eb;
+            float hb = RoadProfile(b, db, p, h, out eb);
+            float A = Mathf.Max(0f, ea), B = Mathf.Max(0f, eb);
+            if (A + B < 1e-3f) return Mathf.Min(ha, hb);
+            float w = A * A / (A * A + B * B);
+            return ha + (hb - ha) * w;
+        }
+
+        /// <summary>Past the open end of a road its shoulder wraps round square (not as a round cap reaching hw out).</summary>
+        float SquareEnds(RoadSample s, float d, Vector2 p)
+        {
+            if (roads[s.road].closed) return d;
+            Vector2 outward;
+            if (s.distance < 0.01f) outward = -s.tangent;
+            else if (s.distance > roadTotal[s.road] - 0.01f) outward = s.tangent;
+            else return d;
+            float beyond = Vector2.Dot(p - s.pos, outward);
+            if (beyond <= 0f) return d;
+            float lat = Mathf.Abs(Vector2.Dot(p - s.pos, s.Right));
+            return s.halfWidth + Mathf.Max(lat - s.halfWidth, beyond);
+        }
+
+        float ProfileReach(RoadSample s)
+        {
+            var def = roads[s.road];
+            return def.fixedHeight ? s.halfWidth + 1f + def.cutWidth : s.halfWidth + Shoulder + ConeReach;
+        }
+
+        /// <summary>
+        /// Ground height beside one road. Under the road and on a short shoulder the ground sits just below the surface
+        /// (following its bank); beyond the shoulder the cut / fill face rises (or falls) at most ConeSlope per metre
+        /// (about 37 deg, gentler on the wide connector corridors) with a rounded toe, and meets the natural ground with
+        /// a soft crease. Only far out (beyond ~12 m) may it steepen, so very deep cuts still close within ConeReach.
+        /// </summary>
+        float RoadProfile(RoadSample s, float d, Vector2 p, float h, out float edge)
+        {
+            var def = roads[s.road];
+            float hw = s.halfWidth;
+            edge = d - hw;
+            if (def.fixedHeight)
             {
-                float inner = rs.halfWidth + 1.0f;
-                float cut = roads[rs.road].cutWidth;
-                if (dist < inner + cut)
-                {
-                    float target = rs.height - 0.08f;
-                    h = Mathf.Lerp(target, h, Spline.SmoothStep(inner, inner + cut, dist));
-                }
+                // flat city streets / causeways: the classic blend (the regions build kerbs and quays to it)
+                float inF = hw + 1f;
+                if (d >= inF + def.cutWidth) return h;
+                return Mathf.Lerp(s.height - 0.08f, h, Spline.SmoothStep(inF, inF + def.cutWidth, d));
             }
-            return h;
+            float run = edge - Shoulder;
+            if (run >= ConeReach) return h;
+            float lat = Mathf.Clamp(Vector2.Dot(p - s.pos, s.Right), -hw, hw);
+            float drop = 0.12f + 0.05f * Mathf.Clamp(edge, 0f, Shoulder);
+            float T = s.height + s.bank * lat - drop;
+            if (run <= 0f) return T;
+            float m = Mathf.Min(ConeSlope, 9f / Mathf.Max(1f, def.cutWidth));
+            float extra = run - 16f;
+            float cone = m * run * run / (run + 1.5f) + (extra > 0f ? 0.02f * extra * extra : 0f);
+            float dv = h - T;
+            float ad = Mathf.Abs(dv);
+            float soft = Mathf.Min(1f, 0.5f * cone);
+            float lim = SMin(ad, cone, soft);
+            float hc = T + (dv < 0f ? -lim : lim);
+            // the face lets go at its reach; anything still steeper there is natural cliff
+            float rel = Spline.SmoothStep(ConeReach - 6f, ConeReach, run);
+            return hc + (h - hc) * rel;
+        }
+
+        static float SMin(float a, float b, float k)
+        {
+            if (k < 1e-4f) return a < b ? a : b;
+            float d = a - b;
+            return 0.5f * (a + b - Mathf.Sqrt(d * d + k * k));
+        }
+
+        static float SMax(float a, float b, float k)
+        {
+            if (k < 1e-4f) return a > b ? a : b;
+            float d = a - b;
+            return 0.5f * (a + b + Mathf.Sqrt(d * d + k * k));
         }
 
         // ------------------------------------------------------------------ pads
@@ -326,25 +415,145 @@ namespace BlossomRally
         }
 
         // ------------------------------------------------------------------ roads
+        /// <summary>Ground beside roads: a flat shoulder this wide (m), then cut / fill faces no steeper than ConeSlope
+        /// (rise per metre, ~37 deg) out to ConeReach metres beyond the shoulder.</summary>
+        public const float Shoulder = 3f, ConeSlope = 0.75f, ConeReach = 32f, SearchReach = 44f;
+        /// <summary>Steepest bank on fast asphalt bends (m per m).</summary>
+        public const float BankMax = 0.045f;
+        public static int FairIters = 20, FairIters2 = 14;
+
+        /// <summary>Where a road (slave) ends on another road (master): T junctions and end-to-end joints.</summary>
+        public readonly List<RoadJunction> junctions = new List<RoadJunction>();
+
+        int[] roadStart, roadCount;
+        float[] roadTotal;
+        Vector2[] spos;
+        const float RoadCell = 16f;
+        int rgX0, rgZ0, rgW, rgH;
+        int[] rgStart, rgItems;
+
+        void BuildRoadGrid()
+        {
+            int n = allSamples.Count;
+            spos = new Vector2[n];
+            roadStart = new int[roads.Count];
+            roadCount = new int[roads.Count];
+            roadTotal = new float[roads.Count];
+            for (int r = 0, k = 0; r < roads.Count; r++)
+            {
+                var l = roadSamples[r];
+                roadStart[r] = k; roadCount[r] = l.Count; k += l.Count;
+                roadTotal[r] = l.Count == 0 ? 0f : l[l.Count - 1].distance + (roads[r].closed ? Vector2.Distance(l[l.Count - 1].pos, l[0].pos) : 0f);
+            }
+            if (n == 0) { rgStart = null; return; }
+            int minX = int.MaxValue, minZ = int.MaxValue, maxX = int.MinValue, maxZ = int.MinValue;
+            var cx = new int[n]; var cz = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                Vector2 p = allSamples[i].pos;
+                spos[i] = p;
+                cx[i] = Mathf.FloorToInt(p.x / RoadCell); cz[i] = Mathf.FloorToInt(p.y / RoadCell);
+                minX = Mathf.Min(minX, cx[i]); maxX = Mathf.Max(maxX, cx[i]);
+                minZ = Mathf.Min(minZ, cz[i]); maxZ = Mathf.Max(maxZ, cz[i]);
+            }
+            rgX0 = minX; rgZ0 = minZ; rgW = maxX - minX + 1; rgH = maxZ - minZ + 1;
+            rgStart = new int[rgW * rgH + 1];
+            for (int i = 0; i < n; i++) rgStart[(cz[i] - rgZ0) * rgW + (cx[i] - rgX0) + 1]++;
+            for (int c = 0; c < rgW * rgH; c++) rgStart[c + 1] += rgStart[c];
+            var fill = (int[])rgStart.Clone();
+            rgItems = new int[n];
+            for (int i = 0; i < n; i++) rgItems[fill[(cz[i] - rgZ0) * rgW + (cx[i] - rgX0)]++] = i;
+        }
+
+        bool CellRange(Vector2 p, float maxDist, out int x0, out int x1, out int z0, out int z1)
+        {
+            int r = Mathf.CeilToInt(maxDist / RoadCell);
+            int cx = Mathf.FloorToInt(p.x / RoadCell) - rgX0, cz = Mathf.FloorToInt(p.y / RoadCell) - rgZ0;
+            x0 = Mathf.Max(0, cx - r); x1 = Mathf.Min(rgW - 1, cx + r);
+            z0 = Mathf.Max(0, cz - r); z1 = Mathf.Min(rgH - 1, cz + r);
+            return rgStart != null && x0 <= x1 && z0 <= z1;
+        }
+
+        int NearestIndex(Vector2 p, float maxDist, float limitSq, int onlyRoad = -1)
+        {
+            int x0, x1, z0, z1;
+            if (!CellRange(p, maxDist, out x0, out x1, out z0, out z1)) return -1;
+            int best = -1;
+            float bestSq = limitSq;
+            for (int z = z0; z <= z1; z++)
+            {
+                int row = z * rgW;
+                for (int x = x0; x <= x1; x++)
+                {
+                    int c = row + x;
+                    for (int k = rgStart[c], e = rgStart[c + 1]; k < e; k++)
+                    {
+                        int i = rgItems[k];
+                        Vector2 q = spos[i];
+                        float dx = q.x - p.x, dz = q.y - p.y, d = dx * dx + dz * dz;
+                        if (d < bestSq && (onlyRoad < 0 || allSamples[i].road == onlyRoad)) { bestSq = d; best = i; }
+                    }
+                }
+            }
+            return best;
+        }
+
+        static RoadSample LerpSample(RoadSample a, RoadSample b, float t)
+        {
+            var s = a;
+            float seg = Vector2.Distance(a.pos, b.pos);
+            s.pos = Vector2.LerpUnclamped(a.pos, b.pos, t);
+            s.height = a.height + (b.height - a.height) * t;
+            s.bank = a.bank + (b.bank - a.bank) * t;
+            s.halfWidth = a.halfWidth + (b.halfWidth - a.halfWidth) * t;
+            s.distance = a.distance + seg * t;
+            Vector2 tg = Vector2.LerpUnclamped(a.tangent, b.tangent, t);
+            s.tangent = tg.sqrMagnitude > 1e-6f ? tg.normalized : a.tangent;
+            s.bridge = t < 0.5f ? a.bridge : b.bridge;
+            return s;
+        }
+
+        /// <summary>Projects p onto the road segments either side of sample idx: the exact centreline point.</summary>
+        float Refine(int idx, Vector2 p, out RoadSample s)
+        {
+            s = allSamples[idx];
+            int r = s.road, n = roadCount[r], li = idx - roadStart[r];
+            bool closed = roads[r].closed;
+            float best = Vector2.Distance(s.pos, p);
+            if (n < 2) return best;
+            for (int k = -1; k <= 0; k++)
+            {
+                int a = li + k, b = a + 1;
+                if (closed) { a = (a + n) % n; b %= n; }
+                else if (a < 0 || b >= n) continue;
+                Vector2 A = spos[roadStart[r] + a], B = spos[roadStart[r] + b];
+                float t;
+                float d = Spline.DistToSegment(p, A, B, out t);
+                if (d < best - 1e-5f)
+                {
+                    best = d;
+                    s = LerpSample(allSamples[roadStart[r] + a], allSamples[roadStart[r] + b], t);
+                }
+            }
+            return best;
+        }
+
+        /// <summary>Nearest point on any road centreline (interpolated between samples) and its distance.</summary>
         public float NearestRoad(Vector2 p, out RoadSample sample, float maxDist = 40f)
         {
             sample = default(RoadSample);
-            int r = Mathf.CeilToInt(maxDist / 16f);
-            int cx = Mathf.FloorToInt(p.x / 16f), cz = Mathf.FloorToInt(p.y / 16f);
-            float best = float.MaxValue;
-            for (int dx = -r; dx <= r; dx++)
-                for (int dz = -r; dz <= r; dz++)
-                {
-                    List<int> list;
-                    if (!roadGrid.TryGetValue(Key(cx + dx, cz + dz), out list)) continue;
-                    foreach (int i in list)
-                    {
-                        var s = allSamples[i];
-                        float d = (s.pos - p).sqrMagnitude;
-                        if (d < best) { best = d; sample = s; }
-                    }
-                }
-            return best == float.MaxValue ? float.MaxValue : Mathf.Sqrt(best);
+            int i = NearestIndex(p, maxDist, float.MaxValue);
+            if (i < 0) return float.MaxValue;
+            return Refine(i, p, out sample);
+        }
+
+        /// <summary>Nearest point on one road's centreline (float.MaxValue when that road is not within maxDist).</summary>
+        public float NearestOnRoad(int road, Vector2 p, out RoadSample sample, float maxDist = 32f)
+        {
+            sample = default(RoadSample);
+            int i = NearestIndex(p, maxDist, float.MaxValue, road);
+            if (i < 0) return float.MaxValue;
+            return Refine(i, p, out sample);
         }
 
         /// <summary>Distance from p to the nearest road edge (99 when no road within 40 m).</summary>
@@ -355,15 +564,88 @@ namespace BlossomRally
             return d >= 40f ? 99f : d - rs.halfWidth;
         }
 
+        /// <summary>Top of the road mesh of one road at p (its nearest centreline point, lateral offset clamped to the road).</summary>
+        public float RoadSurface(int road, Vector2 p)
+        {
+            RoadSample s;
+            if (NearestOnRoad(road, p, out s) == float.MaxValue) return float.MinValue;
+            return s.SurfaceAt(Mathf.Clamp(Vector2.Dot(p - s.pos, s.Right), -s.halfWidth, s.halfWidth));
+        }
+
+        bool SameStretch(int i, int j)
+        {
+            var a = allSamples[i]; var b = allSamples[j];
+            if (a.road != b.road) return false;
+            float d = Mathf.Abs(a.distance - b.distance);
+            if (roads[a.road].closed) d = Mathf.Min(d, roadTotal[a.road] - d);
+            return d < 10f;
+        }
+
+        bool LocalMin(int i, Vector2 p)
+        {
+            int r = allSamples[i].road, n = roadCount[r], li = i - roadStart[r];
+            bool closed = roads[r].closed;
+            float d = (spos[i] - p).sqrMagnitude;
+            for (int k = -1; k <= 1; k += 2)
+            {
+                int j = li + k;
+                if (closed) j = (j + n) % n; else if (j < 0 || j >= n) continue;
+                if ((spos[roadStart[r] + j] - p).sqrMagnitude < d) return false;
+            }
+            return true;
+        }
+
+        /// <summary>The nearest road point and the nearest point on a different stretch (another road, or another leg
+        /// of the same road). Returns how many were found (0..2).</summary>
+        int NearestTwo(Vector2 p, float maxDist, out RoadSample a, out float da, out RoadSample b, out float db)
+        {
+            a = default(RoadSample); b = default(RoadSample); da = db = float.MaxValue;
+            int x0, x1, z0, z1;
+            if (!CellRange(p, maxDist, out x0, out x1, out z0, out z1)) return 0;
+            float lim = maxDist * maxDist;
+            int ia = -1;
+            float best = lim;
+            for (int z = z0; z <= z1; z++)
+                for (int x = x0, c = z * rgW + x0; x <= x1; x++, c++)
+                    for (int k = rgStart[c], e = rgStart[c + 1]; k < e; k++)
+                    {
+                        int i = rgItems[k];
+                        float dx = spos[i].x - p.x, dz = spos[i].y - p.y, d = dx * dx + dz * dz;
+                        if (d < best) { best = d; ia = i; }
+                    }
+            if (ia < 0) return 0;
+            da = Refine(ia, p, out a);
+            int ib = -1;
+            best = lim;
+            for (int z = z0; z <= z1; z++)
+                for (int x = x0, c = z * rgW + x0; x <= x1; x++, c++)
+                    for (int k = rgStart[c], e = rgStart[c + 1]; k < e; k++)
+                    {
+                        int i = rgItems[k];
+                        float dx = spos[i].x - p.x, dz = spos[i].y - p.y, d = dx * dx + dz * dz;
+                        if (d >= best || i == ia || SameStretch(i, ia) || !LocalMin(i, p)) continue;
+                        best = d; ib = i;
+                    }
+            if (ib < 0) return 1;
+            db = Refine(ib, p, out b);
+            return 2;
+        }
+
         public void BuildRoadSamples()
         {
             for (int r = 0; r < roads.Count; r++)
             {
                 var def = roads[r];
-                var pts = Spline.Sample(def.points, def.closed, 2f);
-                // ease every bend to at least 1.8 x the half width, so the inner edge of a hairpin never folds over
+                float rMin = def.width * 0.5f * 1.8f;
+                var pts = Resample(Spline.Sample(def.points, def.closed, 1f), def.closed, 2f);
+                // fair the line first (removes the curvature jumps Catmull-Rom leaves at control points), then ease
+                // every bend to at least 1.8 x the half width so the inner edge of a hairpin never folds over, and
+                // fair lightly again so the eased hairpins blend into their legs
+                pts = Fair(pts, def.closed, FairIters);
                 for (int ease = 0; ease < 6; ease++)
-                    pts = Resample(EaseTightBends(pts, def.closed, def.width * 0.5f * 1.8f), def.closed, 2f);
+                    pts = Resample(EaseTightBends(pts, def.closed, rMin), def.closed, 2f);
+                pts = Resample(Fair(pts, def.closed, FairIters2), def.closed, 2f);
+                pts = Resample(EaseTightBends(pts, def.closed, rMin * 0.97f), def.closed, 2f);
                 var list = new List<RoadSample>(pts.Count);
                 float dist = 0f;
                 for (int i = 0; i < pts.Count; i++)
@@ -414,60 +696,12 @@ namespace BlossomRally
                             list[i] = si;
                         }
                     }
-                // limit the gradient so every road stays drivable (terrain is cut / filled to match)
-                float maxGrade = def.maxGrade;
-                for (int pass = 0; pass < 4; pass++)
-                {
-                    for (int i = 1; i < n + (def.closed ? 1 : 0); i++)
-                    {
-                        int a = (i - 1) % n, b = i % n;
-                        float ds = Vector2.Distance(list[a].pos, list[b].pos) * maxGrade;
-                        var sb = list[b]; sb.height = Mathf.Clamp(sb.height, list[a].height - ds, list[a].height + ds); list[b] = sb;
-                    }
-                    for (int i = n - 2 + (def.closed ? 1 : 0); i >= 0; i--)
-                    {
-                        int a = (i + 1) % n, b = i % n;
-                        float ds = Vector2.Distance(list[a].pos, list[b].pos) * maxGrade;
-                        var sb = list[b]; sb.height = Mathf.Clamp(sb.height, list[a].height - ds, list[a].height + ds); list[b] = sb;
-                    }
-                }
+                ClampGrade(list, def.closed, def.maxGrade);
                 roadSamples.Add(list);
             }
-            // junctions: where a road ends on another road it takes that road's height (2 cm below, so the
-            // through road stays on top) and blends back over 45 m - no step for the car's body to hit.
-            // Roads are processed in order, so a later road follows an earlier one it meets end to end.
-            for (int r = 0; r < roadSamples.Count; r++)
-            {
-                if (roads[r].closed) continue;
-                var list = roadSamples[r];
-                int n = list.Count;
-                for (int end = 0; end < 2; end++)
-                {
-                    int ei = end == 0 ? 0 : n - 1;
-                    Vector2 ep = list[ei].pos;
-                    float best = float.MaxValue, hOther = 0f;
-                    for (int o = 0; o < roadSamples.Count; o++)
-                    {
-                        if (o == r) continue;
-                        foreach (var so in roadSamples[o])
-                        {
-                            float dd = (so.pos - ep).sqrMagnitude;
-                            if (dd < best) { best = dd; hOther = so.height; }
-                        }
-                    }
-                    if (best > 15f * 15f) continue;
-                    float delta = (hOther - 0.02f) - list[ei].height;
-                    float endDist = list[ei].distance;
-                    for (int j = 0; j < n; j++)
-                    {
-                        float along = Mathf.Abs(list[j].distance - endDist);
-                        if (along > 45f) continue;
-                        var sj = list[j];
-                        sj.height += delta * (1f - Spline.SmoothStep(0f, 45f, along));
-                        list[j] = sj;
-                    }
-                }
-            }
+            ComputeBanks();
+            FindJunctions();
+            MatchJunctions();
 
             // bridges where any road crosses the river: the road itself rises into a gentle stone arch
             for (int r = 0; r < roadSamples.Count; r++)
@@ -503,17 +737,263 @@ namespace BlossomRally
                     foreach (var sp in spans)
                         if (list[j].distance >= sp.x && list[j].distance <= sp.y) { var sj = list[j]; sj.bridge = true; list[j] = sj; break; }
             }
+            FadeBankAtBridges();
             for (int r = 0; r < roadSamples.Count; r++)
-                foreach (var s in roadSamples[r])
-                {
-                    int idx = allSamples.Count;
-                    allSamples.Add(s);
-                    long key = Key(Mathf.FloorToInt(s.pos.x / 16f), Mathf.FloorToInt(s.pos.y / 16f));
-                    List<int> l;
-                    if (!roadGrid.TryGetValue(key, out l)) { l = new List<int>(); roadGrid[key] = l; }
-                    l.Add(idx);
-                }
+                foreach (var s in roadSamples[r]) allSamples.Add(s);
+            BuildRoadGrid();
             RoadsReady = true;
+        }
+
+        static void ClampGrade(List<RoadSample> list, bool closed, float maxGrade)
+        {
+            int n = list.Count;
+            for (int pass = 0; pass < 4; pass++)
+            {
+                for (int i = 1; i < n + (closed ? 1 : 0); i++)
+                {
+                    int a = (i - 1) % n, b = i % n;
+                    float ds = Vector2.Distance(list[a].pos, list[b].pos) * maxGrade;
+                    var sb = list[b]; sb.height = Mathf.Clamp(sb.height, list[a].height - ds, list[a].height + ds); list[b] = sb;
+                }
+                for (int i = n - 2 + (closed ? 1 : 0); i >= 0; i--)
+                {
+                    int a = (i + 1) % n, b = i % n;
+                    float ds = Vector2.Distance(list[a].pos, list[b].pos) * maxGrade;
+                    var sb = list[b]; sb.height = Mathf.Clamp(sb.height, list[a].height - ds, list[a].height + ds); list[b] = sb;
+                }
+            }
+        }
+
+        /// <summary>Signed curvature (1/m, + = turning left) at every sample, box-smoothed over about 26 m.</summary>
+        public static float[] Curvature(List<RoadSample> list, bool closed, int smooth = 6)
+        {
+            int n = list.Count;
+            var k = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                if (!closed && (i == 0 || i == n - 1)) continue;
+                Vector2 a = list[(i - 1 + n) % n].pos, b = list[i].pos, c = list[(i + 1) % n].pos;
+                Vector2 d0 = b - a, d1 = c - b;
+                float l0 = d0.magnitude, l1 = d1.magnitude;
+                if (l0 < 1e-4f || l1 < 1e-4f) continue;
+                float turn = Mathf.Atan2(d0.x * d1.y - d0.y * d1.x, Vector2.Dot(d0, d1));
+                k[i] = turn / (0.5f * (l0 + l1));
+            }
+            return BoxSmooth(k, closed, smooth, 2);
+        }
+
+        static float[] BoxSmooth(float[] v, bool closed, int half, int passes)
+        {
+            int n = v.Length;
+            var src = (float[])v.Clone();
+            var dst = new float[n];
+            for (int p = 0; p < passes; p++)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    float s = 0f; int c = 0;
+                    for (int k = -half; k <= half; k++)
+                    {
+                        int j = i + k;
+                        if (closed) j = (j % n + n) % n; else if (j < 0 || j >= n) continue;
+                        s += src[j]; c++;
+                    }
+                    dst[i] = s / c;
+                }
+                var t = src; src = dst; dst = t;
+            }
+            return src;
+        }
+
+        /// <summary>Gentle banking on the valley's and the connectors' fast asphalt bends (hairpins stay flat).</summary>
+        void ComputeBanks()
+        {
+            for (int r = 0; r < roads.Count; r++)
+            {
+                var def = roads[r];
+                if (def.fixedHeight || def.surface != Surface.Asphalt || !(def.region == RegionId.Valley || def.connector)) continue;
+                var list = roadSamples[r];
+                int n = list.Count;
+                if (n < 12) continue;
+                var k = Curvature(list, def.closed);
+                var bank = new float[n];
+                float total = list[n - 1].distance;
+                for (int i = 0; i < n; i++)
+                {
+                    float ak = Mathf.Abs(k[i]);
+                    if (ak < 1e-5f) continue;
+                    float R = 1f / ak;
+                    float b = Mathf.Min(BankMax, 2.4f * ak) * Spline.SmoothStep(14f, 30f, R) * Mathf.Sign(k[i]);
+                    if (!def.closed) b *= Spline.SmoothStep(0f, 25f, list[i].distance) * Spline.SmoothStep(0f, 25f, total - list[i].distance);
+                    bank[i] = b;
+                }
+                bank = BoxSmooth(bank, def.closed, 5, 1);
+                for (int i = 0; i < n; i++) { var s = list[i]; s.bank = bank[i]; list[i] = s; }
+            }
+        }
+
+        void FadeBankAtBridges()
+        {
+            for (int r = 0; r < roads.Count; r++)
+            {
+                var list = roadSamples[r];
+                int n = list.Count;
+                bool any = false;
+                foreach (var s in list) if (s.bridge) { any = true; break; }
+                if (!any) continue;
+                var near = new float[n];
+                for (int i = 0; i < n; i++) near[i] = 1e9f;
+                for (int i = 0; i < n; i++)
+                    if (list[i].bridge)
+                        for (int j = 0; j < n; j++) near[j] = Mathf.Min(near[j], Mathf.Abs(list[j].distance - list[i].distance));
+                for (int j = 0; j < n; j++)
+                {
+                    float f = Spline.SmoothStep(4f, 24f, near[j]);
+                    if (f >= 1f) continue;
+                    var s = list[j]; s.bank *= f; list[j] = s;
+                }
+            }
+        }
+
+        /// <summary>Nearest point on road list (brute force, used while sampling before the grid exists).</summary>
+        static float NearestOnList(List<RoadSample> L, Vector2 p, out RoadSample best, out int bi)
+        {
+            float bd = float.MaxValue; bi = 0;
+            for (int j = 0; j < L.Count; j++) { float d = (L[j].pos - p).sqrMagnitude; if (d < bd) { bd = d; bi = j; } }
+            best = L[bi];
+            float dist = Mathf.Sqrt(bd);
+            for (int k = -1; k <= 0; k++)
+            {
+                int a = bi + k, b = a + 1;
+                if (a < 0 || b >= L.Count) continue;
+                float t;
+                float d = Spline.DistToSegment(p, L[a].pos, L[b].pos, out t);
+                if (d < dist - 1e-5f) { dist = d; best = LerpSample(L[a], L[b], t); }
+            }
+            return dist;
+        }
+
+        /// <summary>Height of the master road's surface plane (grade + bank, no crown) extended to p, and its gradient.</summary>
+        static float MasterPlane(List<RoadSample> M, bool closed, RoadSample m, int mi, Vector2 p, out Vector2 grad)
+        {
+            int n = M.Count;
+            int a = closed ? (mi - 2 + n) % n : Mathf.Max(0, mi - 2), b = closed ? (mi + 2) % n : Mathf.Min(n - 1, mi + 2);
+            float ds = Vector2.Distance(M[a].pos, M[b].pos);
+            float grade = ds > 0.5f ? (M[b].height - M[a].height) / ds : 0f;
+            Vector2 dir = ds > 0.5f ? (M[b].pos - M[a].pos) / ds : m.tangent;
+            grad = dir * grade + m.Right * m.bank;
+            return m.height + Vector2.Dot(grad, p - m.pos);
+        }
+
+        void FindJunctions()
+        {
+            junctions.Clear();
+            for (int r = 0; r < roads.Count; r++)
+            {
+                if (roads[r].closed) continue;
+                var L = roadSamples[r];
+                if (L.Count < 4) continue;
+                for (int end = 0; end < 2; end++)
+                {
+                    var E = L[end == 0 ? 0 : L.Count - 1];
+                    int bestO = -1; float bestScore = 3.5f; bool bestE2E = false; RoadSample bestM = default(RoadSample);
+                    for (int o = 0; o < roads.Count; o++)
+                    {
+                        if (o == r) continue;
+                        var M = roadSamples[o];
+                        if (M.Count < 2) continue;
+                        RoadSample m; int mi;
+                        float d = NearestOnList(M, E.pos, out m, out mi);
+                        float score = d - m.halfWidth;
+                        if (score >= 3.5f) continue;
+                        float mTotal = M[M.Count - 1].distance;
+                        bool e2e = !roads[o].closed && (m.distance < 3f || m.distance > mTotal - 3f);
+                        if (e2e) score += 1f;          // prefer a through road over another road's end
+                        if (score < bestScore) { bestScore = score; bestO = o; bestE2E = e2e; bestM = m; }
+                    }
+                    if (bestO < 0) continue;
+                    if (bestE2E && r < bestO) continue;               // end-to-end: the later road follows the earlier one
+                    if (bestM.bridge || E.bridge || Mathf.Abs(E.height - bestM.height) > 6f) continue;
+                    junctions.Add(new RoadJunction
+                    {
+                        slave = r, master = bestO, slaveEnd = end, endToEnd = bestE2E, point = E.pos,
+                        masterEnd = bestE2E ? (bestM.distance < 3f ? 0 : 1) : -1
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Junction heights: the joining road meets the through road's surface exactly at the mouth (2 cm under it),
+        /// with its cross slope tilted to match the through road's grade and bank there, then eases back to its own
+        /// line over a distance long enough to keep its grade. Several passes so chains of junctions settle.
+        /// </summary>
+        void MatchJunctions()
+        {
+            if (junctions.Count == 0) return;
+            var bank0 = new Dictionary<int, float[]>();
+            foreach (var j in junctions)
+                if (!bank0.ContainsKey(j.slave))
+                {
+                    var L = roadSamples[j.slave];
+                    var b = new float[L.Count];
+                    for (int i = 0; i < L.Count; i++) b[i] = L[i].bank;
+                    bank0[j.slave] = b;
+                }
+            for (int pass = 0; pass < 4; pass++)
+            {
+                foreach (var kv in bank0)
+                {
+                    var L = roadSamples[kv.Key];
+                    for (int i = 0; i < L.Count; i++) { var s = L[i]; s.bank = kv.Value[i]; L[i] = s; }
+                }
+                foreach (var j in junctions)
+                {
+                    var L = roadSamples[j.slave];
+                    var M = roadSamples[j.master];
+                    bool mClosed = roads[j.master].closed;
+                    int n = L.Count;
+                    // the mouth: the first slave sample (walking in from its end) outside the master's footprint
+                    int mouth = -1;
+                    RoadSample m = default(RoadSample); int mi = 0;
+                    for (int k = 0; k < Mathf.Min(n, 40); k++)
+                    {
+                        int idx = j.slaveEnd == 0 ? k : n - 1 - k;
+                        float d = NearestOnList(M, L[idx].pos, out m, out mi);
+                        bool beyondEnd = j.endToEnd && !mClosed
+                                         && ((mi == 0 && Vector2.Dot(L[idx].pos - M[0].pos, M[0].tangent) < -0.05f)
+                                          || (mi == M.Count - 1 && Vector2.Dot(L[idx].pos - M[M.Count - 1].pos, M[M.Count - 1].tangent) > 0.05f));
+                        if (d > m.halfWidth + 0.3f || beyondEnd) { mouth = idx; break; }
+                    }
+                    if (mouth < 0) continue;
+                    j.mouth = mouth;
+                    Vector2 grad;
+                    float plane = MasterPlane(M, mClosed, m, mi, L[mouth].pos, out grad);
+                    float delta = plane - 0.02f - L[mouth].height;
+                    float bJ = Mathf.Clamp(Vector2.Dot(grad, L[mouth].Right), -0.12f, 0.12f);
+                    var def = roads[j.slave];
+                    float total = L[n - 1].distance;
+                    float len = Mathf.Min(Mathf.Max(45f, 3f * Mathf.Abs(delta) / Mathf.Max(0.03f, def.maxGrade)), Mathf.Max(20f, total));
+                    float dm = L[mouth].distance;
+                    for (int i = 0; i < n; i++)
+                    {
+                        float along = j.slaveEnd == 0 ? L[i].distance - dm : dm - L[i].distance;
+                        var s = L[i];
+                        if (along <= 0f)
+                        {
+                            // inside the master (hidden under it): sit on the master's plane
+                            s.height = MasterPlane(M, mClosed, m, mi, s.pos, out grad) - 0.02f;
+                            s.bank = bJ;
+                        }
+                        else
+                        {
+                            if (along < len) s.height += delta * (1f - Spline.SmoothStep(0f, len, along));
+                            if (along < 30f) s.bank = Mathf.Lerp(bJ, s.bank, Spline.SmoothStep(0f, 30f, along));
+                        }
+                        L[i] = s;
+                    }
+                }
+            }
         }
 
         public static float AlongRoad(List<RoadSample> list, int j, float sHit, bool closed, float total)
@@ -607,9 +1087,54 @@ namespace BlossomRally
             return p;
         }
 
-        /// <summary>Re-spaces a polyline to an even step.</summary>
+        /// <summary>Taubin (lambda / mu) fairing: smooths curvature jumps shorter than ~25 m without shrinking bends.
+        /// Open roads keep their first and last two points.</summary>
+        public static List<Vector2> Fair(List<Vector2> pts, bool closed, int iters)
+        {
+            var p = new List<Vector2>(pts);
+            int n = p.Count;
+            if (n < 7) return p;
+            var q = new Vector2[n];
+            for (int it = 0; it < iters; it++)
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    float f = pass == 0 ? 0.5f : -0.53f;
+                    for (int i = 0; i < n; i++)
+                    {
+                        if (!closed && (i < 2 || i > n - 3)) { q[i] = p[i]; continue; }
+                        Vector2 a = p[(i - 1 + n) % n], c = p[(i + 1) % n];
+                        q[i] = p[i] + f * ((a + c) * 0.5f - p[i]);
+                    }
+                    for (int i = 0; i < n; i++) p[i] = q[i];
+                }
+            return p;
+        }
+
+        /// <summary>Re-spaces a polyline to an even step (closed loops: exactly even, no short closing gap).</summary>
         public static List<Vector2> Resample(List<Vector2> pts, bool closed, float step)
         {
+            if (closed && pts.Count > 2)
+            {
+                float L = 0f;
+                for (int i = 0; i < pts.Count; i++) L += Vector2.Distance(pts[i], pts[(i + 1) % pts.Count]);
+                int segs = Mathf.Max(3, Mathf.RoundToInt(L / step));
+                step = L / segs;
+                var o = new List<Vector2>(segs) { pts[0] };
+                float t = step;
+                float acc = 0f;
+                for (int i = 0; i < pts.Count && o.Count < segs; i++)
+                {
+                    Vector2 a = pts[i], b = pts[(i + 1) % pts.Count];
+                    float seg = Vector2.Distance(a, b);
+                    while (t <= acc + seg + 1e-4f && o.Count < segs)
+                    {
+                        o.Add(Vector2.Lerp(a, b, seg > 1e-6f ? (t - acc) / seg : 0f));
+                        t += step;
+                    }
+                    acc += seg;
+                }
+                return o;
+            }
             var src = new List<Vector2>(pts);
             if (closed) src.Add(pts[0]);
             var outp = new List<Vector2> { src[0] };
