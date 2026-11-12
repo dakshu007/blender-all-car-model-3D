@@ -702,6 +702,7 @@ namespace BlossomRally
             ComputeBanks();
             FindJunctions();
             MatchJunctions();
+            RegradeFromMouths();
 
             // bridges where any road crosses the river: the road itself rises into a gentle stone arch
             for (int r = 0; r < roadSamples.Count; r++)
@@ -760,6 +761,45 @@ namespace BlossomRally
                     int a = (i + 1) % n, b = i % n;
                     float ds = Vector2.Distance(list[a].pos, list[b].pos) * maxGrade;
                     var sb = list[b]; sb.height = Mathf.Clamp(sb.height, list[a].height - ds, list[a].height + ds); list[b] = sb;
+                }
+            }
+        }
+
+        /// <summary>After junction matching: keep each joining road within its grade limit, working outwards from its
+        /// mouths (the mouth heights stay exactly on the through road).</summary>
+        void RegradeFromMouths()
+        {
+            var lo = new Dictionary<int, int>(); var hi = new Dictionary<int, int>();
+            foreach (var j in junctions)
+            {
+                if (j.mouth < 0) continue;
+                if (j.slaveEnd == 0) lo[j.slave] = j.mouth; else hi[j.slave] = j.mouth;
+            }
+            for (int r = 0; r < roads.Count; r++)
+            {
+                int a, b;
+                bool hasA = lo.TryGetValue(r, out a), hasB = hi.TryGetValue(r, out b);
+                if (!hasA && !hasB) continue;
+                var L = roadSamples[r];
+                int n = L.Count;
+                if (!hasA) a = 0;
+                if (!hasB) b = n - 1;
+                if (b - a < 2) continue;
+                float g = roads[r].maxGrade * 1.05f;
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    if (hasA)
+                        for (int i = a + 1; i <= b - (hasB ? 1 : 0); i++)
+                        {
+                            float ds = Vector2.Distance(L[i].pos, L[i - 1].pos) * g;
+                            var si = L[i]; si.height = Mathf.Clamp(si.height, L[i - 1].height - ds, L[i - 1].height + ds); L[i] = si;
+                        }
+                    if (hasB)
+                        for (int i = b - 1; i >= a + (hasA ? 1 : 0); i--)
+                        {
+                            float ds = Vector2.Distance(L[i].pos, L[i + 1].pos) * g;
+                            var si = L[i]; si.height = Mathf.Clamp(si.height, L[i + 1].height - ds, L[i + 1].height + ds); L[i] = si;
+                        }
                 }
             }
         }
