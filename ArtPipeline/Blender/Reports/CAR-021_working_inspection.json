@@ -1,0 +1,2564 @@
+{
+  "car_id": "CAR-021",
+  "generated_utc": "2026-11-12T09:32:59+00:00",
+  "tool": "inspect_vehicle.py",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "source_file": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-021/Working/CAR-021_Working_v001.blend",
+  "source_size_bytes": 316851,
+  "source_unmodified": true,
+  "scene_unit_scale": 1.0,
+  "object_count": 28,
+  "object_types": {
+    "EMPTY": 7,
+    "MESH": 21
+  },
+  "duplicate_object_names": [],
+  "totals": {
+    "verts": 10956,
+    "edges": 20601,
+    "faces": 9933,
+    "tris": 20958
+  },
+  "vehicle_bbox": {
+    "min": [
+      -1.0669374465942383,
+      -2.6735000610351562,
+      3.3915042877197266e-05
+    ],
+    "max": [
+      1.0669374465942383,
+      2.6735000610351562,
+      1.9713399410247803
+    ],
+    "size": [
+      2.1338748931884766,
+      5.3470001220703125,
+      1.9713060855865479
+    ],
+    "center": [
+      0.0,
+      0.0,
+      0.9856868982315063
+    ]
+  },
+  "longest_horizontal_axis": "Y",
+  "objects": [
+    {
+      "name": "CAR-021_Accessories",
+      "type": "MESH",
+      "parent": "CAR-021_Exterior",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        2.05363,
+        3.18234,
+        1.56634
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 624,
+      "edges": 1200,
+      "faces": 616,
+      "tris": 1168,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Chrome",
+        "M_Trim_Grey",
+        "M_Trim_Black"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -1.0268144607543945,
+          -2.2218401432037354,
+          0.4049999713897705
+        ],
+        "max": [
+          1.0268144607543945,
+          0.9604998826980591,
+          1.9713399410247803
+        ],
+        "size": [
+          2.053628921508789,
+          3.182340145111084,
+          1.5663399696350098
+        ],
+        "center": [
+          0.0,
+          -0.6306701302528381,
+          1.1881699562072754
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.63067,
+        -1.18817
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 8,
+        "loose_parts": 20
+      }
+    },
+    {
+      "name": "CAR-021_Body",
+      "type": "MESH",
+      "parent": "CAR-021_Root",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.96,
+        5.05,
+        1.48
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 1832,
+      "edges": 3547,
+      "faces": 1702,
+      "tris": 3668,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Paint",
+        "M_Trim_Black"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9800000190734863,
+          -2.5445001125335693,
+          0.41999998688697815
+        ],
+        "max": [
+          0.9800000190734863,
+          2.505499839782715,
+          1.899999976158142
+        ],
+        "size": [
+          1.9600000381469727,
+          5.050000190734863,
+          1.4800000190734863
+        ],
+        "center": [
+          0.0,
+          -0.019500136375427246,
+          1.159999966621399
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0195,
+        -1.16
+      ],
+      "health": {
+        "non_manifold_edges": 22,
+        "boundary_edges": 22,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 4,
+        "loose_parts": 2
+      }
+    },
+    {
+      "name": "CAR-021_Bumper_Front",
+      "type": "MESH",
+      "parent": "CAR-021_Exterior",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.93376,
+        0.197,
+        0.255
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 168,
+      "edges": 324,
+      "faces": 160,
+      "tris": 328,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Paint",
+        "M_Trim_Black"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9668800234794617,
+          2.4054999351501465,
+          0.4050000011920929
+        ],
+        "max": [
+          0.9668800234794617,
+          2.6024999618530273,
+          0.6600000262260437
+        ],
+        "size": [
+          1.9337600469589233,
+          0.19700002670288086,
+          0.2550000250339508
+        ],
+        "center": [
+          0.0,
+          2.503999948501587,
+          0.5325000286102295
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        -2.504,
+        -0.5325
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 2
+      }
+    },
+    {
+      "name": "CAR-021_Bumper_Rear",
+      "type": "MESH",
+      "parent": "CAR-021_Exterior",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.96512,
+        0.185,
+        0.235
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 168,
+      "edges": 324,
+      "faces": 160,
+      "tris": 328,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Paint",
+        "M_Trim_Black"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9825599789619446,
+          -2.629500150680542,
+          0.42500001192092896
+        ],
+        "max": [
+          0.9825599789619446,
+          -2.444500207901001,
+          0.6600000262260437
+        ],
+        "size": [
+          1.9651199579238892,
+          0.18499994277954102,
+          0.23500001430511475
+        ],
+        "center": [
+          0.0,
+          -2.5370001792907715,
+          0.5425000190734863
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        2.537,
+        -0.5425
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 2
+      }
+    },
+    {
+      "name": "CAR-021_Collider_Body",
+      "type": "MESH",
+      "parent": "CAR-021_Root",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.88,
+        5.15,
+        0.62778
+      ],
+      "hidden_viewport": false,
+      "hidden_render": true,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 8,
+      "edges": 12,
+      "faces": 6,
+      "tris": 12,
+      "uv_maps": [],
+      "color_attributes": [],
+      "material_slots": [],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9399999976158142,
+          -2.5945000648498535,
+          0.46000000834465027
+        ],
+        "max": [
+          0.9399999976158142,
+          2.555500030517578,
+          1.0877777338027954
+        ],
+        "size": [
+          1.8799999952316284,
+          5.150000095367432,
+          0.6277776956558228
+        ],
+        "center": [
+          0.0,
+          -0.019500017166137695,
+          0.773888885974884
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0195,
+        -0.77389
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_Collider_Cabin",
+      "type": "MESH",
+      "parent": "CAR-021_Root",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.74,
+        2.935,
+        0.79222
+      ],
+      "hidden_viewport": false,
+      "hidden_render": true,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 8,
+      "edges": 12,
+      "faces": 6,
+      "tris": 12,
+      "uv_maps": [],
+      "color_attributes": [],
+      "material_slots": [],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.8700000047683716,
+          -2.3545000553131104,
+          1.0977777242660522
+        ],
+        "max": [
+          0.8700000047683716,
+          0.5804998874664307,
+          1.8899999856948853
+        ],
+        "size": [
+          1.7400000095367432,
+          2.934999942779541,
+          0.792222261428833
+        ],
+        "center": [
+          0.0,
+          -0.8870000839233398,
+          1.4938888549804688
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.887,
+        -1.49389
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_Exterior",
+      "type": "EMPTY",
+      "parent": "CAR-021_Root",
+      "children": [
+        "CAR-021_Accessories",
+        "CAR-021_Bumper_Front",
+        "CAR-021_Bumper_Rear",
+        "CAR-021_Mirrors",
+        "CAR-021_Spoiler",
+        "CAR-021_Trim"
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "CAR-021_Glass",
+      "type": "MESH",
+      "parent": "CAR-021_Root",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.80585,
+        3.28447,
+        0.68213
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 32,
+      "edges": 32,
+      "faces": 8,
+      "tris": 16,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Glass_Tint"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9029262065887451,
+          -2.4221837520599365,
+          1.169466257095337
+        ],
+        "max": [
+          0.9029262065887451,
+          0.8622893691062927,
+          1.8515934944152832
+        ],
+        "size": [
+          1.8058524131774902,
+          3.284473180770874,
+          0.6821272373199463
+        ],
+        "center": [
+          0.0,
+          -0.7799471616744995,
+          1.51052987575531
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.77995,
+        -1.51053
+      ],
+      "health": {
+        "non_manifold_edges": 32,
+        "boundary_edges": 32,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 8
+      }
+    },
+    {
+      "name": "CAR-021_Interior",
+      "type": "MESH",
+      "parent": "CAR-021_Root",
+      "children": [
+        "CAR-021_SteeringWheel"
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.78,
+        1.945,
+        0.7431
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 120,
+      "edges": 180,
+      "faces": 89,
+      "tris": 178,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Interior_Dark",
+        "M_Trim_Black",
+        "M_CAR-021_Seat"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.8899999856948853,
+          -1.0595000982284546,
+          0.46000000834465027
+        ],
+        "max": [
+          0.8899999856948853,
+          0.885499894618988,
+          1.2031019926071167
+        ],
+        "size": [
+          1.7799999713897705,
+          1.9449999332427979,
+          0.743101954460144
+        ],
+        "center": [
+          0.0,
+          -0.08700010180473328,
+          0.8315510153770447
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.087,
+        -0.83155
+      ],
+      "health": {
+        "non_manifold_edges": 4,
+        "boundary_edges": 4,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 15
+      }
+    },
+    {
+      "name": "CAR-021_Lights",
+      "type": "MESH",
+      "parent": "CAR-021_Root",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.8,
+        5.232,
+        0.54792
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 696,
+      "edges": 1272,
+      "faces": 606,
+      "tris": 1332,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Trim_Black",
+        "M_Light_Head",
+        "M_Light_Indicator",
+        "M_Chrome",
+        "M_Light_Aux",
+        "M_Light_Tail"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.8999999761581421,
+          -2.558500051498413,
+          0.4720749855041504
+        ],
+        "max": [
+          0.8999999761581421,
+          2.6735000610351562,
+          1.0199999809265137
+        ],
+        "size": [
+          1.7999999523162842,
+          5.232000350952148,
+          0.5479249954223633
+        ],
+        "center": [
+          0.0,
+          0.05750000476837158,
+          0.746037483215332
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        -0.0575,
+        -0.74604
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 15
+      }
+    },
+    {
+      "name": "CAR-021_Mirrors",
+      "type": "MESH",
+      "parent": "CAR-021_Exterior",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        2.13387,
+        0.06838,
+        0.10803
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 448,
+      "edges": 864,
+      "faces": 428,
+      "tris": 872,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Trim_Black",
+        "M_Chrome"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -1.0669374465942383,
+          0.7844998836517334,
+          1.1586264371871948
+        ],
+        "max": [
+          1.0669374465942383,
+          0.8528751730918884,
+          1.266653060913086
+        ],
+        "size": [
+          2.1338748931884766,
+          0.06837528944015503,
+          0.10802662372589111
+        ],
+        "center": [
+          0.0,
+          0.8186875581741333,
+          1.2126398086547852
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        -0.81869,
+        -1.21264
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 24,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 24,
+        "loose_parts": 6
+      }
+    },
+    {
+      "name": "CAR-021_Root",
+      "type": "EMPTY",
+      "parent": null,
+      "children": [
+        "CAR-021_Body",
+        "CAR-021_Collider_Body",
+        "CAR-021_Collider_Cabin",
+        "CAR-021_Exterior",
+        "CAR-021_Glass",
+        "CAR-021_Interior",
+        "CAR-021_Lights",
+        "CAR-021_Wheels"
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "CAR-021_Spoiler",
+      "type": "MESH",
+      "parent": "CAR-021_Exterior",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.6,
+        0.14,
+        0.03515
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 24,
+      "edges": 48,
+      "faces": 26,
+      "tris": 44,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Paint"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.800000011920929,
+          -2.384500026702881,
+          1.8603980541229248
+        ],
+        "max": [
+          0.800000011920929,
+          -2.244500160217285,
+          1.8955458402633667
+        ],
+        "size": [
+          1.600000023841858,
+          0.1399998664855957,
+          0.035147786140441895
+        ],
+        "center": [
+          0.0,
+          -2.314500093460083,
+          1.877971887588501
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        2.3145,
+        -1.87797
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_SteeringWheel",
+      "type": "MESH",
+      "parent": "CAR-021_Interior",
+      "children": [],
+      "location": [
+        -0.37,
+        0.5655,
+        1.0981
+      ],
+      "rotation_euler_deg": [
+        -22.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.37,
+        0.5655,
+        1.0981
+      ],
+      "dimensions": [
+        0.362,
+        0.05,
+        0.362
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": true,
+      "verts": 252,
+      "edges": 474,
+      "faces": 230,
+      "tris": 488,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Trim_Black",
+        "M_Trim_Grey"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.5509999990463257,
+          0.469880610704422,
+          0.9227896928787231
+        ],
+        "max": [
+          -0.18900001049041748,
+          0.6518473625183105,
+          1.2771605253219604
+        ],
+        "size": [
+          0.3619999885559082,
+          0.18196675181388855,
+          0.3543708324432373
+        ],
+        "center": [
+          -0.3700000047683716,
+          0.5608639717102051,
+          1.0999751091003418
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.00464,
+        -0.00187
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 5
+      }
+    },
+    {
+      "name": "CAR-021_Trim",
+      "type": "MESH",
+      "parent": "CAR-021_Exterior",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        1.95763,
+        5.32,
+        0.69784
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 400,
+      "edges": 696,
+      "faces": 328,
+      "tris": 736,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Chrome",
+        "M_Trim_Black",
+        "M_CAR-021_Accent",
+        "M_CAR-021_Plate"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.9788144826889038,
+          -2.6735000610351562,
+          0.3709999918937683
+        ],
+        "max": [
+          0.9788144826889038,
+          2.6464998722076416,
+          1.0688368082046509
+        ],
+        "size": [
+          1.9576289653778076,
+          5.319999694824219,
+          0.6978368163108826
+        ],
+        "center": [
+          0.0,
+          -0.013500094413757324,
+          0.7199183702468872
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0135,
+        -0.71992
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 18
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_FL",
+      "type": "EMPTY",
+      "parent": "CAR-021_Wheels",
+      "children": [
+        "CAR-021_Wheel_FL_Rim",
+        "CAR-021_Wheel_FL_Tire"
+      ],
+      "location": [
+        -0.86,
+        1.4755,
+        0.41
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.86,
+        1.4755,
+        0.41
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "CAR-021_Wheel_FL_Rim",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_FL",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.86,
+        1.4755,
+        0.41
+      ],
+      "dimensions": [
+        0.24064,
+        0.58459,
+        0.58459
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 704,
+      "edges": 1264,
+      "faces": 592,
+      "tris": 1344,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Rim",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.983404278755188,
+          1.1832071542739868,
+          0.11770731210708618
+        ],
+        "max": [
+          -0.7427659630775452,
+          1.7677925825119019,
+          0.7022926807403564
+        ],
+        "size": [
+          0.24063831567764282,
+          0.584585428237915,
+          0.5845853686332703
+        ],
+        "center": [
+          -0.863085150718689,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.00309,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 18
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_FL_Tire",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_FL",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.86,
+        1.4755,
+        0.41
+      ],
+      "dimensions": [
+        0.29,
+        0.81993,
+        0.81993
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 840,
+      "edges": 1640,
+      "faces": 800,
+      "tris": 1600,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Tire_Rubber"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -1.0049999952316284,
+          1.0655337572097778,
+          3.3915042877197266e-05
+        ],
+        "max": [
+          -0.7149999737739563,
+          1.8854659795761108,
+          0.8199660778045654
+        ],
+        "size": [
+          0.2900000214576721,
+          0.819932222366333,
+          0.8199321627616882
+        ],
+        "center": [
+          -0.8600000143051147,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 80,
+        "boundary_edges": 80,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 240,
+        "duplicate_verts_within_merge_dist": 40,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_FR",
+      "type": "EMPTY",
+      "parent": "CAR-021_Wheels",
+      "children": [
+        "CAR-021_Wheel_FR_Rim",
+        "CAR-021_Wheel_FR_Tire"
+      ],
+      "location": [
+        0.86,
+        1.4755,
+        0.41
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.86,
+        1.4755,
+        0.41
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "CAR-021_Wheel_FR_Rim",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_FR",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.86,
+        1.4755,
+        0.41
+      ],
+      "dimensions": [
+        0.24064,
+        0.58459,
+        0.58459
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 704,
+      "edges": 1264,
+      "faces": 592,
+      "tris": 1344,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Rim",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          0.7427659630775452,
+          1.1832071542739868,
+          0.11770731210708618
+        ],
+        "max": [
+          0.983404278755188,
+          1.7677925825119019,
+          0.7022926807403564
+        ],
+        "size": [
+          0.24063831567764282,
+          0.584585428237915,
+          0.5845853686332703
+        ],
+        "center": [
+          0.863085150718689,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        -0.00309,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 18
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_FR_Tire",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_FR",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.86,
+        1.4755,
+        0.41
+      ],
+      "dimensions": [
+        0.29,
+        0.81993,
+        0.81993
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 840,
+      "edges": 1640,
+      "faces": 800,
+      "tris": 1600,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Tire_Rubber"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          0.7150000333786011,
+          1.0655337572097778,
+          3.3915042877197266e-05
+        ],
+        "max": [
+          1.0049999952316284,
+          1.8854659795761108,
+          0.8199660778045654
+        ],
+        "size": [
+          0.28999996185302734,
+          0.819932222366333,
+          0.8199321627616882
+        ],
+        "center": [
+          0.8600000143051147,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 80,
+        "boundary_edges": 80,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 240,
+        "duplicate_verts_within_merge_dist": 40,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_RL",
+      "type": "EMPTY",
+      "parent": "CAR-021_Wheels",
+      "children": [
+        "CAR-021_Wheel_RL_Rim",
+        "CAR-021_Wheel_RL_Tire"
+      ],
+      "location": [
+        -0.86,
+        -1.5445,
+        0.41
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.86,
+        -1.5445,
+        0.41
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "CAR-021_Wheel_RL_Rim",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_RL",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.86,
+        -1.5445,
+        0.41
+      ],
+      "dimensions": [
+        0.24064,
+        0.58459,
+        0.58459
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 704,
+      "edges": 1264,
+      "faces": 592,
+      "tris": 1344,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Rim",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -0.983404278755188,
+          -1.8367928266525269,
+          0.11770731210708618
+        ],
+        "max": [
+          -0.7427659630775452,
+          -1.2522073984146118,
+          0.7022926807403564
+        ],
+        "size": [
+          0.24063831567764282,
+          0.584585428237915,
+          0.5845853686332703
+        ],
+        "center": [
+          -0.863085150718689,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.00309,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 18
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_RL_Tire",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_RL",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        -0.86,
+        -1.5445,
+        0.41
+      ],
+      "dimensions": [
+        0.29,
+        0.81993,
+        0.81993
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 840,
+      "edges": 1640,
+      "faces": 800,
+      "tris": 1600,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Tire_Rubber"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          -1.0049999952316284,
+          -1.9544662237167358,
+          3.3915042877197266e-05
+        ],
+        "max": [
+          -0.7149999737739563,
+          -1.1345340013504028,
+          0.8199660778045654
+        ],
+        "size": [
+          0.2900000214576721,
+          0.819932222366333,
+          0.8199321627616882
+        ],
+        "center": [
+          -0.8600000143051147,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 80,
+        "boundary_edges": 80,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 240,
+        "duplicate_verts_within_merge_dist": 40,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_RR",
+      "type": "EMPTY",
+      "parent": "CAR-021_Wheels",
+      "children": [
+        "CAR-021_Wheel_RR_Rim",
+        "CAR-021_Wheel_RR_Tire"
+      ],
+      "location": [
+        0.86,
+        -1.5445,
+        0.41
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.86,
+        -1.5445,
+        0.41
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    },
+    {
+      "name": "CAR-021_Wheel_RR_Rim",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_RR",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.86,
+        -1.5445,
+        0.41
+      ],
+      "dimensions": [
+        0.24064,
+        0.58459,
+        0.58459
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 704,
+      "edges": 1264,
+      "faces": 592,
+      "tris": 1344,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_CAR-021_Rim",
+        "M_Chrome",
+        "M_Brake_Disc"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          0.7427659630775452,
+          -1.8367928266525269,
+          0.11770731210708618
+        ],
+        "max": [
+          0.983404278755188,
+          -1.2522073984146118,
+          0.7022926807403564
+        ],
+        "size": [
+          0.24063831567764282,
+          0.584585428237915,
+          0.5845853686332703
+        ],
+        "center": [
+          0.863085150718689,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        -0.00309,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 0,
+        "boundary_edges": 0,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 0,
+        "duplicate_verts_within_merge_dist": 0,
+        "loose_parts": 18
+      }
+    },
+    {
+      "name": "CAR-021_Wheel_RR_Tire",
+      "type": "MESH",
+      "parent": "CAR-021_Wheel_RR",
+      "children": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.86,
+        -1.5445,
+        0.41
+      ],
+      "dimensions": [
+        0.29,
+        0.81993,
+        0.81993
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false,
+      "verts": 840,
+      "edges": 1640,
+      "faces": 800,
+      "tris": 1600,
+      "uv_maps": [
+        "UVMap"
+      ],
+      "color_attributes": [],
+      "material_slots": [
+        "M_Tire_Rubber"
+      ],
+      "empty_material_slots": 0,
+      "world_bbox": {
+        "min": [
+          0.7150000333786011,
+          -1.9544662237167358,
+          3.3915042877197266e-05
+        ],
+        "max": [
+          1.0049999952316284,
+          -1.1345340013504028,
+          0.8199660778045654
+        ],
+        "size": [
+          0.28999996185302734,
+          0.819932222366333,
+          0.8199321627616882
+        ],
+        "center": [
+          0.8600000143051147,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      "origin_offset_from_bbox_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "health": {
+        "non_manifold_edges": 80,
+        "boundary_edges": 80,
+        "wire_edges": 0,
+        "loose_verts": 0,
+        "zero_area_faces": 0,
+        "inconsistent_winding_edges": 240,
+        "duplicate_verts_within_merge_dist": 40,
+        "loose_parts": 1
+      }
+    },
+    {
+      "name": "CAR-021_Wheels",
+      "type": "EMPTY",
+      "parent": "CAR-021_Root",
+      "children": [
+        "CAR-021_Wheel_FL",
+        "CAR-021_Wheel_FR",
+        "CAR-021_Wheel_RL",
+        "CAR-021_Wheel_RR"
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_euler_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "world_origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hidden_viewport": false,
+      "hidden_render": false,
+      "hidden_in_view_layer": false,
+      "modifiers": [],
+      "zero_scale": false,
+      "unapplied_transform": false
+    }
+  ],
+  "materials": [
+    {
+      "name": "M_Brake_Disc",
+      "users": 4,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_CAR-021_Accent",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_CAR-021_Paint",
+      "users": 4,
+      "use_nodes": true,
+      "images": [
+        "CAR-021_BaseColor.png"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "M_CAR-021_Plate",
+      "users": 1,
+      "use_nodes": true,
+      "images": [
+        "CAR-021_BaseColor.png"
+      ],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial",
+        "ShaderNodeTexImage"
+      ]
+    },
+    {
+      "name": "M_CAR-021_Rim",
+      "users": 4,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_CAR-021_Seat",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Chrome",
+      "users": 8,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Glass_Tint",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Interior_Dark",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Light_Aux",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Light_Head",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Light_Indicator",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Light_Tail",
+      "users": 1,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Tire_Rubber",
+      "users": 4,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Trim_Black",
+      "users": 9,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    },
+    {
+      "name": "M_Trim_Grey",
+      "users": 2,
+      "use_nodes": true,
+      "images": [],
+      "shader_nodes": [
+        "ShaderNodeBsdfPrincipled",
+        "ShaderNodeOutputMaterial"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "name": "CAR-021_BaseColor.png",
+      "filepath": "//../Textures/CAR-021_BaseColor.png",
+      "packed": false,
+      "file_found": true,
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "missing": false
+    }
+  ],
+  "missing_images": [],
+  "wheel_candidates": {
+    "NOTE": "Suggestions only. Verify visually before renaming, separating or moving anything.",
+    "separate_wheel_objects_found": 10,
+    "appears_to_have_four_separate_wheel_objects": false,
+    "wheel_shaped_loose_parts_in_joined_meshes": 4,
+    "suggestions": [
+      {
+        "object": "CAR-021_SteeringWheel",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.3700000047683716,
+          0.5654999017715454,
+          1.09810209274292
+        ]
+      },
+      {
+        "object": "CAR-021_Trim",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword"
+        ],
+        "center": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_FL_Rim",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.8600000143051147,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_FL_Tire",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.8600000143051147,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_FR_Rim",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          0.8600000143051147,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_FR_Tire",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          0.8600000143051147,
+          1.4754998683929443,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_RL_Rim",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.8600000143051147,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_RL_Tire",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          -0.8600000143051147,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_RR_Rim",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          0.8600000143051147,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_RR_Tire",
+        "kind": "object",
+        "reasons": [
+          "name contains wheel-like keyword",
+          "object bounds are disc/cylinder shaped"
+        ],
+        "center": [
+          0.8600000143051147,
+          -1.5445001125335693,
+          0.4099999964237213
+        ]
+      },
+      {
+        "object": "CAR-021_Wheel_FL_Tire",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.86,
+          1.4755,
+          0.41
+        ],
+        "size": [
+          0.29,
+          0.8199,
+          0.8199
+        ],
+        "islands": 1,
+        "faces": 800
+      },
+      {
+        "object": "CAR-021_Wheel_FR_Tire",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.86,
+          1.4755,
+          0.41
+        ],
+        "size": [
+          0.29,
+          0.8199,
+          0.8199
+        ],
+        "islands": 1,
+        "faces": 800
+      },
+      {
+        "object": "CAR-021_Wheel_RL_Tire",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          -0.86,
+          -1.5445,
+          0.41
+        ],
+        "size": [
+          0.29,
+          0.8199,
+          0.8199
+        ],
+        "islands": 1,
+        "faces": 800
+      },
+      {
+        "object": "CAR-021_Wheel_RR_Tire",
+        "kind": "loose_part_cluster",
+        "reasons": [
+          "wheel-shaped loose geometry touching the ground plane"
+        ],
+        "center": [
+          0.86,
+          -1.5445,
+          0.41
+        ],
+        "size": [
+          0.29,
+          0.8199,
+          0.8199
+        ],
+        "islands": 1,
+        "faces": 800
+      }
+    ]
+  }
+}

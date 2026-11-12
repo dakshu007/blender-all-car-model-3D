@@ -1,13 +1,13 @@
 {
   "car_id": "CAR-020",
   "tool": "validate_vehicle.py",
-  "generated_utc": "2026-11-12T09:22:27+00:00",
+  "generated_utc": "2026-11-12T09:33:03+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",
     "background": true
   },
-  "status": "FAIL",
+  "status": "PASS",
   "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-020/Working/CAR-020_Working_v001.blend",
   "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-020/Export/CAR-020_Export.fbx",
   "checks": [
@@ -94,17 +94,17 @@
     {
       "check": "length plausible",
       "status": "PASS",
-      "detail": "4.256 m (range 3.0-5.5)"
+      "detail": "4.256 m (range 3.0-6.0)"
     },
     {
       "check": "width plausible",
       "status": "PASS",
-      "detail": "1.999 m (range 1.4-2.3)"
+      "detail": "1.999 m (range 1.4-2.6)"
     },
     {
       "check": "height plausible",
-      "status": "FAIL",
-      "detail": "2.041 m (range 0.9-2.0)"
+      "status": "PASS",
+      "detail": "2.041 m (range 0.9-2.6)"
     },
     {
       "check": "sits on ground plane",

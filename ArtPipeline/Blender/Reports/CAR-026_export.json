@@ -1,0 +1,74 @@
+{
+  "car_id": "CAR-026",
+  "tool": "export_vehicle_fbx.py",
+  "generated_utc": "2026-11-12T09:38:20+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-026/Working/CAR-026_Working_v001.blend",
+  "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-026/Export/CAR-026_Export.fbx",
+  "fbx_size_bytes": 629404,
+  "object_count": 27,
+  "objects": [
+    "CAR-026_Accessories",
+    "CAR-026_Body",
+    "CAR-026_Bumper_Front",
+    "CAR-026_Bumper_Rear",
+    "CAR-026_Exterior",
+    "CAR-026_Glass",
+    "CAR-026_Interior",
+    "CAR-026_Lights",
+    "CAR-026_Mirrors",
+    "CAR-026_MudFlaps",
+    "CAR-026_Root",
+    "CAR-026_Spoiler",
+    "CAR-026_SteeringWheel",
+    "CAR-026_Trim",
+    "CAR-026_Wheel_FL",
+    "CAR-026_Wheel_FL_Rim",
+    "CAR-026_Wheel_FL_Tire",
+    "CAR-026_Wheel_FR",
+    "CAR-026_Wheel_FR_Rim",
+    "CAR-026_Wheel_FR_Tire",
+    "CAR-026_Wheel_RL",
+    "CAR-026_Wheel_RL_Rim",
+    "CAR-026_Wheel_RL_Tire",
+    "CAR-026_Wheel_RR",
+    "CAR-026_Wheel_RR_Rim",
+    "CAR-026_Wheel_RR_Tire",
+    "CAR-026_Wheels"
+  ],
+  "triangles": 26942,
+  "textures_copied": [
+    "CAR-026_BaseColor.png"
+  ],
+  "settings": {
+    "use_selection": true,
+    "object_types": [
+      "EMPTY",
+      "MESH"
+    ],
+    "axis_forward": "Z",
+    "axis_up": "Y",
+    "bake_space_transform": false,
+    "apply_unit_scale": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "global_scale": 1.0,
+    "use_mesh_modifiers": true,
+    "mesh_smooth_type": "FACE",
+    "use_tspace": false,
+    "use_custom_props": true,
+    "add_leaf_bones": false,
+    "bake_anim": false,
+    "path_mode": "STRIP",
+    "embed_textures": false,
+    "colors_type": "NONE"
+  },
+  "actions": [
+    "exported 27 objects -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-026/Export/CAR-026_Export.fbx",
+    "vehicle data -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/CAR-026/Export/CAR-026_vehicle_data.json"
+  ],
+  "warnings": []
+}

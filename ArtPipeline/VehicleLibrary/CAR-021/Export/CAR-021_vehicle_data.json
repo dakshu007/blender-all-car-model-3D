@@ -1,0 +1,236 @@
+{
+  "car_id": "CAR-021",
+  "display_name": "Halvard Citadel",
+  "vehicle_class": "Luxury SUV",
+  "fbx": "CAR-021_Export.fbx",
+  "root": "CAR-021_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.98569,
+      0.0
+    ],
+    "size": [
+      2.13387,
+      1.97131,
+      5.347
+    ]
+  },
+  "triangles": 20934,
+  "wheels": {
+    "FL": {
+      "transform": "CAR-021_Wheel_FL",
+      "blender_position": [
+        -0.86,
+        1.4755,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.86,
+        0.41,
+        1.4755
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    "FR": {
+      "transform": "CAR-021_Wheel_FR",
+      "blender_position": [
+        0.86,
+        1.4755,
+        0.41
+      ],
+      "unity_local_position": [
+        0.86,
+        0.41,
+        1.4755
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    "RL": {
+      "transform": "CAR-021_Wheel_RL",
+      "blender_position": [
+        -0.86,
+        -1.5445,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.86,
+        0.41,
+        -1.5445
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    },
+    "RR": {
+      "transform": "CAR-021_Wheel_RR",
+      "blender_position": [
+        0.86,
+        -1.5445,
+        0.41
+      ],
+      "unity_local_position": [
+        0.86,
+        0.41,
+        -1.5445
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "FL",
+      "transform": "CAR-021_Wheel_FL",
+      "blender_position": [
+        -0.86,
+        1.4755,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.86,
+        0.41,
+        1.4755
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "FR",
+      "transform": "CAR-021_Wheel_FR",
+      "blender_position": [
+        0.86,
+        1.4755,
+        0.41
+      ],
+      "unity_local_position": [
+        0.86,
+        0.41,
+        1.4755
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "RL",
+      "transform": "CAR-021_Wheel_RL",
+      "blender_position": [
+        -0.86,
+        -1.5445,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.86,
+        0.41,
+        -1.5445
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    },
+    {
+      "slot": "RR",
+      "transform": "CAR-021_Wheel_RR",
+      "blender_position": [
+        0.86,
+        -1.5445,
+        0.41
+      ],
+      "unity_local_position": [
+        0.86,
+        0.41,
+        -1.5445
+      ],
+      "radius": 0.41,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 3.02,
+  "track": 1.72,
+  "steering_wheel": {
+    "transform": "CAR-021_SteeringWheel",
+    "steer_axis": "local +Z in Unity (Blender local +Y)"
+  },
+  "colliders": [
+    {
+      "name": "CAR-021_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.77389,
+        -0.0195
+      ],
+      "unity_size": [
+        1.88,
+        0.62778,
+        5.15
+      ]
+    },
+    {
+      "name": "CAR-021_Collider_Cabin",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        1.49389,
+        -0.887
+      ],
+      "unity_size": [
+        1.74,
+        0.79222,
+        2.935
+      ]
+    }
+  ],
+  "textures": [
+    "CAR-021_BaseColor.png"
+  ],
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-021_Accent",
+    "M_CAR-021_Paint",
+    "M_CAR-021_Plate",
+    "M_CAR-021_Rim",
+    "M_CAR-021_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    -0.37,
+    1.4081,
+    0.1055
+  ],
+  "hood_cam": [
+    0.0,
+    1.59,
+    1.2055
+  ]
+}

@@ -715,7 +715,7 @@ namespace BlossomRally
             {
                 float lim = spec.limiterRpm;
                 float gr = GroundRpm(Gear);
-                float upAt = Mathf.Lerp(lim * 0.58f, lim - 250f, driveCmd);
+                float upAt = Mathf.Lerp(lim * 0.58f, lim - spec.upshiftMargin, driveCmd);
                 float downAt = Mathf.Lerp(lim * 0.28f, lim * 0.5f, driveCmd);
                 if (Gear < n && (gr > upAt || (limiterTime > 0.35f && gr > upAt * 0.72f)))
                     StartShift(Gear + 1);

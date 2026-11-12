@@ -1,0 +1,236 @@
+{
+  "car_id": "CAR-028",
+  "display_name": "Vireo Apex",
+  "vehicle_class": "Modern Rally",
+  "fbx": "CAR-028_Export.fbx",
+  "root": "CAR-028_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.81491,
+      0.0
+    ],
+    "size": [
+      1.97899,
+      1.62975,
+      4.48163
+    ]
+  },
+  "triangles": 21554,
+  "wheels": {
+    "FL": {
+      "transform": "CAR-028_Wheel_FL",
+      "blender_position": [
+        -0.8,
+        1.30882,
+        0.33
+      ],
+      "unity_local_position": [
+        -0.8,
+        0.33,
+        1.30882
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": true,
+      "drive": true
+    },
+    "FR": {
+      "transform": "CAR-028_Wheel_FR",
+      "blender_position": [
+        0.8,
+        1.30882,
+        0.33
+      ],
+      "unity_local_position": [
+        0.8,
+        0.33,
+        1.30882
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": true,
+      "drive": true
+    },
+    "RL": {
+      "transform": "CAR-028_Wheel_RL",
+      "blender_position": [
+        -0.8,
+        -1.21118,
+        0.33
+      ],
+      "unity_local_position": [
+        -0.8,
+        0.33,
+        -1.21118
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": false,
+      "drive": true
+    },
+    "RR": {
+      "transform": "CAR-028_Wheel_RR",
+      "blender_position": [
+        0.8,
+        -1.21118,
+        0.33
+      ],
+      "unity_local_position": [
+        0.8,
+        0.33,
+        -1.21118
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "FL",
+      "transform": "CAR-028_Wheel_FL",
+      "blender_position": [
+        -0.8,
+        1.30882,
+        0.33
+      ],
+      "unity_local_position": [
+        -0.8,
+        0.33,
+        1.30882
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "FR",
+      "transform": "CAR-028_Wheel_FR",
+      "blender_position": [
+        0.8,
+        1.30882,
+        0.33
+      ],
+      "unity_local_position": [
+        0.8,
+        0.33,
+        1.30882
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "RL",
+      "transform": "CAR-028_Wheel_RL",
+      "blender_position": [
+        -0.8,
+        -1.21118,
+        0.33
+      ],
+      "unity_local_position": [
+        -0.8,
+        0.33,
+        -1.21118
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": false,
+      "drive": true
+    },
+    {
+      "slot": "RR",
+      "transform": "CAR-028_Wheel_RR",
+      "blender_position": [
+        0.8,
+        -1.21118,
+        0.33
+      ],
+      "unity_local_position": [
+        0.8,
+        0.33,
+        -1.21118
+      ],
+      "radius": 0.33,
+      "width": 0.25,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 2.52,
+  "track": 1.6,
+  "steering_wheel": {
+    "transform": "CAR-028_SteeringWheel",
+    "steer_axis": "local +Z in Unity (Blender local +Y)"
+  },
+  "colliders": [
+    {
+      "name": "CAR-028_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.51167,
+        0.03882
+      ],
+      "unity_size": [
+        1.9,
+        0.54333,
+        4.12
+      ]
+    },
+    {
+      "name": "CAR-028_Collider_Cabin",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        1.10167,
+        -0.56118
+      ],
+      "unity_size": [
+        1.34,
+        0.61667,
+        2.02
+      ]
+    }
+  ],
+  "textures": [
+    "CAR-028_BaseColor.png"
+  ],
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-028_Accent",
+    "M_CAR-028_Cage",
+    "M_CAR-028_Paint",
+    "M_CAR-028_Plate",
+    "M_CAR-028_Rim",
+    "M_CAR-028_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    -0.37,
+    1.1162,
+    0.0088
+  ],
+  "hood_cam": [
+    0.0,
+    1.29,
+    1.1088
+  ]
+}

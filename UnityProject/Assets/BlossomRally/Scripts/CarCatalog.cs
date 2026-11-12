@@ -69,6 +69,8 @@ namespace BlossomRally
         public float gripTarmac = 1f, gripLoose = 1f, gripSnow = 1f, gripSand = 1f;   // tyre compound per surface
         public float looseDrag = 1f;         // scales the ploughing drag on gravel / dirt / grass / snow / sand
         public string soundClass;            // engine sound family (null = derived from carClass)
+        public float upshiftMargin = 250f;   // full-throttle auto upshift this far below the limiter (wheel-speed rpm):
+                                             // low-revving engines need more, or wheel slip on a snowy climb holds them in 1st
 
         public CarSpec(string id, string name, string cls, string era, Drive d, float mass, float power, float vmax,
                        float grip, float driftGrip, float yaw)
@@ -120,6 +122,7 @@ namespace BlossomRally
         {
             susTravel = travel; damping = damper; gripTarmac = tarmac; gripLoose = loose; gripSnow = snow; gripSand = sand;
             looseDrag = ploughDrag;
+            upshiftMargin = Mathf.Max(250f, limiterRpm * 0.09f);
             return this;
         }
 

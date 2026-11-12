@@ -1,0 +1,238 @@
+{
+  "car_id": "CAR-027",
+  "display_name": "Muskeg Expedition",
+  "vehicle_class": "Overland",
+  "fbx": "CAR-027_Export.fbx",
+  "root": "CAR-027_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      1.22255,
+      0.0
+    ],
+    "size": [
+      2.05,
+      2.44491,
+      4.97576
+    ]
+  },
+  "triangles": 31926,
+  "wheels": {
+    "FL": {
+      "transform": "CAR-027_Wheel_FL",
+      "blender_position": [
+        -0.84,
+        1.46212,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.84,
+        0.41,
+        1.46212
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    "FR": {
+      "transform": "CAR-027_Wheel_FR",
+      "blender_position": [
+        0.84,
+        1.46212,
+        0.41
+      ],
+      "unity_local_position": [
+        0.84,
+        0.41,
+        1.46212
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    "RL": {
+      "transform": "CAR-027_Wheel_RL",
+      "blender_position": [
+        -0.84,
+        -1.35788,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.84,
+        0.41,
+        -1.35788
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    },
+    "RR": {
+      "transform": "CAR-027_Wheel_RR",
+      "blender_position": [
+        0.84,
+        -1.35788,
+        0.41
+      ],
+      "unity_local_position": [
+        0.84,
+        0.41,
+        -1.35788
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "FL",
+      "transform": "CAR-027_Wheel_FL",
+      "blender_position": [
+        -0.84,
+        1.46212,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.84,
+        0.41,
+        1.46212
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "FR",
+      "transform": "CAR-027_Wheel_FR",
+      "blender_position": [
+        0.84,
+        1.46212,
+        0.41
+      ],
+      "unity_local_position": [
+        0.84,
+        0.41,
+        1.46212
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "RL",
+      "transform": "CAR-027_Wheel_RL",
+      "blender_position": [
+        -0.84,
+        -1.35788,
+        0.41
+      ],
+      "unity_local_position": [
+        -0.84,
+        0.41,
+        -1.35788
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    },
+    {
+      "slot": "RR",
+      "transform": "CAR-027_Wheel_RR",
+      "blender_position": [
+        0.84,
+        -1.35788,
+        0.41
+      ],
+      "unity_local_position": [
+        0.84,
+        0.41,
+        -1.35788
+      ],
+      "radius": 0.4099,
+      "width": 0.29,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 2.82,
+  "track": 1.68,
+  "steering_wheel": {
+    "transform": "CAR-027_SteeringWheel",
+    "steer_axis": "local +Z in Unity (Blender local +Y)"
+  },
+  "colliders": [
+    {
+      "name": "CAR-027_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.83722,
+        0.04212
+      ],
+      "unity_size": [
+        1.96,
+        0.55444,
+        4.46
+      ]
+    },
+    {
+      "name": "CAR-027_Collider_Cabin",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        1.53722,
+        -0.68288
+      ],
+      "unity_size": [
+        1.7,
+        0.82556,
+        2.75
+      ]
+    }
+  ],
+  "textures": [
+    "CAR-027_BaseColor.png"
+  ],
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-027_Accent",
+    "M_CAR-027_Can",
+    "M_CAR-027_Paint",
+    "M_CAR-027_Plate",
+    "M_CAR-027_Rim",
+    "M_CAR-027_Seat",
+    "M_CAR-027_Tent",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    -0.37,
+    1.4137,
+    0.0221
+  ],
+  "hood_cam": [
+    0.0,
+    1.5989,
+    1.1221
+  ]
+}

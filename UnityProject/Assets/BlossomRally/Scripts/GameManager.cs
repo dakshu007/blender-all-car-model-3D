@@ -384,12 +384,17 @@ namespace BlossomRally
             if (InputReader.PauseDown && !results) { SetPaused(true); UI.Sound("MenuSelect"); return; }
             if (!stages.Running)
             {
-                for (int i = 0; i < CarCatalog.Cars.Length; i++)
-                    if (InputReader.Down(KeyCode.Alpha1 + i))
-                    {
-                        SpawnCar(i, car.transform.position + Vector3.up * 0.6f, Quaternion.LookRotation(Vector3.ProjectOnPlane(car.transform.forward, Vector3.up)));
-                        Toast(CarCatalog.Cars[i].name);
-                    }
+                // quick car swap: 1-9 pick the first nine, [ and ] step through the whole garage
+                int pick = -1;
+                for (int i = 0; i < Mathf.Min(9, CarCatalog.Cars.Length); i++)
+                    if (InputReader.Down(KeyCode.Alpha1 + i)) pick = i;
+                if (InputReader.Down(KeyCode.LeftBracket)) pick = (carIndex - 1 + CarCatalog.Cars.Length) % CarCatalog.Cars.Length;
+                if (InputReader.Down(KeyCode.RightBracket)) pick = (carIndex + 1) % CarCatalog.Cars.Length;
+                if (pick >= 0)
+                {
+                    SpawnCar(pick, car.transform.position + Vector3.up * 0.6f, Quaternion.LookRotation(Vector3.ProjectOnPlane(car.transform.forward, Vector3.up)));
+                    Toast(CarCatalog.Cars[pick].name);
+                }
                 if (InputReader.Down(KeyCode.Tab)) { pendingEvent = -1; EnterSelect(); return; }
             }
             if (InputReader.ActionDown(GameAction.Reset) && !results) Respawn();

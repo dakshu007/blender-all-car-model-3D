@@ -30,6 +30,18 @@ namespace BlossomRally
                 case "CAR-017": return Srgb(168, 24, 40);
                 case "CAR-018": return Srgb(136, 184, 136);
                 case "CAR-019": return Srgb(40, 88, 168);
+                case "CAR-020": return Srgb(232, 118, 43);
+                case "CAR-021": return Srgb(31, 59, 54);
+                case "CAR-022": return Srgb(60, 63, 68);
+                case "CAR-023": return Srgb(216, 195, 154);
+                case "CAR-024": return Srgb(244, 242, 236);
+                case "CAR-025": return Srgb(31, 163, 160);
+                case "CAR-026": return Srgb(244, 244, 240);
+                case "CAR-027": return Srgb(127, 138, 99);
+                case "CAR-028": return Srgb(244, 244, 242);
+                case "CAR-029": return Srgb(29, 35, 51);
+                case "CAR-030": return Srgb(42, 31, 77);
+                case "CAR-031": return Srgb(122, 37, 49);
                 default: return Color.white;
             }
         }

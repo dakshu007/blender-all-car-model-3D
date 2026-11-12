@@ -101,6 +101,31 @@ Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seco
 
 ## What's new in this version
 
+**0.11.0**
+* **12 new cars** (21 in total), each tuned for its terrain:
+  * Mountains: Talus Crag trail 4x4, Bramble Wagon 84 retro 4x4.
+  * Desert: Simoon T1 trophy truck, Sabka Dunecrew rally-raid pickup, Skink DB dune buggy.
+  * Snow: Ermine S4 snow rally car, Muskeg Expedition overlander.
+  * City: Vireo Apex rally hatch, Corvane Nocturne super saloon, Lumen Arclight electric GT.
+  * All-round: Halvard Citadel luxury SUV, Velina Arc coupe SUV.
+
+  Off-roaders get AWD, low-down torque, ride height and long suspension travel. The snow car grips best on snow and ice.
+  While driving, press **[ / ]** to cycle through every car (1-9 still pick the first nine).
+* **Minimap** in the bottom-left, GTA-style. It rotates, zooms with speed and shows markers, region names and your GPS route.
+* **M opens the world map**. It shows all events, landmarks, fast-travel points and passes.
+  Click to set a **waypoint**, and the GPS routes you along the roads.
+* **Roads**:
+  * Gentler cuts and embankments with shoulders.
+  * Smooth, banked bends.
+  * Clean junctions with no flicker, and no terrain poking through.
+  * Guard rails, walls and kerbs.
+* **Performance**:
+  * Low quality targets 200 FPS: no shadows (soft contact shadows instead), a lite grade, auto render scale and fewer particles.
+  * Terrain LOD.
+  * FPS cap and render scale settings.
+  * Auto Low/Medium on weaker hardware.
+  * Shader warm-up during loading, smoother region streaming, and no per-frame garbage in the HUD.
+
 **0.10.0 (Open World update).** Blossom Valley is now one of **six regions** in a single **3 × 2 km world**,
 joined by mountain-pass roads:
 * **Jade Harbour City**: skyline towers, neon, harbour bridge and container port.

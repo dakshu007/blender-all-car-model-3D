@@ -1,0 +1,235 @@
+{
+  "car_id": "CAR-030",
+  "display_name": "Lumen Arclight",
+  "vehicle_class": "Electric GT",
+  "fbx": "CAR-030_Export.fbx",
+  "root": "CAR-030_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.62002,
+      0.0
+    ],
+    "size": [
+      2.04767,
+      1.23997,
+      5.09463
+    ]
+  },
+  "triangles": 20076,
+  "wheels": {
+    "FL": {
+      "transform": "CAR-030_Wheel_FL",
+      "blender_position": [
+        -0.83,
+        1.43232,
+        0.35
+      ],
+      "unity_local_position": [
+        -0.83,
+        0.35,
+        1.43232
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": true,
+      "drive": true
+    },
+    "FR": {
+      "transform": "CAR-030_Wheel_FR",
+      "blender_position": [
+        0.83,
+        1.43232,
+        0.35
+      ],
+      "unity_local_position": [
+        0.83,
+        0.35,
+        1.43232
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": true,
+      "drive": true
+    },
+    "RL": {
+      "transform": "CAR-030_Wheel_RL",
+      "blender_position": [
+        -0.83,
+        -1.41768,
+        0.35
+      ],
+      "unity_local_position": [
+        -0.83,
+        0.35,
+        -1.41768
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": false,
+      "drive": true
+    },
+    "RR": {
+      "transform": "CAR-030_Wheel_RR",
+      "blender_position": [
+        0.83,
+        -1.41768,
+        0.35
+      ],
+      "unity_local_position": [
+        0.83,
+        0.35,
+        -1.41768
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "FL",
+      "transform": "CAR-030_Wheel_FL",
+      "blender_position": [
+        -0.83,
+        1.43232,
+        0.35
+      ],
+      "unity_local_position": [
+        -0.83,
+        0.35,
+        1.43232
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "FR",
+      "transform": "CAR-030_Wheel_FR",
+      "blender_position": [
+        0.83,
+        1.43232,
+        0.35
+      ],
+      "unity_local_position": [
+        0.83,
+        0.35,
+        1.43232
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": true,
+      "drive": true
+    },
+    {
+      "slot": "RL",
+      "transform": "CAR-030_Wheel_RL",
+      "blender_position": [
+        -0.83,
+        -1.41768,
+        0.35
+      ],
+      "unity_local_position": [
+        -0.83,
+        0.35,
+        -1.41768
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": false,
+      "drive": true
+    },
+    {
+      "slot": "RR",
+      "transform": "CAR-030_Wheel_RR",
+      "blender_position": [
+        0.83,
+        -1.41768,
+        0.35
+      ],
+      "unity_local_position": [
+        0.83,
+        0.35,
+        -1.41768
+      ],
+      "radius": 0.35,
+      "width": 0.28,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 2.85,
+  "track": 1.66,
+  "steering_wheel": {
+    "transform": "CAR-030_SteeringWheel",
+    "steer_axis": "local +Z in Unity (Blender local +Y)"
+  },
+  "colliders": [
+    {
+      "name": "CAR-030_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.458,
+        0.05232
+      ],
+      "unity_size": [
+        1.8784,
+        0.516,
+        4.76
+      ]
+    },
+    {
+      "name": "CAR-030_Collider_Cabin",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.978,
+        -0.43518
+      ],
+      "unity_size": [
+        1.3,
+        0.504,
+        1.885
+      ]
+    }
+  ],
+  "textures": [
+    "CAR-030_BaseColor.png"
+  ],
+  "materials": [
+    "M_Brake_Disc",
+    "M_CAR-030_Accent",
+    "M_CAR-030_Paint",
+    "M_CAR-030_Plate",
+    "M_CAR-030_Rim",
+    "M_CAR-030_Seat",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Interior_Dark",
+    "M_Light_Head",
+    "M_Light_Neon",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Black",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    -0.37,
+    1.0405,
+    0.2323
+  ],
+  "hood_cam": [
+    0.0,
+    1.25,
+    1.3323
+  ]
+}
