@@ -20,11 +20,12 @@ namespace BlossomRally
 
         static readonly GameAction[] Remappable =
             { GameAction.Throttle, GameAction.Brake, GameAction.SteerLeft, GameAction.SteerRight, GameAction.Handbrake,
-              GameAction.Reset, GameAction.Camera, GameAction.Replay, GameAction.Photo };
+              GameAction.Reset, GameAction.Camera, GameAction.Replay, GameAction.Photo, GameAction.Map };
 
         void Awake()
         {
             Instance = this;
+            useGUILayout = false;      // plain GUI calls only: skip the layout pass
             main = new MenuList { title = "SETTINGS", width = 600f };
             main.Add("Quality", null, () => GameSettings.QualityNames[GameSettings.Quality], d => GameSettings.SetQuality(GameSettings.Quality + d));
             main.Add("Grass density", null, () => Mathf.RoundToInt(GameSettings.GrassDensity * 100f) + "%", d => GameSettings.SetGrassDensity(GameSettings.GrassDensity + d * 0.1f));
@@ -32,6 +33,11 @@ namespace BlossomRally
                      d => { if (resolutions.Count > 0) resIndex = (resIndex + d + resolutions.Count) % resolutions.Count; });
             main.Add("Fullscreen", () => Screen.fullScreen = !Screen.fullScreen, () => Screen.fullScreen ? "On" : "Off", d => Screen.fullScreen = !Screen.fullScreen);
             main.Add("V-Sync", null, () => GameSettings.VSync ? "On" : "Off", d => GameSettings.SetVSync(!GameSettings.VSync));
+            main.Add("Frame rate limit", null, () => GameSettings.FpsCapNames[GameSettings.FpsCapIndex] + (GameSettings.FpsCaps[GameSettings.FpsCapIndex] > 0 ? " fps" : ""),
+                     d => GameSettings.SetFpsCap(GameSettings.FpsCapIndex + d));
+            main.Add("Render scale", null, () => GameSettings.RenderScaleIndex == 0
+                         ? "Auto (" + Mathf.RoundToInt(GameSettings.EffectiveRenderScale * 100f) + "%)" : GameSettings.RenderScaleNames[GameSettings.RenderScaleIndex],
+                     d => GameSettings.SetRenderScale(GameSettings.RenderScaleIndex + d));
             main.Add("FPS counter", null, () => GameSettings.ShowFps ? "On" : "Off", d => GameSettings.ShowFps = !GameSettings.ShowFps);
             main.Add("Master volume", null, () => Pct(GameSettings.MasterVolume), d => GameSettings.SetMasterVolume(GameSettings.MasterVolume + d * 0.1f));
             main.Add("Music volume", null, () => Pct(GameSettings.MusicVolume), d => GameSettings.SetMusicVolume(GameSettings.MusicVolume + d * 0.1f));
@@ -39,6 +45,7 @@ namespace BlossomRally
             main.Add("Announcer voice", null, () => !GameSettings.Announcer ? "Off" : BlossomRally.Announcer.HasVoicePack ? "On" : "On (no voice pack)",
                      d => GameSettings.SetAnnouncer(!GameSettings.Announcer));
             main.Add("Gamepad rumble", null, () => GameSettings.Rumble ? "On" : "Off", d => GameSettings.SetRumble(!GameSettings.Rumble));
+            main.Add("Minimap", null, () => GameSettings.Minimap ? "On" : "Off", d => GameSettings.SetMinimap(!GameSettings.Minimap));
             main.Add("Driving & assists...", () => { current = driving; driving.index = 0; });
             main.Add("Visual effects...", () => { current = effects; effects.index = 0; });
             main.Add("Keyboard controls...", () => { current = controls; controls.index = 0; });
@@ -110,6 +117,7 @@ namespace BlossomRally
         {
             if (resolutions.Count == 0) return;
             var r = resolutions[resIndex];
+            GameSettings.ClearRenderScale();       // an explicit resolution replaces the render scale
             Screen.SetResolution(r.x, r.y, Screen.fullScreenMode);
         }
 

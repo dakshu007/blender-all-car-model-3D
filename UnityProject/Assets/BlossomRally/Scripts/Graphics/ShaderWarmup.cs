@@ -14,7 +14,6 @@ namespace BlossomRally
     public static class ShaderWarmup
     {
         static readonly HashSet<Material> warmed = new HashSet<Material>();
-        static Mesh quad;
         const int MaxPerCall = 900;
 
         /// <summary>Draw every not-yet-warmed scene material once (returns how many).</summary>
@@ -43,8 +42,8 @@ namespace BlossomRally
             catch (System.Exception e) { Debug.LogException(e); }
             if (mats.Count == 0) return 0;
 
-            if (quad == null) quad = PetalWeather.QuadMesh();
-            GameObject go = null;
+            GameObject go = null, quads = null;
+            Mesh warmMesh = null;
             RenderTexture rt = null;
             try
             {
@@ -63,22 +62,50 @@ namespace BlossomRally
                 cam.targetTexture = rt;
                 Transform ct = go.transform;
                 ct.SetPositionAndRotation(main.transform.position, main.transform.rotation);
-                var props = new MaterialPropertyBlock();
-                // a couple of rows of tiny quads in front of the camera (all in view, all drawn)
-                Matrix4x4 baseM = Matrix4x4.TRS(ct.position + ct.forward * 3f, ct.rotation, Vector3.one * 0.05f);
-                for (int i = 0; i < mats.Count; i++)
+                // one tiny quad per material (one submesh each) on a single renderer in front of the camera
+                var mesh = new Mesh { name = "BR_WarmupQuads", hideFlags = HideFlags.HideAndDontSave };
+                int n = mats.Count;
+                var v = new Vector3[n * 4];
+                var uv = new Vector2[n * 4];
+                var nr = new Vector3[n * 4];
+                for (int i = 0; i < n; i++)
                 {
-                    var m = mats[i];
-                    int passes = Mathf.Max(1, m.passCount);
-                    for (int s = 0; s < Mathf.Min(passes, 1); s++)
-                        Graphics.DrawMesh(quad, baseM, m, 30, cam, 0, props, ShadowCastingMode.On, true);
+                    float x = (i % 30) * 0.01f - 0.15f, y = (i / 30) * 0.01f - 0.15f;
+                    v[i * 4] = new Vector3(x, y, 0f); v[i * 4 + 1] = new Vector3(x + 0.01f, y, 0f);
+                    v[i * 4 + 2] = new Vector3(x + 0.01f, y + 0.01f, 0f); v[i * 4 + 3] = new Vector3(x, y + 0.01f, 0f);
+                    uv[i * 4] = new Vector2(0, 0); uv[i * 4 + 1] = new Vector2(1, 0); uv[i * 4 + 2] = new Vector2(1, 1); uv[i * 4 + 3] = new Vector2(0, 1);
+                    for (int k = 0; k < 4; k++) nr[i * 4 + k] = Vector3.back;
                 }
+                mesh.vertices = v;
+                mesh.uv = uv;
+                mesh.uv2 = uv;
+                mesh.normals = nr;
+                var col = new Color32[n * 4];
+                for (int i = 0; i < col.Length; i++) col[i] = new Color32(255, 255, 255, 255);
+                mesh.colors32 = col;
+                mesh.subMeshCount = n;
+                for (int i = 0; i < n; i++)
+                {
+                    int b0 = i * 4;
+                    mesh.SetTriangles(new[] { b0, b0 + 2, b0 + 1, b0, b0 + 3, b0 + 2 }, i, false);
+                }
+                mesh.RecalculateBounds();
+                quads = new GameObject("BR_WarmupQuads") { hideFlags = HideFlags.HideAndDontSave, layer = 30 };
+                quads.transform.SetPositionAndRotation(ct.position + ct.forward * 1f, ct.rotation);
+                quads.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = quads.AddComponent<MeshRenderer>();
+                mr.sharedMaterials = mats.ToArray();
+                mr.shadowCastingMode = ShadowCastingMode.On;
+                mr.receiveShadows = true;
+                warmMesh = mesh;
                 cam.Render();
             }
             catch (System.Exception e) { Debug.LogException(e); }
             finally
             {
                 if (go != null) Object.Destroy(go);
+                if (quads != null) Object.Destroy(quads);
+                if (warmMesh != null) Object.Destroy(warmMesh);
                 if (rt != null) { rt.Release(); Object.Destroy(rt); }
             }
             return mats.Count;

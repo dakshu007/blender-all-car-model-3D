@@ -10,7 +10,7 @@ namespace BlossomRally
         public static readonly Color White = new Color(1f, 0.97f, 0.96f, 1f);
         public static readonly Color Pink = new Color(1f, 0.72f, 0.82f, 1f);
         public static readonly Color Gold = new Color(1f, 0.84f, 0.42f, 1f);
-        public static GUIStyle Big, Mid, Small, Title, Huge, Row, MidLeft, MidRight, SmallCentre;
+        public static GUIStyle Big, Mid, Small, Title, Huge, Row, MidLeft, MidRight, SmallCentre, RowRight, SmallRight;
 
         public static void Styles()
         {
@@ -24,6 +24,16 @@ namespace BlossomRally
             Title = new GUIStyle(GUI.skin.label) { fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             Huge = new GUIStyle(GUI.skin.label) { fontSize = 76, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             Row = new GUIStyle(GUI.skin.label) { fontSize = 21, alignment = TextAnchor.MiddleLeft };
+            RowRight = new GUIStyle(Row) { alignment = TextAnchor.MiddleRight };
+            SmallRight = new GUIStyle(Small) { alignment = TextAnchor.UpperRight };
+        }
+
+        // cached small integers ("0".."999"): HUD numbers without a new string every frame
+        static readonly string[] ints = new string[1000];
+        public static string Int(int v)
+        {
+            if (v < 0 || v >= ints.Length) return v.ToString();
+            return ints[v] ?? (ints[v] = v.ToString());
         }
 
         public static void Label(Rect r, string text, GUIStyle st, Color c)
@@ -65,6 +75,70 @@ namespace BlossomRally
         public System.Action select;               // enter / click
         public System.Func<bool> visible;
         public bool Visible { get { return visible == null || visible(); } }
+
+        // cached display strings (the menus are redrawn every frame; no concatenation per frame)
+        string shownSel, shownIdle, shownFor, arrowFor, arrowed;
+        public string Shown(bool sel)
+        {
+            if (!ReferenceEquals(shownFor, label)) { shownFor = label; shownSel = "›  " + label; shownIdle = "   " + label; }
+            return sel ? shownSel : shownIdle;
+        }
+        public string Arrowed(string val)
+        {
+            if (!ReferenceEquals(arrowFor, val) && arrowFor != val) { arrowFor = val; arrowed = "‹  " + val + "  ›"; }
+            return arrowed;
+        }
+    }
+
+    /// <summary>A HUD string rebuilt only when its key (the value shown) changes: if (c.Changed(k)) c.Text = ...;</summary>
+    public sealed class CachedText
+    {
+        public long Key = long.MinValue;
+        public string Text = "";
+        public bool Changed(long key)
+        {
+            if (key == Key) return false;
+            Key = key;
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// FPS overlay (F1 / backquote or Settings): average FPS, average and worst frame time over the last
+    /// half second, and the quality preset. The text is rebuilt twice a second only.
+    /// </summary>
+    public static class FpsCounter
+    {
+        static float acc, worst;
+        static int frames;
+        static string text = "";
+        static Color colour = UI.White;
+
+        /// <summary>Call once per frame (GameManager.Update).</summary>
+        public static void Tick()
+        {
+            if (!GameSettings.ShowFps) { acc = 0f; frames = 0; worst = 0f; return; }
+            float dt = Time.unscaledDeltaTime;
+            acc += dt;
+            frames++;
+            if (dt > worst) worst = dt;
+            if (acc < 0.5f) return;
+            float avg = acc / frames;
+            int fps = Mathf.RoundToInt(1f / Mathf.Max(1e-4f, avg));
+            text = fps + " FPS   " + (avg * 1000f).ToString("0.0") + " ms   max " + (worst * 1000f).ToString("0") + " ms   "
+                   + GameSettings.QualityNames[GameSettings.Quality].ToUpperInvariant();
+            colour = fps >= 110 ? new Color(0.62f, 1f, 0.72f, 1f) : fps >= 55 ? UI.White : new Color(1f, 0.6f, 0.55f, 1f);
+            acc = 0f; frames = 0; worst = 0f;
+        }
+
+        public static void Draw()
+        {
+            if (!GameSettings.ShowFps || text.Length == 0) return;
+            UI.Styles();
+            float W = Screen.width;
+            UI.Panel(new Rect(W - 432, 6, 424, 26), 0.45f);
+            UI.Label(new Rect(W - 428, 8, 412, 22), text, UI.SmallRight, colour);
+        }
     }
 
     public class MenuList
@@ -134,10 +208,10 @@ namespace BlossomRally
                 bool sel = i == index;
                 if (sel) UI.Panel(r, 0.55f);
                 string val = m.value != null ? m.value() : "";
-                UI.Label(new Rect(r.x + 12, r.y, r.width - 24, r.height), (sel ? "›  " : "   ") + m.label, UI.Row, sel ? UI.Pink : UI.White);
+                UI.Label(new Rect(r.x + 12, r.y, r.width - 24, r.height), m.Shown(sel), UI.Row, sel ? UI.Pink : UI.White);
                 if (val.Length > 0)
-                    UI.Label(new Rect(r.x + 12, r.y, r.width - 24, r.height), (m.change != null && sel ? "‹  " + val + "  ›" : val),
-                             new GUIStyle(UI.Row) { alignment = TextAnchor.MiddleRight }, sel ? UI.Gold : UI.White);
+                    UI.Label(new Rect(r.x + 12, r.y, r.width - 24, r.height), m.change != null && sel ? m.Arrowed(val) : val,
+                             UI.RowRight, sel ? UI.Gold : UI.White);
                 if (GUI.Button(r, GUIContent.none, GUIStyle.none))
                 {
                     index = i;

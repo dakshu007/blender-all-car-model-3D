@@ -52,11 +52,17 @@ namespace BlossomRally
             if (registered) return;
             registered = true;
             WorldHooks.WorldBuilt += OnWorldBuilt;
+            WorldHooks.CarSpawned += ContactShadow.Attach;
         }
 
         static void OnWorldBuilt(WorldBuilder world)
         {
             if (world == null) return;
+            // still on the loading screen: compile every shader variant / pipeline state the world uses now,
+            // not the first time each thing comes into view while driving
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            int n = ShaderWarmup.Run();
+            Debug.Log("[BlossomRally] shader warm-up: " + n + " materials in " + sw.ElapsedMilliseconds + " ms");
             var go = new GameObject("BR_Graphics");
             var hub = go.AddComponent<GraphicsHub>();
             hub.world = world;
@@ -105,6 +111,8 @@ namespace BlossomRally
             dapple.world = world;
             yield return dapple.Build();
             OnSettingsChanged();
+            yield return null;
+            ShaderWarmup.Run();               // the horizon / night glow / dapple materials made above (+ the first car)
         }
 
         void OnDestroy()

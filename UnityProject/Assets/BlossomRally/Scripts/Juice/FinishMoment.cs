@@ -27,6 +27,7 @@ namespace BlossomRally
         void Awake()
         {
             Instance = this;
+            useGUILayout = false;      // plain GUI calls only: skip the layout pass
             voice = gameObject.AddComponent<AudioSource>();
             voice.playOnAwake = false;
             voice.spatialBlend = 0f;

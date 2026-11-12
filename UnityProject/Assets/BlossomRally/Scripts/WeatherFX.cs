@@ -11,7 +11,7 @@ namespace BlossomRally
         public Transform follow;
         ParticleSystem rain, splash;
         ParticleSystem.EmitParams ep;
-        float splashAcc;
+        float splashAcc, rainRate = -1f;
 
         void Start()
         {
@@ -96,12 +96,18 @@ namespace BlossomRally
             if (f.sqrMagnitude < 0.01f) f = Vector3.forward;
             f.Normalize();
             rain.transform.position = follow.position + f * 10f + Vector3.up * 16f;
-            var em = rain.emission;
-            em.rateOverTime = 5200f * k;
+            // particle budget follows the preset (Low: 40 %); only touch the emitter when the rate changes
+            float rate = 5200f * k * GameSettings.ParticleScale;
+            if (Mathf.Abs(rate - rainRate) > 1f)
+            {
+                rainRate = rate;
+                var em = rain.emission;
+                em.rateOverTime = rate;
+            }
             if (k < 0.01f) return;
             var gm = GameManager.Instance;
             var world = gm != null ? gm.World : null;
-            splashAcc += Time.deltaTime * 260f * k;
+            splashAcc += Time.deltaTime * 260f * k * GameSettings.ParticleScale;
             int n = Mathf.Min(40, Mathf.FloorToInt(splashAcc));
             splashAcc -= n;
             for (int i = 0; i < n; i++)
@@ -124,6 +130,8 @@ namespace BlossomRally
         readonly List<Drop> drops = new List<Drop>();
         Texture2D dropTex;
         float wiper = -1f, wiperTimer;
+
+        void Awake() { useGUILayout = false; }     // plain GUI calls only: skip the layout pass (and its garbage)
 
         Texture2D DropTex()
         {

@@ -30,6 +30,7 @@ namespace BlossomRally
         void Awake()
         {
             Instance = this;
+            useGUILayout = false;      // plain GUI calls only: skip the layout pass
             for (int i = 0; i < pops.Length; i++) pops[i] = new Pop();
         }
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BlossomRally
 {
-    public enum GameAction { Throttle, Brake, SteerLeft, SteerRight, Handbrake, Reset, Camera, Replay, Photo }
+    public enum GameAction { Throttle, Brake, SteerLeft, SteerRight, Handbrake, Reset, Camera, Replay, Photo, Map }
 
     public static class GameSettings
     {
@@ -32,6 +32,7 @@ namespace BlossomRally
         public static bool ShowFps { get; set; }
         public static bool Rumble { get; private set; } = true;
         public static bool Announcer { get; private set; } = true;
+        public static bool Minimap { get; private set; } = true;
 
         public static event System.Action Changed;
 
@@ -39,7 +40,7 @@ namespace BlossomRally
         {
             { GameAction.Throttle, KeyCode.W }, { GameAction.Brake, KeyCode.S }, { GameAction.SteerLeft, KeyCode.A },
             { GameAction.SteerRight, KeyCode.D }, { GameAction.Handbrake, KeyCode.Space }, { GameAction.Reset, KeyCode.R },
-            { GameAction.Camera, KeyCode.C }, { GameAction.Replay, KeyCode.V }, { GameAction.Photo, KeyCode.O },
+            { GameAction.Camera, KeyCode.C }, { GameAction.Replay, KeyCode.V }, { GameAction.Photo, KeyCode.O }, { GameAction.Map, KeyCode.M },
         };
         static readonly Dictionary<GameAction, KeyCode> bindings = new Dictionary<GameAction, KeyCode>();
         static bool loaded;
@@ -65,6 +66,7 @@ namespace BlossomRally
             RenderScaleIndex = Mathf.Clamp(GetI("BR_RenderScale", 0), 0, RenderScales.Length - 1);
             Rumble = GetI("BR_Rumble", 1) == 1;
             Announcer = GetI("BR_Announcer", 1) == 1;
+            Minimap = GetI("BR_Minimap", 1) == 1;
             foreach (var kv in defaults) bindings[kv.Key] = (KeyCode)GetI("BR_Key_" + kv.Key, (int)kv.Value);
             Apply();
             ApplyRenderScale();
@@ -146,6 +148,7 @@ namespace BlossomRally
         public static void SetVSync(bool v) { VSync = v; SetI("BR_VSync", v ? 1 : 0); Apply(); }
         public static void SetRumble(bool v) { Rumble = v; SetI("BR_Rumble", v ? 1 : 0); Save(); }
         public static void SetAnnouncer(bool v) { Announcer = v; SetI("BR_Announcer", v ? 1 : 0); Save(); }
+        public static void SetMinimap(bool v) { Minimap = v; SetI("BR_Minimap", v ? 1 : 0); Save(); }
 
         static void Save() { try { PlayerPrefs.Save(); } catch (System.Exception) { } }
 

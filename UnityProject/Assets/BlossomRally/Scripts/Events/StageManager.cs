@@ -221,6 +221,7 @@ namespace BlossomRally
         {
             if (Instance != null && Instance != this) { Destroy(this); return; }
             Instance = this;
+            useGUILayout = false;      // plain GUI calls only: skip the layout pass
         }
 
         void OnDestroy()
@@ -737,6 +738,12 @@ namespace BlossomRally
             if (phase == Phase.Results) DrawResults(W, H);
         }
 
+        readonly CachedText cTimer = new CachedText(), cGates = new CachedText(), cPenalty = new CachedText(), cSplit = new CachedText(),
+                            cBest = new CachedText(), cGhost = new CachedText(), cScore = new CachedText(), cChain = new CachedText(),
+                            cBank = new CachedText(), cNext = new CachedText();
+        readonly float[] marks = new float[3];
+        string cName = "", cNameFor;
+
         void DrawTimerPanel(float W)
         {
             float pw = 440f, ph = 66f, px = (W - pw) * 0.5f, py = 10f;
@@ -746,14 +753,22 @@ namespace BlossomRally
             if (phase == Phase.Countdown) shown = drift ? timeLimit : 0f;
             Color tc = White;
             if (drift && shown < 10f && phase == Phase.Running) tc = Color.Lerp(White, Bad, 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 6f));
-            Label(new Rect(px, py + 2, pw, 48), FormatTime(shown), sTimer, tc);
-            Label(new Rect(px, py + 44, pw, 20), drift ? "TIME LEFT" : def.name.ToUpperInvariant(), sSmallC, Pink);
+            // HUD strings only rebuilt when the shown value changes (the timer: once per centisecond)
+            if (cTimer.Changed(Mathf.FloorToInt(Mathf.Max(0f, shown) * 100f + 0.0001f))) cTimer.Text = FormatTime(shown);
+            Label(new Rect(px, py + 2, pw, 48), cTimer.Text, sTimer, tc);
+            if (!ReferenceEquals(cNameFor, def.name)) { cNameFor = def.name; cName = def.name.ToUpperInvariant(); }
+            Label(new Rect(px, py + 44, pw, 20), drift ? "TIME LEFT" : cName, sSmallC, Pink);
 
             // left: checkpoint counter (+ penalties)
             int done = Mathf.Clamp(nextGate - 1, 0, course.Checkpoints);
             Label(new Rect(px + 14, py + 6, 120, 20), "CHECKPOINT", sSmall, Pink);
-            Label(new Rect(px + 14, py + 24, 120, 26), done + " / " + course.Checkpoints, sMidL, White);
-            if (penalty > 0f) Label(new Rect(px + 14, py + 46, 120, 18), "+" + penalty.ToString("0.0", Inv) + " s", sSmall, Bad);
+            if (cGates.Changed(done * 1000L + course.Checkpoints)) cGates.Text = done + " / " + course.Checkpoints;
+            Label(new Rect(px + 14, py + 24, 120, 26), cGates.Text, sMidL, White);
+            if (penalty > 0f)
+            {
+                if (cPenalty.Changed(Mathf.RoundToInt(penalty * 10f))) cPenalty.Text = "+" + penalty.ToString("0.0", Inv) + " s";
+                Label(new Rect(px + 14, py + 46, 120, 18), cPenalty.Text, sSmall, Bad);
+            }
 
             // right: split delta, or best / ghost reference
             Rect rr = new Rect(px + pw - 134, py + 6, 120, 20);
@@ -761,15 +776,21 @@ namespace BlossomRally
             if (!drift && splitTimer > 0f)
             {
                 Label(rr, "SPLIT", right, Pink);
-                Label(new Rect(rr.x, py + 24, 120, 26), FormatDelta(splitDelta), sMidR,
+                if (cSplit.Changed(Mathf.RoundToInt(splitDelta * 100f))) cSplit.Text = FormatDelta(splitDelta);
+                Label(new Rect(rr.x, py + 24, 120, 26), cSplit.Text, sMidR,
                       new Color(splitDelta < 0f ? Good.r : Bad.r, splitDelta < 0f ? Good.g : Bad.g, splitDelta < 0f ? Good.b : Bad.b, Mathf.Clamp01(splitTimer)));
             }
             else
             {
                 Label(rr, "BEST", right, Pink);
-                string bs = bestRef > 0f ? (drift ? FormatPts(bestRef) : FormatTime(bestRef)) : "--";
-                Label(new Rect(rr.x, py + 24, 120, 26), bs, sMidR, White);
-                if (ghost != null) Label(new Rect(rr.x, py + 46, 120, 18), "ghost " + FormatTime(ghost.Time), right, new Color(1f, 0.9f, 0.94f, 0.8f));
+                if (cBest.Changed(Mathf.RoundToInt(bestRef * 100f) * 2L + (drift ? 1 : 0)))
+                    cBest.Text = bestRef > 0f ? (drift ? FormatPts(bestRef) : FormatTime(bestRef)) : "--";
+                Label(new Rect(rr.x, py + 24, 120, 26), cBest.Text, sMidR, White);
+                if (ghost != null)
+                {
+                    if (cGhost.Changed(Mathf.RoundToInt(ghost.Time * 100f))) cGhost.Text = "ghost " + FormatTime(ghost.Time);
+                    Label(new Rect(rr.x, py + 46, 120, 18), cGhost.Text, right, new Color(1f, 0.9f, 0.94f, 0.8f));
+                }
             }
         }
 
@@ -778,12 +799,19 @@ namespace BlossomRally
             float pw = 300f, ph = 162f, px = W - pw - 16f, py = 10f;
             Panel(new Rect(px, py, pw, ph), 0.55f);
             Label(new Rect(px + 16, py + 8, pw - 32, 20), "DRIFT ZONE SCORE", sSmall, Pink);
-            Label(new Rect(px + 16, py + 26, pw - 32, 44), FormatPts(score), sTitleL, White);
+            if (cScore.Changed(Mathf.RoundToInt(score))) cScore.Text = FormatPts(score);
+            Label(new Rect(px + 16, py + 26, pw - 32, 44), cScore.Text, sTitleL, White);
             if (chainActive && chainPts > 1f)
-                Label(new Rect(px + 16, py + 70, pw - 32, 26), "+" + FormatPts(chainPts) + "   x" + combo.ToString("0", Inv), sMidL, Pink);
+            {
+                if (cChain.Changed(Mathf.RoundToInt(chainPts) * 100L + Mathf.RoundToInt(combo))) cChain.Text = "+" + FormatPts(chainPts) + "   x" + combo.ToString("0", Inv);
+                Label(new Rect(px + 16, py + 70, pw - 32, 26), cChain.Text, sMidL, Pink);
+            }
             else if (chainFlash > 0f)
-                Label(new Rect(px + 16, py + 70, pw - 32, 26), "+" + FormatPts(lastBank) + "  banked", sMidL,
+            {
+                if (cBank.Changed(Mathf.RoundToInt(lastBank))) cBank.Text = "+" + FormatPts(lastBank) + "  banked";
+                Label(new Rect(px + 16, py + 70, pw - 32, 26), cBank.Text, sMidL,
                       new Color(Good.r, Good.g, Good.b, Mathf.Clamp01(chainFlash)));
+            }
             else
                 Label(new Rect(px + 16, py + 70, pw - 32, 26), "hold a drift to build combo", sSmall, new Color(1f, 1f, 1f, 0.6f));
 
@@ -793,14 +821,16 @@ namespace BlossomRally
             Fill(new Rect(bx - 2, by - 2, bw + 4, bh + 4), new Color(0.1f, 0.05f, 0.08f, 0.6f));
             int m = def.MedalForPoints(total);
             Fill(new Rect(bx, by, bw * Mathf.Clamp01(total / def.goldPts), bh), m > 0 ? MedalColor(m) : Pink);
-            float[] marks = { def.bronzePts, def.silverPts, def.goldPts };
+            marks[0] = def.bronzePts; marks[1] = def.silverPts; marks[2] = def.goldPts;
             for (int i = 0; i < 3; i++)
             {
                 float x = bx + bw * marks[i] / def.goldPts;
                 Fill(new Rect(x - 1.5f, by - 5, 3, bh + 10), MedalColor(i + 1));
             }
-            string next = m >= 3 ? "GOLD secured!" : MedalName(m + 1) + " in " + FormatPts(marks[m] - total);
-            Label(new Rect(bx, by + 18, bw, 22), next, sSmall, m >= 3 ? GoldCol : White);
+            if (m >= 3) cNext.Text = "GOLD secured!";
+            else if (cNext.Changed(m * 10000000L + Mathf.RoundToInt(marks[m] - total))) cNext.Text = MedalName(m + 1) + " in " + FormatPts(marks[m] - total);
+            if (m >= 3) cNext.Key = long.MinValue;
+            Label(new Rect(bx, by + 18, bw, 22), cNext.Text, sSmall, m >= 3 ? GoldCol : White);
         }
 
         void DrawResults(float W, float H)

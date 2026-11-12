@@ -11,6 +11,7 @@ namespace BlossomRally
         ParticleSystem petals, mist;
         static readonly float[] Rates = { 90f, 320f, 900f };
         float mistRate = -1f;
+        Color mistFog = new Color(-1f, -1f, -1f, -1f);
 
         void Start()
         {
@@ -33,12 +34,26 @@ namespace BlossomRally
 
         float petalRegional = 1f;
 
+        int appliedQ = -1;
+
         void ApplyLevel()
         {
+            float ps = GameSettings.ParticleScale;
             var em = petals.emission;
-            em.rateOverTime = Rates[level] * petalRegional;
+            em.rateOverTime = Rates[level] * petalRegional * ps;
             var main = petals.main;
-            main.maxParticles = level == 2 ? 9000 : 4000;
+            main.maxParticles = Mathf.RoundToInt((level == 2 ? 9000 : 4000) * Mathf.Min(1f, ps));
+            // the noise module is the CPU cost of thousands of petals: cheaper turbulence on Low / Medium
+            int q = GameSettings.Quality;
+            if (q != appliedQ)
+            {
+                appliedQ = q;
+                var noise = petals.noise;
+                noise.octaveCount = q >= 2 ? 2 : 1;
+                noise.quality = q == 0 ? ParticleSystemNoiseQuality.Low : (q == 1 ? ParticleSystemNoiseQuality.Medium : ParticleSystemNoiseQuality.High);
+                var mm = mist.main;
+                mm.maxParticles = q == 0 ? 70 : 140;
+            }
         }
 
         void LateUpdate()
@@ -50,25 +65,31 @@ namespace BlossomRally
             f.Normalize();
             petals.transform.position = follow.position + f * 22f + Vector3.up * 16f;
             float regional = RegionRuntime.PetalAmount;
-            if (Mathf.Abs(regional - petalRegional) > 0.02f)
+            if (Mathf.Abs(regional - petalRegional) > 0.02f || appliedQ != GameSettings.Quality)
             {
                 petalRegional = regional;
-                var pem = petals.emission;
-                pem.rateOverTime = Rates[level] * regional;
+                ApplyLevel();
             }
             mist.transform.position = follow.position + f * 60f + Vector3.up * 3f;
             // mist amount follows the weather preset (none when fog is off)
-            if (Mathf.Abs(Atmosphere.MistRate - mistRate) > 0.05f)
+            // (Low: fewer of the big alpha blobs - they are pure overdraw)
+            float wantMist = Atmosphere.MistRate * (GameSettings.Quality == 0 ? 0.6f : 1f);
+            if (Mathf.Abs(wantMist - mistRate) > 0.05f)
             {
-                mistRate = Atmosphere.MistRate;
+                mistRate = wantMist;
                 var em = mist.emission;
                 em.rateOverTime = mistRate;
                 if (mistRate < 0.1f) mist.Clear();
             }
-            var mainM = mist.main;
-            mainM.startColor = new ParticleSystem.MinMaxGradient(
-                new Color(RenderSettings.fogColor.r, RenderSettings.fogColor.g * 1.02f, RenderSettings.fogColor.b * 1.03f, 0.10f),
-                new Color(0.95f, 0.9f, 1f, 0.06f));
+            Color fc = RenderSettings.fogColor;
+            if (fc != mistFog)
+            {
+                mistFog = fc;
+                var mainM = mist.main;
+                mainM.startColor = new ParticleSystem.MinMaxGradient(
+                    new Color(fc.r, fc.g * 1.02f, fc.b * 1.03f, 0.10f),
+                    new Color(0.95f, 0.9f, 1f, 0.06f));
+            }
         }
 
         ParticleSystem MakePetals()

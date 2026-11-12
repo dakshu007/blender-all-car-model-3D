@@ -62,8 +62,19 @@ namespace BlossomRally
             if (dt <= 0f) return;          // paused
             clock += dt;
             frame++;
+            // camera in another region: the valley's birds, kites and lanterns are far away (or streamed
+            // out of view) - animate them at a quarter rate instead of re-skinning their meshes every frame
+            if (RegionRuntime.Instance != null && RegionRuntime.Presence(RegionId.Valley) < 0.01f)
+            {
+                farDt += dt;
+                if ((frame & 3) != 0) return;
+                dt = farDt;
+            }
+            farDt = 0f;
             Step(dt, false);
         }
+
+        float farDt;
 
         void Step(float dt, bool force)
         {
