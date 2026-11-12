@@ -12,6 +12,7 @@
 // Pass 8: ink & watercolour painting
 // Pass 9: sun visibility (1x1, for the flare)
 // Pass 10: lens drops / mud specks (immediate-mode quads into the lens texture)
+// Pass 11: lite composite (Low preset): bloom + filmic tonemap + pastel grade + vignette, nothing else
 // Everything new is behind uniform switches that are 0 when unused, so the old look is unchanged.
 Shader "Hidden/BlossomRally/PostFX"
 {
@@ -220,6 +221,28 @@ Shader "Hidden/BlossomRally/PostFX"
         float len = 0.10 + h * 0.2;
         float body = saturate(1.0 - abs(r - head) / len);
         return (half)(on * body * smoothstep(0.32, 0.55, r));
+    }
+
+    // ---------------------------------------------------------------- lite composite (Low)
+    // Same look as the full composite with every optional effect off, without the branches / extra
+    // samplers (fewer registers, two texture reads per pixel).
+    half4 fragLite (v2f_img2 i) : SV_Target
+    {
+        half3 c = tex2D(_MainTex, i.uv).rgb;
+        c += tex2D(_BloomTex, i.suv).rgb * _BloomIntensity;
+        c *= _Exposure;
+        c = tonemapACES(c);
+        half3 g = LinearToGammaSpace(c);
+        half lum = dot(g, half3(0.299, 0.587, 0.114));
+        g = lerp(half3(lum, lum, lum), g, _Saturation);
+        g = (g - 0.5) * _Contrast + 0.5;
+        g *= _Tint.rgb;
+        half shadowMask = saturate(1.0 - lum * 1.6);
+        g = lerp(g, g * _ShadowTint.rgb, shadowMask * _ShadowTint.a);
+        g = lerp(g, _Lift.rgb, _Lift.a * (1.0 - lum * 0.7));
+        float2 v = i.uv - 0.5;
+        g *= saturate(1.0 - dot(v, v) * _Vignette);
+        return half4(GammaToLinearSpace(saturate(g)), 1);
     }
 
     // ---------------------------------------------------------------- composite
@@ -659,6 +682,13 @@ Shader "Hidden/BlossomRally/PostFX"
             #pragma vertex vertDrop
             #pragma fragment fragDrop
             #pragma target 3.0
+            ENDCG
+        }
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment fragLite
             ENDCG
         }
     }

@@ -133,7 +133,14 @@ namespace BlossomRally
 
         // shader passes
         const int PassPrefilter = 0, PassBlur = 1, PassComposite = 2, PassCoc = 3, PassDofBlur = 4, PassDofCombine = 5,
-                  PassShaftMask = 6, PassShaftBlur = 7, PassInk = 8, PassSunVis = 9, PassLensDrop = 10;
+                  PassShaftMask = 6, PassShaftBlur = 7, PassInk = 8, PassSunVis = 9, PassLensDrop = 10, PassLite = 11;
+
+        /// <summary>
+        /// Low preset: the cheap grade - quarter-res 3-level bloom + one lite composite pass (tonemap, pastel
+        /// grade incl. the region grade, vignette). Same palette as the full chain, ~1/3 of its GPU cost.
+        /// Photo filters, depth of field and ink mode still use the full chain.
+        /// </summary>
+        public static bool LiteGrade { get { return GameSettings.Quality == 0; } }
 
         Material mat;
         Camera cam;
@@ -256,7 +263,7 @@ namespace BlossomRally
                 Graphics.Blit(src, dst);
                 return;
             }
-            SetupPhoto(src);
+            bool photo = SetupPhoto(src);
             if (!effectEnabled)
             {
                 // ink mode on the raw image (colour grade switched off)
@@ -268,6 +275,11 @@ namespace BlossomRally
             // ---- base grade (+ region / time-of-day grade) ----
             if (Enhanced && RegionGrading) grade = grader.Update(cam.transform.position, frameDt);
             else grade = Grade.Identity;
+            if (LiteGrade && !inkOn && !photo && !WantDof && mat.passCount > PassLite)
+            {
+                RenderLite(src, dst);
+                return;
+            }
             mat.SetFloat("_Threshold", threshold);
             mat.SetFloat("_Knee", 0.5f);
             mat.SetFloat("_BloomIntensity", bloomIntensity);
@@ -381,6 +393,46 @@ namespace BlossomRally
             if (shaftB != null) RenderTexture.ReleaseTemporary(shaftB);
             if (shaftMask != null) RenderTexture.ReleaseTemporary(shaftMask);
             if (sunVis != null) RenderTexture.ReleaseTemporary(sunVis);
+        }
+
+        // ---------------------------------------------------------------- lite chain (Low)
+        void RenderLite(RenderTexture src, RenderTexture dst)
+        {
+            mat.SetFloat("_Threshold", threshold);
+            mat.SetFloat("_Knee", 0.5f);
+            mat.SetFloat("_BloomIntensity", bloomIntensity);
+            mat.SetFloat("_Exposure", exposure * Mathf.Pow(2f, exposureEV));
+            // no realtime shadows on Low: a touch more contrast / colour keeps the image from looking flat
+            mat.SetFloat("_Saturation", saturation * saturationMul * grade.sat * 1.03f);
+            mat.SetFloat("_Contrast", contrast * grade.con * 1.04f);
+            Vector3 gt = Perceptual(grade.tint), gs = Perceptual(grade.shadow), glc = Perceptual(grade.lift);
+            float la = lift.a + grade.liftAmt;
+            Color gl = la > 1e-4f ? (lift * lift.a + new Color(glc.x, glc.y, glc.z) * grade.liftAmt) * (1f / la) : lift;
+            gl.a = la;
+            mat.SetColor("_Lift", gl);
+            mat.SetColor("_Tint", new Color(tint.r * gt.x, tint.g * gt.y, tint.b * gt.z, tint.a));
+            mat.SetColor("_ShadowTint", new Color(shadowTint.r * gs.x, shadowTint.g * gs.y, shadowTint.b * gs.z, shadowTint.a + grade.shadowAmt));
+            mat.SetFloat("_Vignette", Mathf.Max(0f, vignette + vignetteAdd));
+
+            // bloom: prefilter straight to quarter res (4 bilinear taps cover the 4x4 block), 2 more levels, back up
+            var fmt = src.format;
+            int w = Mathf.Max(4, src.width / 4), h = Mathf.Max(4, src.height / 4);
+            var b0 = RenderTexture.GetTemporary(w, h, 0, fmt);
+            var b1 = RenderTexture.GetTemporary(Mathf.Max(2, w / 2), Mathf.Max(2, h / 2), 0, fmt);
+            var b2 = RenderTexture.GetTemporary(Mathf.Max(2, w / 4), Mathf.Max(2, h / 4), 0, fmt);
+            b0.filterMode = b1.filterMode = b2.filterMode = FilterMode.Bilinear;
+            mat.SetFloat("_BlurOffset", 1f);
+            Graphics.Blit(src, b0, mat, PassPrefilter);
+            Graphics.Blit(b0, b1, mat, PassBlur);
+            Graphics.Blit(b1, b2, mat, PassBlur);
+            mat.SetFloat("_BlurOffset", 0.5f);
+            Graphics.Blit(b2, b1, mat, PassBlur);
+            Graphics.Blit(b1, b0, mat, PassBlur);
+            mat.SetTexture("_BloomTex", b0);
+            Graphics.Blit(src, dst, mat, PassLite);
+            RenderTexture.ReleaseTemporary(b0);
+            RenderTexture.ReleaseTemporary(b1);
+            RenderTexture.ReleaseTemporary(b2);
         }
 
         static Vector3 Perceptual(Vector3 v)
@@ -570,14 +622,14 @@ namespace BlossomRally
             RenderTexture.ReleaseTemporary(eighth);
         }
 
-        void SetupPhoto(RenderTexture src)
+        bool SetupPhoto(RenderTexture src)
         {
             bool logo = showLogo && logoTexture != null;
             bool photo = filter > 0 || letterbox > 0.0005f || logo;
             if (!photo)
             {
                 mat.DisableKeyword("BR_PHOTO");
-                return;
+                return false;
             }
             mat.EnableKeyword("BR_PHOTO");
             int f = Mathf.Clamp(filter, 0, FilterNames.Length - 1);
@@ -603,6 +655,7 @@ namespace BlossomRally
                 mat.SetVector("_LogoRect", new Vector4(2f, 2f, 1f, 1f));   // off screen, never divides by zero
                 mat.SetFloat("_LogoAlpha", 0f);
             }
+            return true;
         }
     }
 }

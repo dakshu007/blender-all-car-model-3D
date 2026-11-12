@@ -160,6 +160,10 @@ def main():
         "textures": copied,
         "materials": sorted({m.name for o in vis for m in o.data.materials if m}),
     }
+    # optional camera anchors written by build_generic.py (cars built after CAR-019)
+    for key in ("driver_eye", "hood_cam"):
+        if root is not None and key in root.keys():
+            data[key] = pc.blender_to_unity(list(root[key]))
     data_path = os.path.join(out_dir, f"{car}_vehicle_data.json")
     pc.write_json(data_path, data)
     log.act(f"vehicle data -> {data_path}")

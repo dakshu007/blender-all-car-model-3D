@@ -16,12 +16,13 @@ public static class Harness
     public static int Main(string[] args)
     {
         string only = null; float mpp = 4f; string outDir = "out";
-        float[] prof = null;
+        float[] prof = null; bool noStats = false;
         for (int i = 0; i < args.Length; i++)
         {
             if (args[i] == "--region") { only = args[++i]; mpp = 2f; }
             else if (args[i] == "--mpp") mpp = float.Parse(args[++i]);
             else if (args[i] == "--out") outDir = args[++i];
+            else if (args[i] == "--nostats") noStats = true;
             else if (args[i] == "--profile") { prof = new float[4]; for (int k = 0; k < 4; k++) prof[k] = float.Parse(args[++i]); }
         }
         Directory.CreateDirectory(outDir);
@@ -71,6 +72,8 @@ public static class Harness
             }
             Console.WriteLine($"{def.name,-38} {def.region,-10} {def.surface,-7} {list[n - 1].distance,7:F0}  {maxG * 100,6:F1}%  {maxCut,6:F1}  {maxFill,6:F1}  {minR,7:F1}  {hMin,6:F1}..{hMax,6:F1}" + (maxG > 0.12f || maxCut > 6f ? $"   [grade@{gAt} cut@{cutAt}]" : ""));
         }
+
+        if (!noStats) RoadStats.Run(field, only);
 
         if (prof != null)
         {

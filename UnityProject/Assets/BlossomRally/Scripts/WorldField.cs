@@ -20,6 +20,16 @@ namespace BlossomRally
         public int road;
         public bool bridge;
         public float distance;
+        /// <summary>Cross slope (m per m, + = the right side is higher; right = (tangent.y, -tangent.x)).</summary>
+        public float bank;
+
+        public Vector2 Right { get { return new Vector2(tangent.y, -tangent.x); } }
+        /// <summary>Top of the road mesh at a lateral offset (+ = right) from the centreline.</summary>
+        public float SurfaceAt(float lateral)
+        {
+            float a = Mathf.Abs(lateral);
+            return height + WorldField.RoadLift + bank * lateral + WorldField.RoadCrown * Mathf.Max(0f, 1f - a / Mathf.Max(0.5f, halfWidth));
+        }
     }
 
     public sealed class BridgeInfo { public int road; public List<int> idx; public float sHit, span, arch, total; }
@@ -28,6 +38,9 @@ namespace BlossomRally
     {
         /// <summary>The field of the world being played (set by WorldBuilder).</summary>
         public static WorldField Active { get; set; }
+
+        /// <summary>The road mesh sits this far above the sample heights (edges); the crown adds RoadCrown at the centre.</summary>
+        public const float RoadLift = 0.05f, RoadCrown = 0.04f;
 
         public readonly List<RoadDef> roads;
         public readonly List<List<RoadSample>> roadSamples = new List<List<RoadSample>>();

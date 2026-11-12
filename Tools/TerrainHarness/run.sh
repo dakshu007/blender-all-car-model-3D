@@ -27,7 +27,7 @@ for f in $DOTNET_ROOT/packs/Microsoft.NETCore.App.Ref/*/ref/net10.0/*.dll; do RE
 BIN=$(mktemp -d)
 mkdir -p "$HERE/out"
 $DOTNET_ROOT/dotnet $DOTNET_ROOT/sdk/*/Roslyn/bincore/csc.dll -nologo -noconfig -nostdlib -langversion:9.0 -optimize+ -target:exe \
-  -nowarn:1701,1702,0649,0414,0162,0219 -out:"$BIN/harness.dll" $REFS "$HERE/UnityStub.cs" "$HERE/Harness.cs" $FILES
+  -nowarn:1701,1702,0649,0414,0162,0219 -out:"$BIN/harness.dll" $REFS "$HERE/UnityStub.cs" "$HERE/Harness.cs" "$HERE/RoadStats.cs" $FILES
 VER=$(ls $DOTNET_ROOT/shared/Microsoft.NETCore.App/ | head -1)
 cat > "$BIN/harness.runtimeconfig.json" <<JSON
 { "runtimeOptions": { "tfm": "net10.0", "framework": { "name": "Microsoft.NETCore.App", "version": "$VER" } } }

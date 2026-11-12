@@ -17,7 +17,12 @@ namespace BlossomRally
         /// <summary>0..1 how much the camera is inside a region (soft at the borders).</summary>
         public static float Presence(RegionId id) { return presence[(int)id]; }
 
-        public const float StreamDistance = 720f;
+        /// <summary>Distance from a region's tile at which its content streams in (per quality preset).</summary>
+        public static float StreamDistance { get { return GameSettings.StreamDistance; } }
+        /// <summary>Extra distance before streamed-in content is dropped again (no on/off flicker at the edge).</summary>
+        public const float StreamHysteresis = 70f;
+        /// <summary>Main-thread budget per frame for switching streamed content on (ms).</summary>
+        const double StageBudgetMs = 1.2;
 
         /// <summary>How much of the global rain is shown at the camera (snow region snows instead, the desert stays dry).</summary>
         public static float RainVisual
@@ -52,6 +57,7 @@ namespace BlossomRally
             rt.world = w;
             rt.regions = regs;
             rt.active = new bool[regs.Length];
+            rt.pending = new int[regs.Length];
             for (int i = 0; i < regs.Length; i++) rt.active[i] = true;
             Instance = rt;
             return rt;
@@ -62,6 +68,7 @@ namespace BlossomRally
         {
             var rt = Instance;
             if (rt == null || rt.regions == null) return;
+            if (all) rt.FlushStaging();
             for (int i = 0; i < rt.regions.Length; i++)
             {
                 var r = rt.regions[i];
@@ -69,6 +76,88 @@ namespace BlossomRally
                 if (all) { r.Context.Root.gameObject.SetActive(true); rt.active[i] = true; }
             }
             if (!all) { rt.first = true; rt.streamT = 0f; }
+        }
+
+        // ---------------------------------------------------------------- staged activation
+        // Switching a whole region on in one SetActive (thousands of colliders + renderers + scripts) is a
+        // visible hitch. Instead the root comes on with its children parked inactive, and the children are
+        // switched back on a few per frame within a small time budget (big groups are split further).
+        // Ticks for that region wait until it is complete.
+        readonly System.Collections.Generic.List<Transform> staged = new System.Collections.Generic.List<Transform>();
+        readonly System.Collections.Generic.List<int> stagedRegion = new System.Collections.Generic.List<int>();
+        int stagedHead;
+        int[] pending = new int[6];          // parked children still waiting, per region
+        readonly System.Diagnostics.Stopwatch stageWatch = new System.Diagnostics.Stopwatch();
+        const int SplitAbove = 48;          // a child with more children than this is itself staged child by child
+
+        void Park(Transform t, int region)
+        {
+            for (int c = 0; c < t.childCount; c++)
+            {
+                var ch = t.GetChild(c);
+                if (!ch.gameObject.activeSelf) continue;   // stays off: it was off on purpose
+                ch.gameObject.SetActive(false);            // cheap: the parent is not active in the hierarchy
+                staged.Add(ch);
+                stagedRegion.Add(region);
+                pending[region]++;
+            }
+        }
+
+        bool Staging(int region) { return region < pending.Length && pending[region] > 0; }
+
+        void StageIn(int region, Transform root)
+        {
+            Park(root, region);
+            root.gameObject.SetActive(true);
+        }
+
+        void StageOut(int region, Transform root)
+        {
+            root.gameObject.SetActive(false);
+            // un-park anything still waiting (cheap now that the root is off) so the hierarchy is whole again
+            for (int k = stagedHead; k < staged.Count; k++)
+                if (stagedRegion[k] == region)
+                {
+                    if (staged[k] != null) staged[k].gameObject.SetActive(true);
+                    stagedRegion[k] = -1;
+                }
+            if (region < pending.Length) pending[region] = 0;
+        }
+
+        void PumpStaging()
+        {
+            if (stagedHead >= staged.Count) { staged.Clear(); stagedRegion.Clear(); stagedHead = 0; return; }
+            stageWatch.Reset();
+            stageWatch.Start();
+            int done = 0;
+            while (stagedHead < staged.Count && (done == 0 || stageWatch.Elapsed.TotalMilliseconds < StageBudgetMs))
+            {
+                var t = staged[stagedHead];
+                int reg = stagedRegion[stagedHead];
+                stagedHead++;
+                if (reg < 0) continue;
+                pending[reg]--;
+                if (t == null) continue;
+                if (t.childCount > SplitAbove)
+                {
+                    // a big group (e.g. all the colliders): park its children and stage them one by one
+                    Park(t, reg);
+                    t.gameObject.SetActive(true);
+                }
+                else t.gameObject.SetActive(true);
+                done++;
+            }
+            stageWatch.Stop();
+        }
+
+        void FlushStaging()
+        {
+            for (int k = stagedHead; k < staged.Count; k++)
+                if (staged[k] != null && stagedRegion[k] >= 0) staged[k].gameObject.SetActive(true);
+            staged.Clear();
+            stagedRegion.Clear();
+            stagedHead = 0;
+            for (int i = 0; i < pending.Length; i++) pending[i] = 0;
         }
 
         static float RectDistance(Rect r, Vector2 p)
@@ -96,19 +185,33 @@ namespace BlossomRally
             if (streamT <= 0f)
             {
                 streamT = 0.3f;
+                float sd = StreamDistance;
+                bool switched = false;
                 for (int i = 0; i < regions.Length; i++)
                 {
                     var r = regions[i];
                     if (r == null || r.Context == null || r.Context.Root == null) continue;
-                    bool want = RectDistance(r.Rect, e2) < StreamDistance;
-                    if (want != active[i] || first)
+                    float d = RectDistance(r.Rect, e2);
+                    bool want = active[i] ? d < sd + StreamHysteresis : d < sd;
+                    if (first)
                     {
+                        // loading / teleport: switch immediately (the screen is covered or the view jumps anyway)
                         active[i] = want;
                         r.Context.Root.gameObject.SetActive(want);
                     }
+                    else if (want != active[i] && !switched)
+                    {
+                        // at most one region per step: two regions never pay their switch in the same frame
+                        active[i] = want;
+                        switched = true;
+                        if (want) StageIn(i, r.Context.Root);
+                        else StageOut(i, r.Context.Root);
+                    }
                 }
+                if (first) FlushStaging();
                 first = false;
             }
+            PumpStaging();
 
             float dt = Time.deltaTime;
             matT -= Time.unscaledDeltaTime;
@@ -118,6 +221,7 @@ namespace BlossomRally
             {
                 var r = regions[i];
                 if (r == null || r.Context == null || !active[i]) continue;
+                if (Staging(i)) continue;     // still switching on
                 if (mats) r.Context.UpdateMaterials();
                 if (dt > 0f)
                 {
@@ -138,6 +242,8 @@ namespace BlossomRally
                 {
                     banner = reg;
                     bannerT = 0f;
+                    bannerHead = "ENTERING" + (reg.Hanzi.Length > 0 ? "  ·  " + reg.Hanzi : "");
+                    bannerName = reg.Name.ToUpperInvariant();
                     try { reg.OnEnter(); } catch (System.Exception ex) { Debug.LogException(ex); }
                 }
             }
@@ -147,6 +253,10 @@ namespace BlossomRally
                 if (bannerT > 4.6f) bannerT = -1f;
             }
         }
+
+        string bannerHead = "", bannerName = "";
+
+        void Awake() { useGUILayout = false; }      // plain GUI calls only: skip the layout pass (and its garbage)
 
         void OnGUI()
         {
@@ -165,8 +275,8 @@ namespace BlossomRally
             GUI.color = new Color(acc.r, acc.g, acc.b, a);
             GUI.DrawTexture(bar, Texture2D.whiteTexture);
             GUI.color = old;
-            UI.Label(new Rect(panel.x, panel.y + 8f * s, panel.width, 22f * s), "ENTERING" + (banner.Hanzi.Length > 0 ? "  ·  " + banner.Hanzi : ""), UI.SmallCentre, new Color(1f, 1f, 1f, 0.85f * a));
-            UI.Label(new Rect(panel.x, panel.y + 30f * s, panel.width, 50f * s), banner.Name.ToUpperInvariant(), UI.Title, new Color(UI.White.r, UI.White.g, UI.White.b, a));
+            UI.Label(new Rect(panel.x, panel.y + 8f * s, panel.width, 22f * s), bannerHead, UI.SmallCentre, new Color(1f, 1f, 1f, 0.85f * a));
+            UI.Label(new Rect(panel.x, panel.y + 30f * s, panel.width, 50f * s), bannerName, UI.Title, new Color(UI.White.r, UI.White.g, UI.White.b, a));
             UI.Label(new Rect(panel.x, panel.y + 82f * s, panel.width, 24f * s), banner.Tagline, UI.SmallCentre, new Color(acc.r, acc.g, acc.b, a));
         }
     }

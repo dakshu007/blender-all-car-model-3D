@@ -68,8 +68,14 @@ class CarSpec:
         self.wheel_x, self.wheel_r = w["x"], w["r"]
         self.tire_w, self.rim_r = w["tire_w"], w["rim_r"]
         self.arch_r = w.get("arch_r", self.wheel_r + 0.045)
+        # optional rear-axle overrides (bigger rear tyres / wider rear track); default = same as the front
+        self.wheel_x_r = w.get("x_rear", self.wheel_x)
+        self.wheel_r_r = w.get("r_rear", self.wheel_r)
+        self.tire_w_r = w.get("tire_w_rear", self.tire_w)
+        self.rim_r_r = w.get("rim_r_rear", self.rim_r)
+        self.arch_r_r = w.get("arch_r_rear", self.wheel_r_r + 0.045 if "r_rear" in w else self.arch_r)
         self.wheels = {"FL": (-self.wheel_x, self.axle_f), "FR": (self.wheel_x, self.axle_f),
-                       "RL": (-self.wheel_x, self.axle_r), "RR": (self.wheel_x, self.axle_r)}
+                       "RL": (-self.wheel_x_r, self.axle_r), "RR": (self.wheel_x_r, self.axle_r)}
         b = d["body"]
         self.round = b.get("round", 0.2)
         self.keys = []
@@ -92,6 +98,12 @@ class CarSpec:
             self.half_w = max(self.half_w, fl["lip"])
         self.atlas = Atlas(self.y_min, self.y_max, self.half_w)
         self.gh = d["glasshouse"]
+
+    def wdims(self, slot):
+        """(radius, tyre width, rim radius, arch radius, |x|) of the wheel in this slot."""
+        if slot.startswith("F"):
+            return self.wheel_r, self.tire_w, self.rim_r, self.arch_r, self.wheel_x
+        return self.wheel_r_r, self.tire_w_r, self.rim_r_r, self.arch_r_r, self.wheel_x_r
 
     # --- section helpers ---------------------------------------------------
     def lerp_keys(self, y):
@@ -165,7 +177,7 @@ class CarSpec:
 
     def tub_y(self):
         g = self.gh
-        y0 = max(g["yR0"], self.axle_r + self.arch_r + 0.03)
+        y0 = max(g["yR0"], self.axle_r + self.arch_r_r + 0.03)
         y1 = g["yF0"] - 0.02
         return y0, y1
 

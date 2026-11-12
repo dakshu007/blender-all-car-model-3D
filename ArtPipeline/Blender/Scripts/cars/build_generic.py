@@ -26,6 +26,7 @@ from mathutils import Euler, Matrix, Vector  # noqa: E402
 
 import pipeline_common as pc  # noqa: E402
 import vehicle_builder as vb  # noqa: E402
+import build_extras  # noqa: E402
 from carspec import CarSpec  # noqa: E402
 from collection_specs import SPECS  # noqa: E402
 from vehicle_builder import MeshBuilder  # noqa: E402
@@ -89,6 +90,10 @@ class Builder:
             "seat": vb.material(f"M_{C}_Seat", c["seat"], rough=0.8),
             "cage": vb.material(f"M_{C}_Cage", c["cage"], rough=0.5),
             "accent": vb.material(f"M_{C}_Accent", c["accent"], rough=0.75),
+            "neon": vb.material("M_Light_Neon", c.get("neon", "#38E8FF"), rough=0.2, emission=c.get("neon", "#38E8FF"),
+                                emission_strength=3.0),
+            "tent": vb.material(f"M_{C}_Tent", c.get("tent", "#C9B48A"), rough=0.85),
+            "can": vb.material(f"M_{C}_Can", c.get("can", "#B5352B"), rough=0.6),
         }
 
     # ----------------------------------------------------------------- body ---
@@ -109,29 +114,33 @@ class Builder:
 
     def shell(self):
         S, M = self.S, self.M
-        for name, y in (("front", S.axle_f), ("rear", S.axle_r)):
-            margin = S.lerp_keys(y)[7] - (S.wheel_r + 0.01 + S.arch_r)
+        for name, y, slot in (("front", S.axle_f, "FL"), ("rear", S.axle_r, "RL")):
+            wr, _tw, _rim, ar, _x = S.wdims(slot)
+            margin = S.lerp_keys(y)[7] - (wr + 0.01 + ar)
             if margin < 0.02:
                 print(f"[warning] {self.C} {name} arch top is only {margin * 100:.1f} cm below the wing top")
         mb = MeshBuilder(f"{self.C}_Shell")
         mb.loft([S.ring(y) for y in self.sections()], M["paint"])
         shell = mb.finish(self.cols["Body"])
         shell.data.materials.append(M["trim"])
-        cb = MeshBuilder(f"{self.C}_ArchCutter")
-        x_in = S.wheel_x - S.tire_w / 2 - 0.06
-        for slot, (wx, wy) in S.wheels.items():
-            sx = 1 if wx > 0 else -1
-            cb.cyl((sx * x_in, wy, S.wheel_r + 0.01), (sx * 1.4, wy, S.wheel_r + 0.01), S.arch_r, M["trim"], seg=40)
-        cutter = cb.finish(self.cols["Body"])
-        mod = shell.modifiers.new("Arches", "BOOLEAN")
-        mod.operation = "DIFFERENCE"
-        mod.solver = "EXACT"
-        mod.object = cutter
-        if hasattr(mod, "material_mode"):
-            mod.material_mode = "TRANSFER"
-        vb.apply_modifiers(shell)
-        bpy.data.objects.remove(cutter)
-        # open the deck over the cabin tub
+        if self.d.get("arches", True):
+            cb = MeshBuilder(f"{self.C}_ArchCutter")
+            for slot, (wx, wy) in S.wheels.items():
+                sx = 1 if wx > 0 else -1
+                wr, tw, _rim, ar, wxa = S.wdims(slot)
+                x_in = wxa - tw / 2 - 0.06
+                cb.cyl((sx * x_in, wy, wr + 0.01), (sx * 1.6, wy, wr + 0.01), ar, M["trim"], seg=40)
+            cutter = cb.finish(self.cols["Body"])
+            mod = shell.modifiers.new("Arches", "BOOLEAN")
+            mod.operation = "DIFFERENCE"
+            mod.solver = "EXACT"
+            mod.object = cutter
+            if hasattr(mod, "material_mode"):
+                mod.material_mode = "TRANSFER"
+            vb.apply_modifiers(shell)
+            bpy.data.objects.remove(cutter)
+        # open the deck over the cabin tub (and over a pickup bed)
+        bed = (self.d.get("acc") or {}).get("bed")
         bm = bmesh.new()
         bm.from_mesh(shell.data)
         y0, _ = S.tub_y()
@@ -142,6 +151,9 @@ class Builder:
             if y0 + 1e-4 < c.y < y1 - 1e-4 and f.normal.z > 0.6 and c.z > S.zbelt_at(c.y) - 0.03 \
                     and abs(c.x) < S.lerp_keys(c.y)[6] - 0.004:
                 kill.append(f)
+            elif bed and bed["y1"] + 1e-4 < c.y < bed["y0"] - 1e-4 and f.normal.z > 0.6 \
+                    and c.z > S.zbelt_at(c.y) - 0.03 and abs(c.x) < S.lerp_keys(c.y)[6] - 0.004:
+                kill.append(f)
         bmesh.ops.delete(bm, geom=kill, context="FACES")
         bm.to_mesh(shell.data)
         bm.free()
@@ -151,6 +163,8 @@ class Builder:
 
     def glasshouse(self):
         S, M, g = self.S, self.M, self.S.gh
+        if g.get("open"):
+            return self.open_frame(), None
         mb = MeshBuilder(f"{self.C}_Glasshouse")
         bm = mb.bm
         feet, tops = S.gh_feet(), S.gh_tops()
@@ -197,6 +211,36 @@ class Builder:
         vb.apply_modifiers(gh)
         return gh, glass
 
+    def open_frame(self):
+        """Open cockpit (buggy): a tube frame along the glasshouse edges instead of glass and roof."""
+        S, M, g = self.S, self.M, self.S.gh
+        mb = MeshBuilder(f"{self.C}_Cage")
+        r = g.get("tube", 0.034)
+        cg = M["cage"]
+        z1 = g["z1"]
+        zf, zr = S.zbelt_at(g["yF0"]), S.zbelt_at(g["yR0"])
+        for sx in (-1, 1):
+            # A-pillar, roof rail, main hoop leg, door bar
+            mb.tube_path([(sx * g["w0"], g["yF0"], zf - 0.02), (sx * g["w1"], g["yF1"], z1),
+                          (sx * g["w1"], g["yR1"], z1), (sx * g["w0"], g["yR0"], zr - 0.02)], r, cg)
+            mb.cyl((sx * g["w0"], g["yF0"], zf - 0.02), (sx * g["w0"], g["yR0"], zr - 0.02), r * 0.85, cg, seg=8)
+            # rear braces down to the tail
+            yb = S.y_min + 0.35
+            mb.cyl((sx * g["w1"], g["yR1"], z1), (sx * (g["w0"] - 0.08), yb, S.zbelt_at(yb) + 0.02), r * 0.85, cg, seg=8)
+        mb.cyl((-g["w1"], g["yF1"], z1), (g["w1"], g["yF1"], z1), r, cg, seg=8)
+        mb.cyl((-g["w1"], g["yR1"], z1), (g["w1"], g["yR1"], z1), r, cg, seg=8)
+        mb.cyl((-g["w1"], g["yF1"], z1), (g["w1"], g["yR1"], z1), r * 0.8, cg, seg=8)
+        mb.cyl((g["w1"], g["yF1"], z1), (-g["w1"], g["yR1"], z1), r * 0.8, cg, seg=8)
+        mb.cyl((-g["w0"], g["yR0"], zr - 0.02), (g["w1"], g["yR1"], z1), r * 0.8, cg, seg=8)
+        mb.cyl((-g["w0"], g["yR0"], zr - 0.02), (g["w0"], g["yR0"], zr - 0.02), r * 0.85, cg, seg=8)
+        # windscreen-frame net (stylised mesh panel)
+        for t in (0.33, 0.66):
+            ya, za = g["yF0"] + (g["yF1"] - g["yF0"]) * t, zf + (z1 - zf) * t
+            xa = g["w0"] + (g["w1"] - g["w0"]) * t
+            mb.cyl((-xa, ya, za), (xa, ya, za), 0.008, M["trim"], seg=6)
+        o = mb.finish(self.cols["Exterior"], recalc=False)
+        return o
+
     def flares(self):
         S, M, fl = self.S, self.M, self.d.get("flares")
         if not fl:
@@ -204,11 +248,12 @@ class Builder:
         mb = MeshBuilder(f"{self.C}_Flares")
         bm = mb.bm
         pi, ti = mb.mi(M["paint"]), mb.mi(M["trim"])
+        if fl.get("mat") == "trim":
+            pi = ti
         n = 17
-        ar = S.arch_r
-        r_in = ar + 0.007
-        wz = S.wheel_r
         for slot, (wx, wy) in S.wheels.items():
+            wz, _tw, _rim, ar, wxa = S.wdims(slot)
+            r_in = ar + 0.007
             sx = 1 if wx > 0 else -1
             bz = S.lerp_keys(wy)[0] + 0.02
             phi0 = math.asin(max(-0.99, (bz - wz) / r_in))
@@ -221,19 +266,21 @@ class Builder:
                 poly = [(-o, bz), (-o, wz + 0.6 * ar), (-(o - 0.12), wz + ar + 0.06), (o - 0.12, wz + ar + 0.06),
                         (o, wz + 0.6 * ar), (o, bz)]
                 outer = resample(poly, n)
-                lip, shelf, t = fl["lip"], fl["lip"] - 0.008, 0.55
+                flip = fl["lip"] if slot.startswith("F") else fl.get("lip_rear", fl["lip"])
+                lip, shelf, t = flip, flip - 0.008, 0.55
             else:
                 ro = ar + 0.10
                 ph0 = math.asin(max(-0.99, (bz - wz) / ro))
                 outer = [Vector((ro * math.cos(p), wz + ro * math.sin(p))) for p in
                          [(math.pi - ph0) + (ph0 - (math.pi - ph0)) * k / (n - 1) for k in range(n)]]
-                lip, shelf, t = fl["lip"], fl["lip"] - 0.012, 0.45
+                flip = fl["lip"] if slot.startswith("F") else fl.get("lip_rear", fl["lip"])
+                lip, shelf, t = flip, flip - 0.012, 0.45
             rows = {"ret": [], "lip": [], "shelf": [], "base": []}
             for a, b in zip(inner, outer):
                 mid = a.lerp(b, t)
                 y_out = wy + b.x
                 z_out = min(b.y, S.zbelt_at(y_out) - 0.012)
-                rows["ret"].append(bm.verts.new((sx * (S.wheel_x - 0.02), wy + a.x, a.y)))
+                rows["ret"].append(bm.verts.new((sx * (wxa - 0.02), wy + a.x, a.y)))
                 rows["lip"].append(bm.verts.new((sx * lip, wy + a.x, a.y)))
                 rows["shelf"].append(bm.verts.new((sx * shelf, wy + mid.x, min(mid.y, S.zbelt_at(wy + mid.x)))))
                 rows["base"].append(bm.verts.new((sx * (S.body_half_width_at(y_out, z_out) - 0.004), y_out, z_out)))
@@ -242,7 +289,7 @@ class Builder:
                 A, B = rows[ra], rows[rb]
                 for k in range(n - 1):
                     bucket.append(bm.faces.new((A[k], A[k + 1], B[k + 1], B[k])))
-            wc = Vector((sx * (S.wheel_x - 0.15), wy, wz))
+            wc = Vector((sx * (wxa - 0.15), wy, wz))
             vb.orient_faces(bm, outf, lambda f, wc=wc, sx=sx: (f.calc_center_median() - wc).normalized()
                             + Vector((sx * 0.8, 0, 0)))
             wcy = Vector((0, wy, wz))
@@ -313,7 +360,7 @@ class Builder:
         y_m = d["doors"][0][0] - 0.05
         z_m = S.zbelt_at(y_m) + 0.075
         bw = S.body_half_width_at(y_m, S.zbelt_at(y_m) - 0.03)
-        for sx in (-1, 1):
+        for sx in ((-1, 1) if d.get("mirrors") else ()):
             mi.cyl((sx * (bw - 0.02), y_m, z_m - 0.05), (sx * (bw + 0.035), y_m - 0.01, z_m), 0.011, M["trim"], seg=8)
             if d.get("mirrors") == "round":
                 mi.cyl((sx * (bw + 0.06), y_m + 0.03, z_m + 0.01), (sx * (bw + 0.06), y_m - 0.04, z_m + 0.01),
@@ -324,9 +371,12 @@ class Builder:
                 mi.box((sx * (bw + 0.06), y_m - 0.005, z_m + 0.012), (0.12, 0.065, 0.078), M["trim"],
                        top_scale=(0.9, 0.85))
                 mi.box((sx * (bw + 0.06), y_m - 0.039, z_m + 0.012), (0.10, 0.004, 0.058), M["chrome"])
-        o = mi.finish(self.cols["Exterior"])
-        vb.add_bevel(o, width=0.006, segments=2, angle=30)
-        parts.append(vb.apply_modifiers(o))
+        if d.get("mirrors"):
+            o = mi.finish(self.cols["Exterior"])
+            vb.add_bevel(o, width=0.006, segments=2, angle=30)
+            parts.append(vb.apply_modifiers(o))
+        else:
+            mi.bm.free()
 
         tr = MeshBuilder(f"{self.C}_Trim")
         fr = d["front"]
@@ -349,17 +399,22 @@ class Builder:
         yh = d["doors"][0][1] + 0.13
         zh = S.zbelt_at(yh) - 0.09
         hw = S.body_half_width_at(yh, zh)
-        for sx in (-1, 1):
+        for sx in ((-1, 1) if d.get("handles", True) else ()):
             tr.box((sx * (hw + 0.004), yh, zh), (0.016, 0.10, 0.022), M["trim"])
         if d.get("roof_vent"):
             tr.box((0, g["yF1"] - 0.12, g["z1"] + 0.012), (0.26, 0.16, 0.035), M["trim"], top_scale=(0.85, 0.6))
         # exhaust
         ex = d["rear"].get("exhaust_x")
-        if ex is not None:
+        exs = [ex] if ex is not None else []
+        for px in d["rear"].get("exhaust_pairs", []):
+            exs += [px, -px]
+        for ex in exs:
             zr = min(self.rear_face["z0"] - 0.03, S.lerp_keys(S.y_min + 0.2)[0] + 0.02)
+            zr = d["rear"].get("exhaust_z", zr)
             y_end = self.rear_face["y"] - 0.05
-            tr.cyl((ex, S.y_min + 0.25, zr), (ex, y_end, zr), 0.038, M["chrome"], seg=14)
-            tr.cyl((ex, y_end + 0.004, zr), (ex, y_end - 0.004, zr), 0.028, M["trim"], seg=14)
+            er = d["rear"].get("exhaust_r", 0.038)
+            tr.cyl((ex, S.y_min + 0.25, zr), (ex, y_end, zr), er, M["chrome"], seg=14)
+            tr.cyl((ex, y_end + 0.004, zr), (ex, y_end - 0.004, zr), er * 0.74, M["trim"], seg=14)
         # tow hooks
         for (x, y, z) in ((0.6 * S.nose_half_width(), self.front_face["y"] + 0.03, self.front_face["z0"] - 0.01),
                           (-0.6 * S.tail_half_width(), self.rear_face["y"] - 0.03, self.rear_face["z0"] - 0.01)):
@@ -376,17 +431,33 @@ class Builder:
         o = tr.finish(self.cols["Exterior"])
         parts.append(o)
 
+        if d.get("mudflaps", True) is False:
+            return parts
         mf = MeshBuilder(f"{self.C}_MudFlaps")
+        big = d.get("mudflaps") == "big"
         for slot, (wx, wy) in S.wheels.items():
             sx = 1 if wx > 0 else -1
-            zb = S.lerp_keys(wy - S.wheel_r - 0.11)[0]
+            wr, tw, _rim, _ar, wxa = S.wdims(slot)
+            zb = S.lerp_keys(wy - wr - 0.11)[0]
             top = zb + 0.10
-            mf.box((sx * S.wheel_x, wy - S.wheel_r - 0.11, (0.06 + top) / 2), (S.tire_w + 0.04, 0.012, top - 0.06),
-                   M["accent"])
+            low = 0.10 if big else 0.06
+            mf.box((sx * wxa, wy - wr - 0.11, (low + top) / 2), (tw + (0.08 if big else 0.04), 0.014 if big else 0.012,
+                                                                   top - low), M["accent"])
         o = mf.finish(self.cols["Exterior"])
         vb.add_bevel(o, width=0.004, segments=1, angle=35)
         parts.append(vb.apply_modifiers(o))
         return parts
+
+    def roof_z_at(self, y):
+        """Outer glasshouse height at y (roof, windscreen or rear window slope)."""
+        g, S = self.S.gh, self.S
+        if g["yR1"] <= y <= g["yF1"]:
+            return g["z1"]
+        if y > g["yF1"]:
+            t = min(1.0, (y - g["yF1"]) / max(1e-3, g["yF0"] - g["yF1"]))
+            return g["z1"] + (S.zbelt_at(g["yF0"]) - g["z1"]) * t
+        t = min(1.0, (g["yR1"] - y) / max(1e-3, g["yR1"] - g["yR0"]))
+        return g["z1"] + (S.zbelt_at(g["yR0"]) - g["z1"]) * t
 
     def spoilers(self):
         S, M, d = self.S, self.M, self.d
@@ -414,8 +485,11 @@ class Builder:
                               (le_y - c - 0.045, le_z + 0.07), (le_y + 0.01, le_z + 0.05)], "YZ",
                              sx * (s + 0.004), sx * (s + 0.016), M["paint"])
                 ys0, ys1 = le_y - 0.08 * k, le_y - 0.24 * k
-                dz0 = S.deck_z_at(ys0) - 0.02
-                dz1 = S.deck_z_at(ys1) - 0.02
+                if sp.get("mount") == "roof":
+                    dz0, dz1 = self.roof_z_at(ys0) - 0.02, self.roof_z_at(ys1) - 0.02
+                else:
+                    dz0 = S.deck_z_at(ys0) - 0.02
+                    dz1 = S.deck_z_at(ys1) - 0.02
                 mb.prism([(ys0, dz0), (ys1, dz1), (ys1 + 0.03 * k, le_z + 0.005), (ys0 - 0.03 * k, le_z + 0.005)],
                          "YZ", sx * sp["stand_x"], sx * (sp["stand_x"] + 0.015), M["trim"])
         elif sp:  # ducktail / lip
@@ -438,10 +512,19 @@ class Builder:
         lb = MeshBuilder(f"{self.C}_Lights")
         fr = d["front"]
         for lp in fr.get("headlights", []):
+            if lp["shape"] == "bar":   # one centred full-width LED strip
+                y = self.y_face(lp["z"], True) + 0.004 + lp.get("dy", 0.0)
+                lb.box((0, y - 0.006, lp["z"]), (lp["w"] + 0.02, 0.02, lp["h"] + 0.016), M["trim"])
+                lb.box((0, y + 0.006, lp["z"]), (lp["w"], 0.012, lp["h"]), M[lp.get("mat", "head")])
+                continue
             for sx in (-1, 1):
                 x = sx * lp["x"]
                 y = S.y_max + 0.004 + lp.get("dy", 0.0)
-                if lp["shape"] == "round":
+                if lp["shape"] == "strip":
+                    y = self.y_face(lp["z"], True) + 0.004 + lp.get("dy", 0.0)
+                    lb.box((x, y - 0.006, lp["z"]), (lp["w"] + 0.02, 0.02, lp["h"] + 0.02), M["trim"])
+                    lb.box((x, y + 0.006, lp["z"]), (lp["w"], 0.012, lp["h"]), M[lp.get("mat", "head")])
+                elif lp["shape"] == "round":
                     r = lp["r"]
                     lb.cyl((x, y - lp.get("depth", 0.10), lp["z"]), (x, y, lp["z"]), r, M["trim"], seg=20)
                     lb.cyl((x, y - 0.004, lp["z"]), (x, y + 0.009, lp["z"]), r * 1.07, M["chrome"], seg=20)
@@ -473,6 +556,10 @@ class Builder:
         if pan:
             lb.box((0, S.y_min - 0.004, pan["z"]), (pan["w"], 0.012, pan["h"]), M["trim"])
         for lp in rr.get("lights", []):
+            if lp["shape"] == "bar":
+                y = self.y_face(lp["z"], False) - 0.008
+                lb.box((0, y, lp["z"]), (lp["w"], 0.012, lp["h"]), M[lp.get("mat", "tail")])
+                continue
             for sx in (-1, 1):
                 x = sx * lp["x"]
                 y = self.y_face(lp["z"], False) - 0.008
@@ -517,23 +604,24 @@ class Builder:
                 ib.box((x + bx * 0.20, seat_y, z_seat + 0.07), (0.06, 0.44, 0.10), M["seat"])
                 ib.box((x + bx * 0.20, seat_y - 0.27, z_seat + back_h * 0.45), (0.06, 0.13, back_h * 0.7),
                        M["seat"], rot=rot)
-        r = 0.018
-        cg = M["cage"]
-        xb, xr = g["w0"] - 0.07, g["w1"] - 0.06
-        y_main = max(ty0 + 0.06, seat_y - 0.42)
-        zt_main = min(g["z1"] - 0.05, S.gh_inner_top(y_main))
-        ztf = g["z1"] - 0.05
-        yf_top = g["yF1"] + 0.04
-        zfl = S.zbelt_at(yF0 - 0.08)
-        zml = S.zbelt_at(y_main)
-        ib.tube_path([(-xb, y_main, zb + 0.08), (-xb, y_main, zml), (-xr, y_main + 0.02, zt_main),
-                      (xr, y_main + 0.02, zt_main), (xb, y_main, zml), (xb, y_main, zb + 0.08)], r, cg)
-        ib.tube_path([(-xb, yF0 - 0.08, zb + 0.30), (-xb, yF0 - 0.08, zfl), (-xr, yf_top, ztf),
-                      (xr, yf_top, ztf), (xb, yF0 - 0.08, zfl), (xb, yF0 - 0.08, zb + 0.30)], r, cg)
-        for sx in (-1, 1):
-            ib.cyl((sx * xr, yf_top, ztf), (sx * xr, y_main + 0.02, zt_main), r, cg, seg=8)
-            ib.cyl((sx * (xb + 0.01), yF0 - 0.10, zb + 0.38), (sx * (xb + 0.01), y_main, zml - 0.05), r, cg, seg=8)
-        ib.cyl((-xb, y_main, zb + 0.10), (xr, y_main + 0.02, zt_main), r, cg, seg=8)
+        if self.d.get("cage", True):
+            r = 0.018
+            cg = M["cage"]
+            xb, xr = g["w0"] - 0.07, g["w1"] - 0.06
+            y_main = max(ty0 + 0.06, seat_y - 0.42)
+            zt_main = min(g["z1"] - 0.05, S.gh_inner_top(y_main))
+            ztf = g["z1"] - 0.05
+            yf_top = g["yF1"] + 0.04
+            zfl = S.zbelt_at(yF0 - 0.08)
+            zml = S.zbelt_at(y_main)
+            ib.tube_path([(-xb, y_main, zb + 0.08), (-xb, y_main, zml), (-xr, y_main + 0.02, zt_main),
+                          (xr, y_main + 0.02, zt_main), (xb, y_main, zml), (xb, y_main, zb + 0.08)], r, cg)
+            ib.tube_path([(-xb, yF0 - 0.08, zb + 0.30), (-xb, yF0 - 0.08, zfl), (-xr, yf_top, ztf),
+                          (xr, yf_top, ztf), (xb, yF0 - 0.08, zfl), (xb, yF0 - 0.08, zb + 0.30)], r, cg)
+            for sx in (-1, 1):
+                ib.cyl((sx * xr, yf_top, ztf), (sx * xr, y_main + 0.02, zt_main), r, cg, seg=8)
+                ib.cyl((sx * (xb + 0.01), yF0 - 0.10, zb + 0.38), (sx * (xb + 0.01), y_main, zml - 0.05), r, cg, seg=8)
+            ib.cyl((-xb, y_main, zb + 0.10), (xr, y_main + 0.02, zt_main), r, cg, seg=8)
         self.steer_pos = (-seat_x, yF0 - 0.34, zbelt - 0.05)
         return ib.finish(self.cols["Interior"], recalc=False)
 
@@ -553,9 +641,13 @@ class Builder:
         return o
 
     # --------------------------------------------------------------- wheels ---
-    def tire_mesh(self, name):
+    def tire_mesh(self, name, slot="FL"):
         S, M = self.S, self.M
-        R, rim, hw = S.wheel_r, S.rim_r, S.tire_w / 2
+        R, tw, rim, _ar, _x = S.wdims(slot)
+        hw = tw / 2
+        style = self.d["wheels"].get("tyre", "road")
+        if style != "road":
+            return self.tire_mesh_offroad(name, R, rim, hw, style)
         TD = 0.011
         axial = [0.783, 0.936, 1.0, 0.979, 0.885, 0.613, 0.0]
         tfrac = [0.0, 0.136, 0.424, 0.696, 0.856, None, None]
@@ -584,10 +676,60 @@ class Builder:
         vb.orient_faces(tb.bm, list(tb.bm.faces), lambda f: f.calc_center_median())
         return tb
 
-    def rim_mesh(self, name):
+    def tire_mesh_offroad(self, name, R, rim, hw, style):
+        """Chunkier tyres: 'at' (staggered all-terrain blocks + sidewall lugs), 'sand' (paddles),
+        'studded' (fine blocks with steel studs)."""
+        M = self.M
+        TD = {"at": 0.024, "sand": 0.030, "studded": 0.012}.get(style, 0.016)
+        # squarer shoulder than the road tyre
+        axial = [0.80, 0.95, 1.0, 0.99, 0.93, 0.62, 0.0]
+        tfrac = [0.0, 0.14, 0.45, 0.74, 0.92, None, None]
+        half = []
+        for a_, t in zip(axial, tfrac):
+            rr = R - TD - (0.0005 if a_ > 0 else 0.0) if t is None else rim + t * (R - TD - rim) / 0.95
+            half.append((a_ * hw, rr))
+        prof = half + [(-w, r) for (w, r) in reversed(half[:-1])]
+        tb = MeshBuilder(name)
+        seg = 36 if style != "studded" else 40
+        grid = tb.revolve(prof, seg, M["tire"])
+        blocks, lugs = [], []
+        for i in range(seg):
+            if style == "at":
+                blocks += [grid[i][4], grid[i][5]] if i % 2 == 0 else [grid[i][6], grid[i][7]]
+                lugs.append(grid[i][3] if i % 2 == 0 else grid[i][8])
+            elif style == "sand":
+                if i % 3 == 0:
+                    blocks += [grid[i][4], grid[i][5], grid[i][6], grid[i][7]]
+            else:
+                blocks.append(grid[i][5] if i % 2 == 0 else grid[i][6])
+                if i % 2 == 0:
+                    blocks += [grid[i][4], grid[i][7]]
+        res = bmesh.ops.extrude_discrete_faces(tb.bm, faces=blocks + lugs)
+        lugset = set()
+        nb = len(blocks)
+        for k, f in enumerate(res["faces"]):
+            c = f.calc_center_median()
+            radial = Vector((0, c.y, c.z)).normalized()
+            d = TD if k < nb else TD * 0.6
+            for v in f.verts:
+                v.co += radial * d
+            if k >= nb:
+                lugset.add(f)
+        if style == "studded":
+            for i in range(seg):
+                ang = 2 * math.pi * (i + 0.5) / seg
+                radial = Vector((0, math.cos(ang), math.sin(ang)))
+                for xs in ((0.3, 0.75) if i % 2 == 0 else (-0.3, -0.75)):
+                    p0 = Vector((xs * hw, 0, 0)) + radial * (R - 0.003)
+                    tb.cyl(p0, p0 + radial * 0.009, 0.0045, M["chrome"], seg=4)
+        vb.orient_faces(tb.bm, list(tb.bm.faces), lambda f: f.calc_center_median())
+        return tb
+
+    def rim_mesh(self, name, slot="FL"):
         S, M = self.S, self.M
-        k = S.rim_r / 0.205
-        a = S.tire_w / 0.235
+        _R, tw, rim_r, _ar, _x = S.wdims(slot)
+        k = rim_r / 0.205
+        a = tw / 0.235
         rb = MeshBuilder(name)
 
         def P(pts):
@@ -603,7 +745,14 @@ class Builder:
                 q = Euler((2 * math.pi * i / n, 0, 0)).to_quaternion()
                 rb.box(q @ Vector((0.064 * a, 0, 0.105 * k)), (0.024 * a, wdt * k, 0.11 * k), M["rim"], rot=q,
                        top_scale=(1.0, 0.75))
-        else:  # dish with vents
+        elif style[0] == "aero":  # flat aero disc with dark slots (EV)
+            rb.revolve(P([(0.076, 0.188), (0.084, 0.150), (0.088, 0.070), (0.070, 0.070), (0.062, 0.188)]),
+                       32, M["rim"], closed=True)
+            n = style[1]
+            for i in range(n):
+                q = Euler((2 * math.pi * i / n, 0, 0)).to_quaternion()
+                rb.box(q @ Vector((0.087 * a, 0, 0.125 * k)), (0.006, 0.016 * k, 0.07 * k), M["trim"], rot=q)
+        else:  # dish with vents (beadlock: + an outer ring of bolts)
             n = style[1]
             rb.revolve(P([(0.064, 0.150), (0.062, 0.066), (0.052, 0.066), (0.052, 0.150)]), 32, M["rim"],
                        closed=True)
@@ -611,10 +760,18 @@ class Builder:
                 ang = 2 * math.pi * (i + 0.5) / n
                 c = Vector((0.0645 * a, 0.108 * k * math.cos(ang), 0.108 * k * math.sin(ang)))
                 rb.cyl(c, c + Vector((0.003, 0, 0)), 0.027 * k, M["trim"], seg=12)
+            if style[0] == "beadlock":
+                rb.revolve(P([(0.100, 0.172), (0.116, 0.172), (0.116, 0.212), (0.100, 0.212)]), 32, M["trim"],
+                           closed=True)
+                for i in range(12):
+                    ang = 2 * math.pi * i / 12
+                    c = Vector((0.116 * a, 0.192 * k * math.cos(ang), 0.192 * k * math.sin(ang)))
+                    rb.cyl(c, c + Vector((0.01, 0, 0)), 0.0075 * k, M["chrome"], seg=6)
         rb.cyl((0.050 * a, 0, 0), (0.074 * a, 0, 0), 0.064 * k, M["rim"], seg=20)
         rb.cyl((0.074 * a, 0, 0), (0.092 * a, 0, 0), 0.046 * k, M["rim"], seg=20, r2=0.03 * k)
-        for i in range(5 if style[0] == "dish" else 6):
-            ang = 2 * math.pi * (i + 0.5) / (5 if style[0] == "dish" else 6)
+        nl = 5 if style[0] in ("dish", "beadlock", "aero") else 6
+        for i in range(nl):
+            ang = 2 * math.pi * (i + 0.5) / nl
             c = Vector((0.084 * a, 0.044 * k * math.cos(ang), 0.044 * k * math.sin(ang)))
             rb.cyl(c, c + Vector((0.012, 0, 0)), 0.008 * k, M["chrome"], seg=6)
         rb.cyl((-0.03 * a, 0, 0), (-0.008 * a, 0, 0), 0.165 * k, M["disc"], seg=28)
@@ -627,20 +784,21 @@ class Builder:
         out = {}
         for slot, (wx, wy) in S.wheels.items():
             sx = 1 if wx > 0 else -1
+            wr, tw, _rim, _ar, _x = S.wdims(slot)
             piv = bpy.data.objects.new(f"{self.C}_Wheel_{slot}", None)
             piv.empty_display_type = "CIRCLE"
-            piv.empty_display_size = S.wheel_r
-            piv.location = (wx, wy, S.wheel_r)
+            piv.empty_display_size = wr
+            piv.location = (wx, wy, wr)
             piv["wheel_slot"] = slot
             piv["steer"] = slot.startswith("F")
             dt = self.d.get("drivetrain", "AWD")
             piv["drive"] = dt == "AWD" or (dt == "RWD" and slot.startswith("R")) or (dt == "FWD" and slot.startswith("F"))
-            piv["radius"] = S.wheel_r
-            piv["width"] = S.tire_w
+            piv["radius"] = wr
+            piv["width"] = tw
             self.cols["Wheels"].objects.link(piv)
             parts = []
             for kind, fn in (("Tire", self.tire_mesh), ("Rim", self.rim_mesh)):
-                mb = fn(f"{self.C}_Wheel_{slot}_{kind}")
+                mb = fn(f"{self.C}_Wheel_{slot}_{kind}", slot)
                 if sx < 0:
                     bmesh.ops.rotate(mb.bm, verts=mb.bm.verts, cent=(0, 0, 0),
                                      matrix=Matrix.Rotation(math.pi, 3, "Z"))
@@ -706,12 +864,21 @@ def main():
     fl = B.flares()
     vb.project_uvs(shell, A)
     vb.project_uvs(gh, A)
-    parts = [shell, gh]
+    open_cage = None
+    if glass is None:          # open cockpit: the frame is an exterior part, not body
+        open_cage = gh
+        parts = [shell]
+    else:
+        parts = [shell, gh]
     if fl:
         vb.project_uvs(fl, A, force_side=True)
         parts.append(fl)
-    body = vb.join(parts, f"{C}_Body")
+    body = vb.join(parts, f"{C}_Body") if len(parts) > 1 else parts[0]
+    body.name = body.data.name = f"{C}_Body"
     exterior = B.exterior()
+    exterior += build_extras.build(B)
+    if open_cage is not None:
+        exterior.append(open_cage)
     lights = B.lights()
     interior = B.interior()
     steering = B.steering()
@@ -719,7 +886,7 @@ def main():
     colliders = B.collision()
 
     bpy.context.view_layer.update()
-    for o in [glass, lights, interior, steering] + exterior:
+    for o in [x for x in [glass, lights, interior, steering] + exterior if x is not None]:
         vb.project_uvs(o, A)
     trim = bpy.data.objects[f"{C}_Trim"]
     me = trim.data
@@ -738,8 +905,9 @@ def main():
                 tx = 1 - tx
             tz = (co.z - (zc - 0.0575)) / 0.115
             uv.data[li].uv = (u0 + (u1 - u0) * tx, v0 + (v1 - v0) * tz)
-    for o in [body, glass, lights, interior, steering] + exterior:
-        vb.smooth_by_angle(o, 32)
+    for o in [x for x in [body, glass, lights, interior, steering] + exterior if x is not None]:
+        if not o.name.endswith("_SpareWheel"):
+            vb.smooth_by_angle(o, 32)
 
     root = bpy.data.objects.new(f"{C}_Root", None)
     root.empty_display_type = "ARROWS"
@@ -756,7 +924,8 @@ def main():
         e.parent = root
         groups[gname] = e
     for o in (body, glass, lights, interior):
-        o.parent = root
+        if o is not None:
+            o.parent = root
     steering.parent = interior
     for o in exterior:
         o.parent = groups["Exterior"]
@@ -779,6 +948,13 @@ def main():
             else:
                 o.location -= off
     steering.location -= off
+    # camera anchors for the game (Blender space, after recentring): driver's eye and bonnet camera
+    sp_ = B.steer_pos
+    eye = Vector((sp_[0], sp_[1] - 0.46, sp_[2] + 0.31)) - off
+    g_ = spec.gh
+    hood = Vector((0.0, g_["yF0"] + 0.30, max(1.25, spec.zbelt_at(g_["yF0"]) + 0.45))) - off
+    root["driver_eye"] = [round(v, 4) for v in eye]
+    root["hood_cam"] = [round(v, 4) for v in hood]
     bpy.context.view_layer.update()
     bb = pc.world_bbox(vis)
 

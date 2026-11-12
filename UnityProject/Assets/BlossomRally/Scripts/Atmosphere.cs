@@ -140,16 +140,16 @@ namespace BlossomRally
         float cookieCover = -1f, cookieTimer;
         ReflectionProbe probe;
         float probeTimer;
+        Camera cam;
+        float camTimer;
+        static readonly int IdWindGust = Shader.PropertyToID("_BR_WindGust");
+        static readonly int IdSunDir = Shader.PropertyToID("_SunDir");
 
         void Awake()
         {
             Instance = this;
             GameSettings.Load();
-            QualitySettings.shadows = ShadowQuality.All;
-            QualitySettings.shadowProjection = ShadowProjection.StableFit;
-            QualitySettings.shadowCascade4Split = new Vector3(0.06f, 0.16f, 0.4f);
-            QualitySettings.pixelLightCount = 4;              // headlights + a few garage lights
-            QualitySettings.lodBias = 1.5f;
+            // shadows, cascades, pixel lights and LOD bias are per preset (GameSettings.Apply)
             GameSettings.Apply();
 
             var sunGo = new GameObject("Sun");
@@ -188,6 +188,38 @@ namespace BlossomRally
             probe.cullingMask = ~((1 << WorldBuilder.LayerGrass) | (1 << 31) | (1 << CarExtras.CarLayer));
             probe.farClipPlane = 600f;
             probe.hdr = true;
+            ApplyProbeQuality();
+            GameSettings.Changed += OnSettingsChanged;
+        }
+
+        void OnDestroy()
+        {
+            GameSettings.Changed -= OnSettingsChanged;
+            if (Instance == this) Instance = null;
+        }
+
+        int probeQ = -1;
+
+        void OnSettingsChanged()
+        {
+            if (Sun == null || sky == null) return;
+            Apply(live);                       // fog density follows the preset (FogBoost)
+            ApplyProbeQuality();
+        }
+
+        // High / Ultra: the probe sees the world (time sliced, every few seconds). Low / Medium: sky only at
+        // 64 px, re-rendered only when the sky changes - cars keep a pretty sky reflection for almost nothing.
+        void ApplyProbeQuality()
+        {
+            if (probe == null) return;
+            int q = GameSettings.Quality;
+            if (q == probeQ) return;
+            probeQ = q;
+            bool full = q >= 2;
+            probe.cullingMask = full ? ~((1 << WorldBuilder.LayerGrass) | (1 << 31) | (1 << CarExtras.CarLayer)) : 0;
+            probe.resolution = full ? 128 : 64;
+            probe.size = full ? new Vector3(400f, 200f, 400f) : new Vector3(6000f, 2000f, 6000f);
+            probeTimer = 0f;
         }
 
         void Apply(Look k)
@@ -199,9 +231,13 @@ namespace BlossomRally
             RenderSettings.ambientSkyColor = k.ambSky;
             RenderSettings.ambientEquatorColor = k.ambEq;
             RenderSettings.ambientGroundColor = k.ambGround;
-            RenderSettings.fog = k.fogD > 0.00005f;
+            // Low / Medium draw less far away: a slightly thicker haze (and a faint floor even with
+            // "Fog Off" on Low) melts the streaming and cull edges into the sky colour instead of popping
+            float fogD = k.fogD * GameSettings.FogBoost;
+            if (GameSettings.Quality == 0) fogD = Mathf.Max(fogD, 0.0009f);
+            RenderSettings.fog = fogD > 0.00005f;
             RenderSettings.fogColor = k.fog;
-            RenderSettings.fogDensity = k.fogD;
+            RenderSettings.fogDensity = fogD;
             RenderSettings.reflectionIntensity = k.refl;
             sky.SetColor("_Top", k.top);
             sky.SetColor("_Horizon", k.horizon);
@@ -236,14 +272,14 @@ namespace BlossomRally
             float t = Time.time;
             float g = Mathf.Max(0f, 0.45f * Mathf.Sin(t * 0.21f) + 0.3f * Mathf.Sin(t * 0.53f + 1.7f) + 0.15f * Mathf.Sin(t * 1.3f));
             Gust = g * live.wind;
-            Shader.SetGlobalVector("_BR_WindGust", new Vector4(Gust, 0f, 0f, 0f));
+            Shader.SetGlobalVector(IdWindGust, new Vector4(Gust, 0f, 0f, 0f));
             if (blend < 1f)
             {
                 blend = Mathf.MoveTowards(blend, 1f, Time.unscaledDeltaTime / 2.5f);
                 live = Look.Lerp(from, target, Mathf.SmoothStep(0f, 1f, blend));
                 Apply(live);
             }
-            if (sky != null) sky.SetVector("_SunDir", -Sun.transform.forward);
+            if (sky != null) sky.SetVector(IdSunDir, -Sun.transform.forward);
 
             // drifting cloud shadows: a tiling cookie scrolled by moving the light along its own plane
             cookieTimer -= Time.unscaledDeltaTime;
@@ -252,21 +288,21 @@ namespace BlossomRally
             Sun.transform.position = drift;
 
             // keep the reflection probe around the camera, refresh every few seconds (time sliced)
-            var cam = Camera.main;
+            if (cam == null || camTimer <= 0f) { cam = Camera.main; camTimer = 1f; }
+            camTimer -= Time.unscaledDeltaTime;
             if (probe != null && cam != null)
             {
-                bool want = GameSettings.Quality >= 2;
-                probe.enabled = want;
-                if (want)
+                probe.enabled = true;
+                bool full = GameSettings.Quality >= 2;
+                probeTimer -= Time.unscaledDeltaTime;
+                if (probeTimer <= 0f)
                 {
-                    probeTimer -= Time.unscaledDeltaTime;
-                    if (probeTimer <= 0f)
-                    {
-                        probe.transform.position = cam.transform.position + Vector3.up * 2f;
-                        probe.RenderProbe();
-                        probeTimer = blend < 1f ? 0.6f : 3f;
-                    }
+                    probe.transform.position = cam.transform.position + Vector3.up * 2f;
+                    probe.RenderProbe();
+                    // sky-only probe: only while the look blends (plus a slow safety refresh)
+                    probeTimer = blend < 1f ? (full ? 0.6f : 1.2f) : (full ? (GameSettings.Quality >= 3 ? 2f : 3f) : 20f);
                 }
+                else if (!full) probe.transform.position = cam.transform.position;
             }
         }
 
