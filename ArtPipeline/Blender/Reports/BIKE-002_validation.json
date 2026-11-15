@@ -1,7 +1,7 @@
 {
   "car_id": "BIKE-002",
   "tool": "validate_vehicle.py",
-  "generated_utc": "2026-11-15T05:58:55+00:00",
+  "generated_utc": "2026-11-15T06:15:31+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",
@@ -169,7 +169,7 @@
     {
       "check": "export file exists",
       "status": "PASS",
-      "detail": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_Export.fbx (199532 bytes)"
+      "detail": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_Export.fbx (199500 bytes)"
     },
     {
       "check": "FBX contains every exported object",

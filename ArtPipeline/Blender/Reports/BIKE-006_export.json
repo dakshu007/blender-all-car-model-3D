@@ -1,7 +1,7 @@
 {
   "car_id": "BIKE-006",
   "tool": "export_vehicle_fbx.py",
-  "generated_utc": "2026-11-15T06:08:48+00:00",
+  "generated_utc": "2026-11-15T06:26:34+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",
@@ -9,7 +9,7 @@
   },
   "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-006/Working/BIKE-006_Working_v001.blend",
   "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-006/Export/BIKE-006_Export.fbx",
-  "fbx_size_bytes": 245388,
+  "fbx_size_bytes": 245404,
   "object_count": 13,
   "objects": [
     "BIKE-006_Body",
@@ -53,6 +53,7 @@
     "colors_type": "NONE"
   },
   "actions": [
+    "existing export backed up to BIKE-006_Export_backup.fbx",
     "exported 13 objects -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-006/Export/BIKE-006_Export.fbx",
     "vehicle data -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-006/Export/BIKE-006_vehicle_data.json"
   ],

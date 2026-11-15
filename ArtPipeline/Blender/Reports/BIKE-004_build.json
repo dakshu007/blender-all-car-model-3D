@@ -2,7 +2,7 @@
   "car_id": "BIKE-004",
   "display_name": "Dune Hare 450",
   "tool": "bikes/build_bike.py",
-  "generated_utc": "2026-11-15T06:02:04+00:00",
+  "generated_utc": "2026-11-15T06:18:08+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",
