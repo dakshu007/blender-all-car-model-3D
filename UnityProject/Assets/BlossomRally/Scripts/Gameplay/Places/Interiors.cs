@@ -1,6 +1,7 @@
 // Interiors.cs - the pocket-interior runtime of the Places module:
 //  * Enter(place): fade to black, build the interior lazily (first visit), teleport the player person into the
-//    pocket space far below the building (Place.PocketY), fade in. Exit() reverses it at the building's door.
+//    pocket space far above the building (Place.PocketY = 900 m; same x / z, so map, GPS and region streaming stay
+//    put), fade in. Exit() reverses it at the building's door.
 //  * While inside: the sun is switched off (walls cannot leak it on Low, which has no shadows), ambient light / fog /
 //    camera far plane get interior values (restored on exit; changes made by Atmosphere meanwhile are respected),
 //    rain / petals keep following a proxy at the door outside and the Frost Summit snowfall is hidden.
@@ -75,6 +76,19 @@ namespace BlossomRally
             Instance = go.AddComponent<Interiors>();
             Instance.useGUILayout = false;
             return Instance;
+        }
+
+        /// <summary>World rebuilt: leave any interior (restoring the environment) and forget this instance.</summary>
+        internal static void Shutdown()
+        {
+            var i = Instance;
+            if (i == null) return;
+            if (i.current != null) i.Cleanup();
+            i.cineActive = false;
+            i.atBlack = null;
+            i.SetMenu(false);
+            Instance = null;
+            Destroy(i.gameObject);
         }
 
         InteriorSpace current;
@@ -298,19 +312,25 @@ namespace BlossomRally
             if (seat != null)
             {
                 seatT += udt;
-                if (input && seatT > 0.6f && (InputReader.Down(KeyCode.E) || InputReader.Down(KeyCode.Space) ||
-                    GamepadBridge.ButtonDown(PadButton.West) || GamepadBridge.ButtonDown(PadButton.East))) Stand();
+                if (input && seatT > 0.6f && StandPressed()) Stand();
             }
             if (cineActive)
             {
                 cineT += udt;
-                if (cineT > 7.5f || (input && cineT > 0.8f && (InputReader.Down(KeyCode.E) || InputReader.Down(KeyCode.Space) || GamepadBridge.ButtonDown(PadButton.West))))
+                if (cineT > 7.5f || (input && cineT > 0.8f && StandPressed()))
                 { cineActive = false; fbInit = false; }
             }
             if (current == null) return;
             // ---- effects: steam, embers, incense smoke, bell swing, candle / fire flicker
             if (!paused) TickFx(dt);
             if (Atmosphere.Sun != null && Atmosphere.Sun.enabled) envDirty = true;
+        }
+
+        /// <summary>E / Space / Enter or pad A / B (pad X stays photo mode while no prompt is shown).</summary>
+        static bool StandPressed()
+        {
+            return InputReader.Down(KeyCode.E) || InputReader.Down(KeyCode.Space) || InputReader.Down(KeyCode.Return) ||
+                   GamepadBridge.ButtonDown(PadButton.South) || GamepadBridge.ButtonDown(PadButton.East);
         }
 
         void TickFx(float dt)
@@ -683,6 +703,7 @@ namespace BlossomRally
 
         void OnGUI()
         {
+            GUI.depth = -100;
             if (Event.current.type != EventType.Repaint) return;
             float W = Screen.width, H = Screen.height;
             float s = Mathf.Clamp(H / 1080f, 0.6f, 2f);
@@ -700,13 +721,12 @@ namespace BlossomRally
             {
                 var r = new Rect(W * 0.5f - 140f * s, H - 92f * s, 280f * s, 40f * s);
                 UI.Panel(r, 0.5f);
-                UI.Label(r, seat != null ? (InputReader.PadConnected ? "X   Stand up" : "E   Stand up") : (InputReader.PadConnected ? "X   Continue" : "E   Continue"), UI.Mid, UI.White);
+                UI.Label(r, seat != null ? (InputReader.PadConnected ? "A   Stand up" : "E   Stand up") : (InputReader.PadConnected ? "A   Continue" : "E   Continue"), UI.Mid, UI.White);
             }
             if (fade > 0.001f)
             {
                 var old = GUI.color;
                 GUI.color = new Color(0.04f, 0.02f, 0.03f, Mathf.SmoothStep(0f, 1f, fade));
-                GUI.depth = -100;
                 GUI.DrawTexture(new Rect(0f, 0f, W, H), Texture2D.whiteTexture);
                 GUI.color = old;
             }

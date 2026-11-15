@@ -2,7 +2,7 @@
   "car_id": "BIKE-002",
   "display_name": "Mantis 750",
   "tool": "bikes/build_bike.py",
-  "generated_utc": "2026-11-15T05:56:47+00:00",
+  "generated_utc": "2026-11-15T06:12:31+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",

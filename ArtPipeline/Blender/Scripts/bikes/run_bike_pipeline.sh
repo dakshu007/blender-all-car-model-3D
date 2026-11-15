@@ -42,7 +42,7 @@ for BIKE in "${BIKES[@]}"; do
   [[ "${OVERWRITE:-0}" == "1" ]] && BUILD_ARGS+=(--overwrite)
   run_blender "$HERE/build_bike.py" "${BUILD_ARGS[@]}"
   BLEND="$(python3 -c "import json;print(json.load(open('$REPORTS/${BIKE}_build.json'))['saved_file'])")"
-  run_blender "$SCRIPTS/render_previews.py" --input "$BLEND" --out-dir "$LIB/Previews" --prefix "$BIKE" --samples "$SAMPLES"
+  run_blender "$SCRIPTS/render_previews.py" --input "$BLEND" --out-dir "$LIB/Previews" --prefix "$BIKE" --samples "$SAMPLES" --fit 1.22
   python3 "$SCRIPTS/make_contact_sheet.py" --dir "$LIB/Previews" --prefix "$BIKE" --out "$LIB/Previews/${BIKE}_Preview.png" \
     --title "$BIKE  $NAME  (working ${VERSION}) - neutral studio, Blender Cycles"
   run_blender "$SCRIPTS/export_vehicle_fbx.py" --blend "$BLEND" --car-id "$BIKE" --out-dir "$LIB/Export" \

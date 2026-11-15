@@ -410,30 +410,30 @@ namespace BlossomRally
             g.Ellipsoid(b + Up * 1.0f * s, new Vector3(0.6f, 0.75f, 0.42f) * s, 10, 5, body, bodyD);
             for (int sx = -1; sx <= 1; sx += 2)
             {
-                PG.Beam(g, b + new Vector3(sx * 0.55f, 1.4f, 0f) * s, b + new Vector3(sx * 0.62f, 0.8f, 0.2f) * s, 0.13f * s, 0.13f * s, robe);
-                PG.Beam(g, b + new Vector3(sx * 0.62f, 0.8f, 0.2f) * s, b + new Vector3(sx * 0.15f, 0.62f, 0.38f) * s, 0.11f * s, 0.11f * s, body);
+                PG.Beam(g, b + new Vector3(sx * 0.55f, 1.4f, 0f) * s, b + new Vector3(sx * 0.62f, 0.8f, -0.2f) * s, 0.13f * s, 0.13f * s, robe);
+                PG.Beam(g, b + new Vector3(sx * 0.62f, 0.8f, -0.2f) * s, b + new Vector3(sx * 0.15f, 0.62f, -0.38f) * s, 0.11f * s, 0.11f * s, body);
             }
             g.Ellipsoid(b + new Vector3(0f, 2.05f, 0f) * s, new Vector3(0.36f, 0.42f, 0.36f) * s, 9, 6, body, bodyD);
             g.Ellipsoid(b + new Vector3(0f, 2.45f, 0f) * s, new Vector3(0.18f, 0.16f, 0.18f) * s, 7, 4, bodyD, bodyD);
             for (int sx = -1; sx <= 1; sx += 2) g.Ellipsoid(b + new Vector3(sx * 0.36f, 1.95f, 0f) * s, new Vector3(0.06f, 0.2f, 0.08f) * s, 5, 3, body, bodyD);
             // halo (glow) behind
-            Vector3 hc = b + new Vector3(0f, 2.05f, -0.42f) * s;
+            Vector3 hc = b + new Vector3(0f, 2.05f, 0.42f) * s;
             int N = 24;
             for (int k = 0; k < N; k++)
             {
                 float a0 = k * Mathf.PI * 2f / N, a1 = (k + 1) * Mathf.PI * 2f / N;
                 Vector3 i0 = hc + new Vector3(Mathf.Cos(a0), Mathf.Sin(a0), 0f) * 0.62f * s, i1 = hc + new Vector3(Mathf.Cos(a1), Mathf.Sin(a1), 0f) * 0.62f * s;
                 Vector3 o0 = hc + new Vector3(Mathf.Cos(a0), Mathf.Sin(a0), 0f) * 0.78f * s, o1 = hc + new Vector3(Mathf.Cos(a1), Mathf.Sin(a1), 0f) * 0.78f * s;
-                pg.glow.QuadOut(i0, i1, o1, o0, Vector3.forward, C(255, 210, 110), C(255, 210, 110), C(255, 180, 70), C(255, 180, 70));
+                pg.glow.QuadOut(i0, i1, o1, o0, Vector3.back, C(255, 210, 110), C(255, 210, 110), C(255, 180, 70), C(255, 180, 70));
             }
-            Vector3 mc = b + new Vector3(0f, 1.2f, -0.5f) * s;
+            Vector3 mc = b + new Vector3(0f, 1.2f, 0.5f) * s;
             for (int k = 0; k < N; k++)
             {
                 float a0 = k * Mathf.PI * 2f / N, a1 = (k + 1) * Mathf.PI * 2f / N;
                 Vector3 i0 = mc + new Vector3(Mathf.Cos(a0), Mathf.Sin(a0) * 1.3f, 0f) * 1.05f * s, i1 = mc + new Vector3(Mathf.Cos(a1), Mathf.Sin(a1) * 1.3f, 0f) * 1.05f * s;
                 Vector3 o0 = mc + new Vector3(Mathf.Cos(a0), Mathf.Sin(a0) * 1.3f, 0f) * 1.2f * s, o1 = mc + new Vector3(Mathf.Cos(a1), Mathf.Sin(a1) * 1.3f, 0f) * 1.2f * s;
                 if (Mathf.Sin(a0) < -0.6f) continue;
-                pg.glow.QuadOut(i0, i1, o1, o0, Vector3.forward, C(250, 190, 90), C(250, 190, 90), C(230, 150, 60), C(230, 150, 60));
+                pg.glow.QuadOut(i0, i1, o1, o0, Vector3.back, C(250, 190, 90), C(250, 190, 90), C(230, 150, 60), C(230, 150, 60));
             }
         }
 
@@ -532,7 +532,7 @@ namespace BlossomRally
             }
             Act(sp, ip + new Vector3(0f, 1f, -1.2f), "Light incense", Wallet.Format(5) + "  ·  a blessing for 10 min", () => Interiors.Instance.LightIncense(sp), 1.8f);
             // bell on a frame (front left)
-            Vector3 bf = new Vector3(-hx + 2.4f, 0f, -hz + 3.2f);
+            Vector3 bf = new Vector3(-hx + 1.5f, 0f, -hz + 3.4f);
             float bh = Mathf.Min(H - 0.8f, 3.6f);
             for (int s = -1; s <= 1; s += 2)
             {
@@ -545,10 +545,10 @@ namespace BlossomRally
             sp.striker = MeshObj(sp.root, "Striker", PropShapes.StrikerLog(), PlaceMats.Shell, bf + new Vector3(0f, bh - 0.14f, -1.6f)).transform;
             PG.Box2(pg.shell, bf + new Vector3(0f, bh, -1.6f), new Vector3(0.35f, 0.08f, 0.08f), Pal.WoodDark, Pal.WoodDark);
             PG.Rod(pg.shell, bf + new Vector3(0f, bh, -1.6f), bf + new Vector3(0f, H, -1.6f), 0.03f, Pal.WoodDark, 4);
-            Act(sp, bf + new Vector3(0.6f, 1f, -1.1f), "Ring the bell", "", () => Interiors.Instance.RingBell(sp), 2f);
-            Npc(sp, Monk(320), bf + new Vector3(1.6f, 0f, 0.6f), 210f, PersonPose.Idle);
+            Act(sp, bf + new Vector3(1.4f, 1f, -0.6f), "Ring the bell", "", () => Interiors.Instance.RingBell(sp), 2f);
+            Npc(sp, Monk(320), bf + new Vector3(1.4f, 0f, 1.2f), 230f, PersonPose.Idle);
             // wishing tree + wish box (front right)
-            Vector3 wt = new Vector3(hx - 2.2f, 0f, -hz + 3.4f);
+            Vector3 wt = new Vector3(hx - 1.2f, 0f, -hz + 3.0f);
             PlaceKit.Plant(pg, wt, 1.9f, rng, true);
             for (int k = 0; k < 14; k++)
             {
@@ -556,15 +556,15 @@ namespace BlossomRally
                 Vector3 rp = wt + new Vector3(Mathf.Cos(a) * r, 1.35f + 0.25f * (k % 4), Mathf.Sin(a) * r);
                 PG.OBox(pg.glow, rp - Up * 0.15f, new Vector3(0.03f, 0.13f, 0.004f), Quaternion.Euler(0f, a * Mathf.Rad2Deg, 0f), C(220, 40, 40));
             }
-            Vector3 wb = wt + new Vector3(-1.2f, 0f, 0.2f);
+            Vector3 wb = wt + new Vector3(0f, 0f, 1.5f);
             PG.Box2(pg.shell, wb + Up * 0.45f, new Vector3(0.4f, 0.45f, 0.3f), Pal.RedDeep, Pal.Gold);
             PlaceKit.Glyph(pg.shell, wb + new Vector3(0f, 0.5f, -0.31f), Vector3.right, Up, 0.42f, 0.03f, '福', Pal.Gold);
             pg.Col(wb + Up * 0.45f, new Vector3(0.8f, 0.9f, 0.6f));
-            Act(sp, wb + new Vector3(0f, 1f, -0.8f), "Make a wish", Wallet.Format(10) + " coin  ·  luck for 15 min", () => Interiors.Instance.MakeWish(sp), 1.6f);
+            Act(sp, wb + new Vector3(-0.9f, 1f, 0f), "Make a wish", Wallet.Format(10) + " coin  ·  luck for 15 min", () => Interiors.Instance.MakeWish(sp), 1.6f);
             // viewpoint stairs (back right corner)
             if (sp.place.HasViewpoint)
             {
-                Vector3 s0 = new Vector3(hx - 0.9f, 0f, 0.4f);
+                Vector3 s0 = new Vector3(hx - 0.9f, 0f, -1.9f);
                 for (int k = 0; k < 10; k++)
                 {
                     Vector3 sc = s0 + new Vector3(0f, 0.18f + k * 0.34f, 0.3f * k);
@@ -602,7 +602,7 @@ namespace BlossomRally
             pg.ambient = new Color(0.86f, 0.86f, 0.88f);
             sp.ambSky = new Color(0.85f, 0.85f, 0.9f); sp.ambEq = new Color(0.75f, 0.74f, 0.74f); sp.ambGround = new Color(0.45f, 0.44f, 0.44f);
             // glass storefront with the street at dusk behind it
-            PlaceKit.Paint(pg.glow, new Vector3(0f, 2.9f, -hz + 0.015f), Vector3.left, Up, W - 0.4f, 5.4f, PlaceKit.View.City, false);
+            PlaceKit.Paint(pg.glow, new Vector3(0f, 2.9f, -hz + 0.015f), Vector3.right, Up, W - 0.4f, 5.4f, PlaceKit.View.City, false);
             {
                 Vector3 a = new Vector3(-hx + 0.2f, 0.1f, -hz + 0.25f), b = new Vector3(hx - 0.2f, 0.1f, -hz + 0.25f);
                 Color32 gc = new Color32(255, 255, 255, 255);

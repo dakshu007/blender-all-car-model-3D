@@ -1,0 +1,177 @@
+{
+  "car_id": "BIKE-006",
+  "display_name": "Red Lantern 1800",
+  "vehicle_class": "Cruiser",
+  "fbx": "BIKE-006_Export.fbx",
+  "root": "BIKE-006_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.75108,
+      -0.00249
+    ],
+    "size": [
+      0.82,
+      1.50216,
+      2.47205
+    ]
+  },
+  "triangles": 8930,
+  "wheels": {
+    "F": {
+      "transform": "BIKE-006_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.85,
+        0.335
+      ],
+      "unity_local_position": [
+        0.0,
+        0.335,
+        0.85
+      ],
+      "radius": 0.335,
+      "width": 0.13,
+      "steer": true,
+      "drive": false
+    },
+    "R": {
+      "transform": "BIKE-006_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.85,
+        0.34
+      ],
+      "unity_local_position": [
+        0.0,
+        0.34,
+        -0.85
+      ],
+      "radius": 0.34,
+      "width": 0.21,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "F",
+      "transform": "BIKE-006_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.85,
+        0.335
+      ],
+      "unity_local_position": [
+        0.0,
+        0.335,
+        0.85
+      ],
+      "radius": 0.335,
+      "width": 0.13,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "R",
+      "transform": "BIKE-006_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.85,
+        0.34
+      ],
+      "unity_local_position": [
+        0.0,
+        0.34,
+        -0.85
+      ],
+      "radius": 0.34,
+      "width": 0.21,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 1.7,
+  "track": null,
+  "two_wheeler": true,
+  "steering_wheel": null,
+  "colliders": [
+    {
+      "name": "BIKE-006_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.45,
+        0.0
+      ],
+      "unity_size": [
+        0.42,
+        0.46,
+        1.95
+      ]
+    }
+  ],
+  "textures": [
+    "BIKE-006_BaseColor.png"
+  ],
+  "materials": [
+    "M_BIKE-006_Paint",
+    "M_BIKE-006_Plate",
+    "M_BIKE-006_Rim",
+    "M_BIKE-006_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-006",
+    "M_Trim_Fork_BIKE-006",
+    "M_Trim_Frame_BIKE-006",
+    "M_Trim_Grey",
+    "M_Trim_Whitewall"
+  ],
+  "driver_eye": [
+    0.0,
+    1.36,
+    -0.24
+  ],
+  "hood_cam": [
+    0.0,
+    1.14,
+    0.1
+  ],
+  "rider_seat": [
+    0.0,
+    0.72,
+    -0.42
+  ],
+  "rider_grip": [
+    0.3581,
+    1.2431,
+    0.0618
+  ],
+  "rider_peg": [
+    0.2,
+    0.29,
+    0.26
+  ],
+  "steer_rake": 31.0,
+  "fork": {
+    "transform": "BIKE-006_Fork",
+    "unity_pivot": [
+      0.0,
+      1.05502,
+      0.41737
+    ],
+    "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"
+  }
+}

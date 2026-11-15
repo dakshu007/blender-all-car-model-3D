@@ -15,26 +15,64 @@ namespace BlossomRally
 
         // ================================================================== entrance dressing
         /// <summary>Lantern posts either side of the door and a standing glyph sign (world space, door on the ground).</summary>
-        public static void Entrance(PGeo pg, PlaceSites sites, WorldBuilder w, Vector3 door, float outYaw, char glyph, Color32 board, bool posts = true)
+        public static void Entrance(PGeo pg, PlaceSites sites, WorldBuilder w, Vector3 door, float outYaw, char glyph, Color32 board, bool onPlatform)
         {
             Quaternion q = Quaternion.Euler(0f, outYaw, 0f);
             Vector3 f = q * Vector3.forward, r = q * Vector3.right;
-            if (posts)
-                for (int s = -1; s <= 1; s += 2)
-                {
-                    Vector3 p = door + r * (s * 2.05f) + f * 0.35f;
-                    p.y = w.TerrainHeight(p.x, p.z);
-                    if (sites != null && !sites.FootprintFree(new Vector2(p.x, p.z), 0.25f, 0.25f, outYaw, p.y, p.y + 2.5f)) continue;
-                    LanternPost(pg, p, outYaw, s);
-                    pg.Col(p + Up * 1.2f, new Vector3(0.3f, 2.4f, 0.3f), outYaw);
-                }
-            Vector3 sp = door + r * 3.1f + f * 1.1f;
-            sp.y = w.TerrainHeight(sp.x, sp.z);
-            if (sites == null || sites.FootprintFree(new Vector2(sp.x, sp.z), 0.5f, 0.3f, outYaw, sp.y, sp.y + 2f))
+            for (int s = -1; s <= 1; s += 2)
             {
+                Vector3 p = door + r * (s * 2.05f) + f * 0.35f;
+                if (!Spot(sites, w, ref p, door.y, onPlatform, 0.25f, 0.25f, outYaw, 2.5f)) continue;
+                LanternPost(pg, p, outYaw, s);
+                pg.Col(p + Up * 1.2f, new Vector3(0.3f, 2.4f, 0.3f), outYaw);
+            }
+            // the sign stands to the right of the door (falls back to the left side)
+            for (int s = 1; s >= -1; s -= 2)
+            {
+                Vector3 sp = door + r * (s * 3.1f) + f * 1.0f;
+                if (!Spot(sites, w, ref sp, door.y, onPlatform, 0.5f, 0.3f, outYaw, 2f)) continue;
                 StandingSign(pg, sp, outYaw, glyph, board);
                 pg.Col(sp + Up * 0.9f, new Vector3(0.9f, 1.8f, 0.3f), outYaw);
+                break;
             }
+        }
+
+        /// <summary>Ground the point (terrain or the platform level), keep it off roads and out of other colliders.</summary>
+        static bool Spot(PlaceSites sites, WorldBuilder w, ref Vector3 p, float doorY, bool onPlatform, float hx, float hz, float yaw, float h)
+        {
+            Vector2 p2 = new Vector2(p.x, p.z);
+            if (w.Field != null && w.Field.EdgeDistance(p2) < 0.7f) return false;
+            float t = w.TerrainHeight(p.x, p.z);
+            p.y = onPlatform ? doorY : t;
+            if (!onPlatform && Mathf.Abs(t - doorY) > 0.8f) return false;
+            if (sites != null && !sites.FootprintFree(p2, hx, hz, yaw, p.y + 0.05f, p.y + h)) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Steps (and a walkable ramp collider) from a raised floor edge down to the terrain. top = floor point on the
+        /// front edge (world), fwd = outward. Nothing when the drop is small.
+        /// </summary>
+        public static void FrontSteps(PGeo pg, WorldBuilder w, Vector3 top, float yaw, float width)
+        {
+            Quaternion q = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 f = q * Vector3.forward;
+            float drop = top.y - w.TerrainHeight(top.x + f.x * 1.5f, top.z + f.z * 1.5f);
+            if (drop < 0.22f) return;
+            int n = Mathf.Clamp(Mathf.CeilToInt(drop / 0.18f), 2, 12);
+            float rise = drop / n, run = 0.32f;
+            for (int i = 0; i < n; i++)
+            {
+                float y = top.y - rise * (i + 1);
+                Vector3 c = top + f * (run * (i + 0.5f));
+                PG.OBox(pg.shell, new Vector3(c.x, (y + rise + (top.y - drop - 0.4f)) * 0.5f, c.z), new Vector3(width * 0.5f, (y + rise - (top.y - drop - 0.4f)) * 0.5f, run * 0.5f), q, i % 2 == 0 ? Pal.Stone : Pal.StoneLight);
+            }
+            float len = run * n;
+            float ang = Mathf.Atan2(drop, len) * Mathf.Rad2Deg;
+            Vector3 mid = top + f * (len * 0.5f) - Up * (drop * 0.5f);
+            var go = new ColBox { c = mid - Up * 0.15f, size = new Vector3(width, 0.3f, Mathf.Sqrt(len * len + drop * drop) + 0.2f), yaw = yaw };
+            pg.cols.Add(go);
+            pg.rampPitch.Add(pg.cols.Count - 1, ang);
         }
 
         public static void LanternPost(PGeo pg, Vector3 p, float yaw, int side)

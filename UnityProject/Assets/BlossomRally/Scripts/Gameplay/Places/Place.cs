@@ -51,8 +51,11 @@ namespace BlossomRally
         public bool HasViewpoint { get; internal set; }
         public Vector3 Viewpoint { get; internal set; }
         public float ViewpointYaw { get; internal set; }
-        /// <summary>Y of the pocket interior under the building.</summary>
-        public const float PocketY = -600f;
+        /// <summary>
+        /// Y of the pocket interiors (same x / z as the building). Far ABOVE the world rather than below it: the on-foot
+        /// controller treats anything under the water level as "too deep" and below -60 m as fallen out of the world.
+        /// </summary>
+        public const float PocketY = 900f;
 
         internal Transform exterior;
         internal InteriorSpace interior;

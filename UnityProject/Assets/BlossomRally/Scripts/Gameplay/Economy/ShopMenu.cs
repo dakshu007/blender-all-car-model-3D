@@ -29,7 +29,7 @@ namespace BlossomRally
             for (int i = 0; i < def.items.Count; i++)
             {
                 var it = def.items[i];
-                priceTexts[i] = it == null ? "" : it.price <= 0 ? "Free" : Wallet.Format(it.price);
+                priceTexts[i] = it == null ? "" : it.price <= 0 ? "Free" : Wallet.Format(Price(it));
             }
             UI.Sound("MenuSelect");
         }
@@ -59,18 +59,22 @@ namespace BlossomRally
             if (InputReader.MenuBack) Close();
         }
 
+        /// <summary>Price after the places module's discount buff (a temple blessing, a regular's tea).</summary>
+        static int Price(ShopItem it) { return it == null || it.price <= 0 ? 0 : Mathf.Max(1, Mathf.RoundToInt(it.price * (1f - Buffs.ShopDiscount))); }
+
         void Buy(int i)
         {
             if (shop == null || i < 0 || i >= shop.items.Count) return;
             var it = shop.items[i];
             if (it == null) return;
-            if (it.price > 0 && !Wallet.TrySpend(it.price, it.name))
+            int cost = Price(it);
+            if (cost > 0 && !Wallet.TrySpend(cost, it.name))
             {
                 shakeT = 0f;
                 UI.Sound("MenuBack");
                 return;
             }
-            if (it.price > 0) EconomySave.Data.spent += it.price;
+            if (cost > 0) EconomySave.Data.spent += cost;
             lastBought = it.name;
             boughtT = 0f;
             UI.Sound("MedalBronze");
@@ -106,7 +110,7 @@ namespace BlossomRally
                 if (it == null) continue;
                 Rect r = new Rect(p.x + 22f * s, y, pw - 44f * s, rowH - 8f * s);
                 bool selected = i == sel;
-                bool afford = it.price <= 0 || Wallet.CanAfford(it.price);
+                bool afford = it.price <= 0 || Wallet.CanAfford(Price(it));
                 MenuArt.Fill(r, selected ? new Color(1f, 1f, 1f, 0.14f * a) : new Color(1f, 1f, 1f, 0.05f * a));
                 if (selected) MenuArt.Outline(r, Mathf.Max(1f, 2f * s), MenuArt.A(UI.Pink, 0.9f * a));
                 MenuArt.Text(new Rect(r.x + 16f * s, r.y + 4f * s, r.width * 0.7f, 28f * s), it.name, MenuArt.MidL, MenuArt.A(UI.White, a));

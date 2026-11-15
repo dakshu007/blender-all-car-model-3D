@@ -2,7 +2,7 @@
   "car_id": "BIKE-001",
   "display_name": "Lingyun SR",
   "tool": "bikes/build_bike.py",
-  "generated_utc": "2026-11-15T05:54:39+00:00",
+  "generated_utc": "2026-11-15T06:09:26+00:00",
   "blender": {
     "version": "5.0.1",
     "build_hash": "a3db93c5b259",

@@ -201,7 +201,7 @@ namespace BlossomRally
             }
             // bus shelters
             var shelter = CityKit.BusShelter(r);
-            Vector3[] shel = { new Vector3(930f, 0f, -124.5f - 3f), new Vector3(1130f, 0f, 50f - 5.5f - 3f), new Vector3(820f, 0f, 230f + 5f + 3f), new Vector3(960f, 0f, 50f + 5.5f + 3f) };
+            Vector3[] shel = { new Vector3(930f, 0f, -130f + 6f + 3.2f), new Vector3(1130f, 0f, 50f - 5.5f - 3f), new Vector3(820f, 0f, 230f + 5f + 3f), new Vector3(960f, 0f, 50f + 5.5f + 3f) };
             float[] shYaw = { 0f, 0f, 180f, 180f };
             for (int i = 0; i < shel.Length; i++)
             {

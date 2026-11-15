@@ -20,6 +20,7 @@ namespace BlossomRally
             if (registered) return;
             registered = true;
             WorldHooks.WorldBuilt += w => Create(w);
+            WorldHooks.CarSpawned += OnCarSpawned;
             GameSettings.Changed += () =>
             {
                 PlaceMats.ApplyQuality();
@@ -38,10 +39,28 @@ namespace BlossomRally
             return null;
         }
 
+        /// <summary>A car bought / chosen in a showroom while inside appears on the showroom's parking bay.</summary>
+        static void OnCarSpawned(ArcadeCar car)
+        {
+            var p = Interiors.CurrentPlace;
+            if (car == null || p == null || !PlayerState.OnFoot) return;
+            if (p.kind != PlaceKind.Showroom && p.kind != PlaceKind.BikeShop) return;
+            if ((p.Parking - p.Door).sqrMagnitude < 1f) return;      // no bay was found
+            Vector3 pos = p.Parking + Vector3.up * 0.45f;
+            Quaternion rot = Quaternion.Euler(0f, p.ParkingYaw, 0f);
+            car.transform.SetPositionAndRotation(pos, rot);
+            if (car.Body != null)
+            {
+                car.Body.position = pos;
+                car.Body.rotation = rot;
+                if (!car.Body.isKinematic) { car.Body.SetVelocity(Vector3.zero); car.Body.angularVelocity = Vector3.zero; }
+            }
+        }
+
         static PlacesManager Create(WorldBuilder w)
         {
+            Interiors.Shutdown();
             if (Instance != null) Destroy(Instance.gameObject);
-            if (Interiors.Instance != null) Destroy(Interiors.Instance.gameObject);
             var go = new GameObject("PlacesManager");
             var m = go.AddComponent<PlacesManager>();
             m.useGUILayout = false;
@@ -130,7 +149,7 @@ namespace BlossomRally
                 p.OutYaw = Mathf.Atan2(od.x, od.z) * Mathf.Rad2Deg;
                 p.buildingPos = c;
                 p.buildingYaw = yaw;
-                ExteriorKit.Entrance(pg, sites, world, dw, p.OutYaw, p.glyph, board, !p.doorOnColliderBase);
+                ExteriorKit.Entrance(pg, sites, world, dw, p.OutYaw, p.glyph, board, p.doorOnColliderBase);
             }
             else
             {
@@ -152,6 +171,11 @@ namespace BlossomRally
                 if (p.kind == PlaceKind.Showroom) door = ExteriorKit.Showroom(pg, s.c, s.yaw, s.floorY, s.minY, p.hx, p.hz, front);
                 else door = ExteriorKit.BikeShop(pg, s.c, s.yaw, s.floorY, s.minY, p.hx, p.hz, new System.Random(77));
                 sites.Reserve(s.c, p.hx + 2f, p.hz + 3f, s.yaw, s.minY - 1f, s.floorY + 10f);
+                {
+                    Quaternion qs = Quaternion.Euler(0f, s.yaw, 0f);
+                    float edge = p.kind == PlaceKind.Showroom ? p.hz + 1.8f : p.hz + 1.5f;
+                    ExteriorKit.FrontSteps(pg, world, new Vector3(s.c.x, s.floorY, s.c.y) + qs * new Vector3(0f, 0f, edge), s.yaw, 3.2f);
+                }
                 p.Door = door;
                 p.OutYaw = s.yaw;
                 p.buildingPos = new Vector3(s.c.x, s.floorY, s.c.y);

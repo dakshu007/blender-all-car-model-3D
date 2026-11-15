@@ -49,6 +49,7 @@ def parse():
     p.add_argument("--views", nargs="+", default=["all"])
     p.add_argument("--samples", type=int, default=48)
     p.add_argument("--res", nargs=2, type=int, default=[1280, 800])
+    p.add_argument("--fit", type=float, default=1.0, help="perspective framing scale (>1 = more margin)")
     p.add_argument("--ignore-collections", nargs="*", default=["Collision", "CAR_Collision"],
                    help="Collections hidden from render (e.g. collision proxies)")
     return p.parse_args(pc.script_args())
@@ -111,7 +112,7 @@ def build_studio(scene, bbox, samples, res):
     scene.collection.objects.link(fo)
 
 
-def place_camera(scene, cam_obj, bbox, view, yaw_deg):
+def place_camera(scene, cam_obj, bbox, view, yaw_deg, fit=1.0):
     center = Vector(bbox["center"])
     size = Vector(bbox["size"])
     radius = size.length / 2
@@ -149,7 +150,7 @@ def place_camera(scene, cam_obj, bbox, view, yaw_deg):
         cam.type = "PERSP"
         cam.lens = 55
         fov = 2 * math.atan(cam.sensor_width / (2 * cam.lens))
-        dist = radius / math.sin(fov / 2) * 0.82
+        dist = radius / math.sin(fov / 2) * 0.82 * fit
         target.z = bbox["min"][2] + size.z * 0.42
     cam.clip_end = dist * 4
     cam_obj.location = target + d * dist
@@ -183,7 +184,7 @@ def main():
     yaw = forward_yaw(args.forward)
     outputs = []
     for v in views:
-        place_camera(scene, cam_obj, bbox, VIEWS[v], yaw)
+        place_camera(scene, cam_obj, bbox, VIEWS[v], yaw, args.fit)
         out = os.path.join(os.path.abspath(args.out_dir), f"{args.prefix}_{v}.png")
         scene.render.filepath = out
         bpy.ops.render.render(write_still=True)

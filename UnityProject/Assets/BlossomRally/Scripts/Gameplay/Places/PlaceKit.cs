@@ -29,6 +29,8 @@ namespace BlossomRally
         public readonly LifeGeo glass = new LifeGeo();
         public readonly List<BakeLight> lights = new List<BakeLight>();
         public readonly List<ColBox> cols = new List<ColBox>();
+        /// <summary>Collider index -> pitch (degrees, down along +Z) for ramp colliders.</summary>
+        public readonly Dictionary<int, float> rampPitch = new Dictionary<int, float>();
         public Color ambient = new Color(0.62f, 0.56f, 0.5f);
         public float floorY;                              // contact shading reference (local)
 
@@ -64,12 +66,15 @@ namespace BlossomRally
             {
                 var cr = new GameObject(name + "_Colliders").transform;
                 cr.SetParent(root, false);
-                foreach (var b in cols)
+                for (int i = 0; i < cols.Count; i++)
                 {
+                    var b = cols[i];
+                    float pitch;
+                    rampPitch.TryGetValue(i, out pitch);
                     var go = new GameObject("Col");
                     go.transform.SetParent(cr, false);
                     go.transform.localPosition = b.c;
-                    go.transform.localRotation = Quaternion.Euler(0f, b.yaw, 0f);
+                    go.transform.localRotation = Quaternion.Euler(pitch, b.yaw, 0f);
                     go.AddComponent<BoxCollider>().size = b.size;
                 }
             }

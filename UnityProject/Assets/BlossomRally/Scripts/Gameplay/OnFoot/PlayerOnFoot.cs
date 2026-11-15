@@ -659,6 +659,7 @@ namespace BlossomRally
                     if (dt > 0f) UpdateSlide(dt);
                     break;
                 case Phase.OnFoot:
+                    if (Interiors.Sitting) break;      // seated in a tea house / temple: the places module owns the pose
                     if (rig == null || !rig.gameObject.activeInHierarchy) { ForceIntoCar(); break; }
                     if (dt > 0f) UpdateOnFoot(dt, active);
                     FindNearVehicle();

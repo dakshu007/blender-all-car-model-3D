@@ -1,0 +1,178 @@
+{
+  "car_id": "BIKE-005",
+  "display_name": "Snow Leopard 1100",
+  "vehicle_class": "Adventure Tourer",
+  "fbx": "BIKE-005_Export.fbx",
+  "root": "BIKE-005_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.69402,
+      0.01843
+    ],
+    "size": [
+      0.87,
+      1.38797,
+      2.30685
+    ]
+  },
+  "triangles": 9550,
+  "wheels": {
+    "F": {
+      "transform": "BIKE-005_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.78,
+        0.355
+      ],
+      "unity_local_position": [
+        0.0,
+        0.355,
+        0.78
+      ],
+      "radius": 0.355,
+      "width": 0.11,
+      "steer": true,
+      "drive": false
+    },
+    "R": {
+      "transform": "BIKE-005_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.78,
+        0.345
+      ],
+      "unity_local_position": [
+        0.0,
+        0.345,
+        -0.78
+      ],
+      "radius": 0.345,
+      "width": 0.16,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "F",
+      "transform": "BIKE-005_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.78,
+        0.355
+      ],
+      "unity_local_position": [
+        0.0,
+        0.355,
+        0.78
+      ],
+      "radius": 0.355,
+      "width": 0.11,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "R",
+      "transform": "BIKE-005_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.78,
+        0.345
+      ],
+      "unity_local_position": [
+        0.0,
+        0.345,
+        -0.78
+      ],
+      "radius": 0.345,
+      "width": 0.16,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 1.56,
+  "track": null,
+  "two_wheeler": true,
+  "steering_wheel": null,
+  "colliders": [
+    {
+      "name": "BIKE-005_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.55,
+        0.0
+      ],
+      "unity_size": [
+        0.42,
+        0.66,
+        1.81
+      ]
+    }
+  ],
+  "textures": [
+    "BIKE-005_BaseColor.png"
+  ],
+  "materials": [
+    "M_BIKE-005_Accent",
+    "M_BIKE-005_Paint",
+    "M_BIKE-005_Plate",
+    "M_BIKE-005_Rim",
+    "M_BIKE-005_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Light_Aux",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-005",
+    "M_Trim_Fork_BIKE-005",
+    "M_Trim_Frame_BIKE-005",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    0.0,
+    1.55,
+    0.0
+  ],
+  "hood_cam": [
+    0.0,
+    1.3,
+    0.32
+  ],
+  "rider_seat": [
+    0.0,
+    0.9,
+    -0.28
+  ],
+  "rider_grip": [
+    0.3479,
+    1.237,
+    0.2853
+  ],
+  "rider_peg": [
+    0.145,
+    0.4,
+    -0.26
+  ],
+  "steer_rake": 26.0,
+  "fork": {
+    "transform": "BIKE-005_Fork",
+    "unity_pivot": [
+      0.0,
+      1.12796,
+      0.403
+    ],
+    "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"
+  }
+}
