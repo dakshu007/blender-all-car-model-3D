@@ -90,6 +90,7 @@ namespace BlossomRally
         readonly float[] timeW = new float[5];
         float checkTimer;
         Grade regionTarget = Grade.Identity;
+        readonly float[] regionW = new float[6];     // reused (no garbage every region check)
 
         public Grade Current { get { return live; } }
 
@@ -119,7 +120,7 @@ namespace BlossomRally
             }
             float wp = Mathf.Clamp01((cam.y - 22f) / 25f) * Mathf.Clamp01((220f - Vector2.Distance(p, MapData.MountainCenter)) / 80f);
             // outside the valley the valley's own sub-regions fade out and each region's grade takes over
-            var rw = new float[6];
+            var rw = regionW;
             WorldLayout.Weights(p, rw);
             float inValley = rw[(int)RegionId.Valley];
             wv *= inValley; wb *= inValley; wt *= inValley; wl *= inValley; wp *= inValley;

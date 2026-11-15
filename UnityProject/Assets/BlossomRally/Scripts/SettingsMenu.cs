@@ -64,6 +64,12 @@ namespace BlossomRally
             effects.Add("Ink & watercolour mode", null, () => OnOff(PostFX.InkMode), d => PostFX.InkMode = !PostFX.InkMode);
             effects.Add("Motion blur", null, () => OnOff(PostFX.MotionBlur), d => PostFX.MotionBlur = !PostFX.MotionBlur);
             effects.Add("Lens effects", null, () => OnOff(PostFX.LensEffects), d => PostFX.LensEffects = !PostFX.LensEffects);
+            effects.Add("Ambient occlusion", null, () => GfxPrefs.Label(GfxFeature.AmbientOcclusion), d => GfxPrefs.Toggle(GfxFeature.AmbientOcclusion));
+            effects.Add("Atmospheric scattering", null, () => GfxPrefs.Label(GfxFeature.Atmospherics), d => GfxPrefs.Toggle(GfxFeature.Atmospherics));
+            effects.Add("Cinematic depth of field", null, () => GfxPrefs.Label(GfxFeature.CinematicDof), d => GfxPrefs.Toggle(GfxFeature.CinematicDof));
+            effects.Add("Film grain", null, () => GfxPrefs.Label(GfxFeature.FilmGrain), d => GfxPrefs.Toggle(GfxFeature.FilmGrain));
+            effects.Add("Upscale sharpening", null, () => GfxPrefs.Label(GfxFeature.Sharpening), d => GfxPrefs.Toggle(GfxFeature.Sharpening));
+            effects.Add("Effects: follow preset", GfxPrefs.ResetToPreset);
             effects.Add("Slow-motion moments", null, () => OnOff(JuiceSettings.SlowMoMoments), d => JuiceSettings.SlowMoMoments = !JuiceSettings.SlowMoMoments);
             effects.Add("Score pop-ups", null, () => OnOff(JuiceSettings.ScorePopups), d => JuiceSettings.ScorePopups = !JuiceSettings.ScorePopups);
             effects.Add("Reduced camera motion", null, () => OnOff(JuiceSettings.ReducedMotion), d => JuiceSettings.ReducedMotion = !JuiceSettings.ReducedMotion);

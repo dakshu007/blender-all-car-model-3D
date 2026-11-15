@@ -3,6 +3,7 @@
 // reflection of the pagoda and trees on the lake (High / Ultra, _ReflectionTex from WaterFX), depth-tinted
 // body colour and soft shoreline foam (when the camera depth texture is on, _BR_HasDepth), rain rings and
 // ripples / a bow wake around the player's car in shallow water (BR_Interact globals), sun glints, fog.
+// High / Ultra (global _BR_GfxQ >= 2): sun glitter - tiny wave facets flashing along the sun's path.
 // SubShader LOD 200: the original surface-shader water (used when GraphicsFX.Enhanced is off).
 Shader "BlossomRally/Water"
 {
@@ -49,6 +50,7 @@ Shader "BlossomRally/Water"
             float _BR_Rain;
             float4 _BR_WaterFx;     // x foam / ripples on, y water level, z detail ripples
             sampler2D _BR_Noise;
+            float _BR_GfxQ;
 
             struct appdata
             {
@@ -188,6 +190,17 @@ Shader "BlossomRally/Water"
                 float nh = saturate(dot(n, H));
                 half3 spec = _LightColor0.rgb * (pow(nh, 380.0) * 3.0 + pow(nh, 48.0) * 0.12);
                 half3 col = lerp(body, refl, fres * 0.85) + spec;
+                if (_BR_GfxQ > 1.5)
+                {
+                    float gd = distance(_WorldSpaceCameraPos, wp);
+                    if (gd < 160.0)
+                    {
+                        float g1 = tex2Dlod(_BR_Noise, float4(wp.xz * 1.7 + _Time.y * float2(0.07, 0.04), 0, 0)).r;
+                        float g2 = tex2Dlod(_BR_Noise, float4(wp.xz * 2.3 - _Time.y * float2(0.05, 0.06), 0, 0)).g;
+                        float facet = saturate((g1 * g2 - 0.36) * 14.0);
+                        col += _LightColor0.rgb * (facet * pow(nh, 24.0) * 3.0 * saturate(1.0 - gd / 160.0));
+                    }
+                }
 
                 // soft shoreline foam where the water meets the bank
                 half foam = 0.0;

@@ -4,6 +4,8 @@
 //  * patterns in car space (_CarW2L = world -> car matrix, _CarExt = half width, height, half length):
 //    1 racing stripes, 2 two-tone, 3 door roundels, 4 blossom sprigs
 //  * mud / dust build-up from the sills upwards (_Dirt 0..1, _DirtColor), washed glossy by rain
+//  * clear coat (Medium+, global _BR_GfxQ): a sharp second reflection layer from the reflection probe with a
+//    Schlick fresnel, so body lines catch the sky at grazing angles; dulled by dirt, sharper when wet
 Shader "BlossomRally/CarPaint"
 {
     Properties
@@ -40,12 +42,15 @@ Shader "BlossomRally/CarPaint"
         float4 _CarExt;
         float4x4 _CarW2L;
         float _BR_Wetness;
+        float _BR_GfxQ;        // global (GraphicsHub): 0 / -1 = off (Low)
 
         struct Input
         {
             float2 uv_MainTex;
             float3 worldPos;
             float3 worldNormal;
+            float3 worldRefl;
+            float3 viewDir;
         };
 
         float hash21(float2 p)
@@ -124,6 +129,15 @@ Shader "BlossomRally/CarPaint"
             o.Metallic = 0;
             o.Smoothness = lerp(lerp(_Glossiness, 0.12, dirt), 0.82, wet * (1.0 - dirt * 0.5));
             o.Alpha = 1;
+            if (_BR_GfxQ > 0.5)
+            {
+                float ndv = saturate(dot(normalize(IN.worldNormal), normalize(IN.viewDir)));
+                float f1 = 1.0 - ndv;
+                float fr = 0.04 + 0.96 * f1 * f1 * f1 * f1 * f1;
+                half4 rp = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, IN.worldRefl, lerp(0.8, 0.2, wet));
+                half3 refl = DecodeHDR(rp, unity_SpecCube0_HDR);
+                o.Emission = refl * (fr * 0.75 * (1.0 - dirt * 0.85));
+            }
         }
         ENDCG
     }

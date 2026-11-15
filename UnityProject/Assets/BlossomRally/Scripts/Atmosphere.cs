@@ -3,6 +3,9 @@
 // Night) and WEATHER (Clear Spring, Spring Haze, Cloudy, Rain, After Rain, Fog Off). Changes blend
 // smoothly (~2.5 s). Also drives: drifting cloud shadows (sun cookie), stars + moon, lantern glow,
 // wet roads (global _BR_Wetness / _BR_Rain), a car reflection probe, wind gusts.
+// Graphics upgrade: the trilight ambient also takes the colour of the ground around the camera (white bounce
+// in Frost Summit, warm red in Red Canyon, bright sand on the coast...), and the sun is published to the
+// material shaders (_BR_SunDir xyz + w daylight, _BR_SunColor linear) for terrain relief and snow sparkle.
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -144,6 +147,27 @@ namespace BlossomRally
         float camTimer;
         static readonly int IdWindGust = Shader.PropertyToID("_BR_WindGust");
         static readonly int IdSunDir = Shader.PropertyToID("_SunDir");
+        static readonly int IdBRSunDir = Shader.PropertyToID("_BR_SunDir");
+        static readonly int IdBRSunColor = Shader.PropertyToID("_BR_SunColor");
+
+        // ---- regional ambient bounce (multipliers on the ground / equator colours, RegionId order)
+        static readonly Color[] RegionGround =
+        {
+            new Color(1f, 1f, 1f), new Color(0.96f, 0.96f, 1.0f), new Color(1.07f, 1.07f, 1.06f),
+            new Color(0.94f, 1.02f, 0.92f), new Color(1.85f, 1.9f, 2.05f), new Color(1.5f, 1.04f, 0.76f),
+        };
+        static readonly Color[] RegionEquator =
+        {
+            new Color(1f, 1f, 1f), new Color(0.98f, 0.98f, 1.02f), new Color(1.02f, 1.03f, 1.04f),
+            new Color(0.98f, 1.0f, 0.98f), new Color(1.08f, 1.1f, 1.15f), new Color(1.07f, 0.99f, 0.92f),
+        };
+        static readonly float[] regionW = new float[6];
+        Color baseSky, baseEq, baseGround;
+        Color bounceGround = Color.white, bounceEq = Color.white, bounceGroundT = Color.white, bounceEqT = Color.white;
+        Color appliedGround = Color.white, appliedEq = Color.white;
+        float bounceTimer;
+
+        static float Diff(Color a, Color b) { return Mathf.Abs(a.r - b.r) + Mathf.Abs(a.g - b.g) + Mathf.Abs(a.b - b.b); }
 
         void Awake()
         {
@@ -228,9 +252,10 @@ namespace BlossomRally
             Sun.color = k.sunColor;
             Sun.intensity = k.sun;
             Sun.shadowStrength = k.shadow;
-            RenderSettings.ambientSkyColor = k.ambSky;
-            RenderSettings.ambientEquatorColor = k.ambEq;
-            RenderSettings.ambientGroundColor = k.ambGround;
+            baseSky = k.ambSky;
+            baseEq = k.ambEq;
+            baseGround = k.ambGround;
+            ApplyAmbient();
             // Low / Medium draw less far away: a slightly thicker haze (and a faint floor even with
             // "Fog Off" on Low) melts the streaming and cull edges into the sky colour instead of popping
             float fogD = k.fogD * GameSettings.FogBoost;
@@ -256,6 +281,10 @@ namespace BlossomRally
             Shader.SetGlobalFloat("_BR_Wetness", k.wet);
             Shader.SetGlobalFloat("_BR_Rain", k.rain);
             Shader.SetGlobalFloat("_BR_Night", k.night);
+            Vector3 sd = -(k.sunRot * Vector3.forward);
+            Shader.SetGlobalVector(IdBRSunDir, new Vector4(sd.x, sd.y, sd.z, (1f - k.night) * (1f - k.clouds * 0.7f)));
+            Color sunLin = QualitySettings.activeColorSpace == ColorSpace.Linear ? k.sunColor.linear : k.sunColor;
+            Shader.SetGlobalColor(IdBRSunColor, sunLin * k.sun);
             // brightness of the scene relative to the bright day the tree impostors were captured in
             float lum = Mathf.Clamp(k.sun * 0.55f + (k.ambSky.grayscale + k.ambEq.grayscale) * 0.5f, 0.12f, 1.6f) / 1.27f;
             Shader.SetGlobalColor("_BR_SceneLight", Color.Lerp(Color.white, (k.sunColor + k.ambSky) * 0.5f, 0.35f) * lum);
@@ -265,6 +294,44 @@ namespace BlossomRally
 #pragma warning disable 0618   // cookieSize2D only exists in newer Unity 6 releases
             Sun.cookieSize = 520f;
 #pragma warning restore 0618
+        }
+
+        void ApplyAmbient()
+        {
+            RenderSettings.ambientSkyColor = baseSky;
+            RenderSettings.ambientEquatorColor = baseEq * bounceEq;
+            RenderSettings.ambientGroundColor = baseGround * bounceGround;
+            appliedGround = bounceGround;
+            appliedEq = bounceEq;
+        }
+
+        // the ground colour around the camera tints the light bouncing up from below (throttled, smooth)
+        void UpdateBounce()
+        {
+            bounceTimer -= Time.unscaledDeltaTime;
+            if (bounceTimer <= 0f)
+            {
+                bounceTimer = 0.3f;
+                bounceGroundT = Color.white;
+                bounceEqT = Color.white;
+                if (GraphicsFX.Enhanced && cam != null)
+                {
+                    Vector3 p = cam.transform.position;
+                    WorldLayout.Weights(new Vector2(p.x, p.z), regionW);
+                    Color g = Color.black, e = Color.black;
+                    float ws = 0f;
+                    for (int i = 0; i < regionW.Length; i++) { g += RegionGround[i] * regionW[i]; e += RegionEquator[i] * regionW[i]; ws += regionW[i]; }
+                    if (ws > 1e-3f) { bounceGroundT = g * (1f / ws); bounceEqT = e * (1f / ws); }
+                }
+            }
+            float kb = 1f - Mathf.Exp(-Time.unscaledDeltaTime / 1.5f);
+            bounceGround = Color.Lerp(bounceGround, bounceGroundT, kb);
+            bounceEq = Color.Lerp(bounceEq, bounceEqT, kb);
+            bool arrived = Diff(bounceGround, bounceGroundT) + Diff(bounceEq, bounceEqT) < 0.004f;
+            if (arrived) { bounceGround = bounceGroundT; bounceEq = bounceEqT; }
+            // only touch RenderSettings when the change is visible (it re-evaluates the ambient probe)
+            float pending = Diff(bounceGround, appliedGround) + Diff(bounceEq, appliedEq);
+            if (pending > 0.02f || (arrived && pending > 1e-5f)) ApplyAmbient();
         }
 
         void Update()
@@ -290,6 +357,7 @@ namespace BlossomRally
             // keep the reflection probe around the camera, refresh every few seconds (time sliced)
             if (cam == null || camTimer <= 0f) { cam = Camera.main; camTimer = 1f; }
             camTimer -= Time.unscaledDeltaTime;
+            UpdateBounce();
             if (probe != null && cam != null)
             {
                 probe.enabled = true;

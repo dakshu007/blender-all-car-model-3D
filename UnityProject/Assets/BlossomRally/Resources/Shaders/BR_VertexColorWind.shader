@@ -7,7 +7,10 @@
 // the vertex colour - barrel roof tiles on sloped reds / slates, stone blocks and paving on greys,
 // wood grain on browns and lacquered pillars, mottled plaster on creams - fading out with distance.
 // Driven by the globals _BR_DetailAmount (0 = off, exactly the old look) and _BR_DetailDist (m);
-// _DetailPatterns = 0 on a material keeps only the soft variation (used for the terrain).
+// _DetailPatterns = 0 on a material marks the terrain: instead of the building patterns it gets ground
+// micro-detail chosen by colour - grass tufts with dry tips, rock cracks and strata, wind ripples on sand and
+// layered canyon walls, wind-blown snow drifts with sparkling ice crystals - plus a sun-lit relief (cheap
+// emboss towards _BR_SunDir). All inside the same distance fade, so Low (_BR_DetailAmount 0) is unchanged.
 Shader "BlossomRally/VertexColorWind"
 {
     Properties
@@ -43,6 +46,8 @@ Shader "BlossomRally/VertexColorWind"
         float4 _BR_WindGust;   // set globally by BlossomRally.Atmosphere: x = gust multiplier
         float _BR_DetailAmount;
         float _BR_DetailDist;
+        float4 _BR_SunDir;     // xyz towards the sun, w daylight (Atmosphere)
+        float4 _BR_SunColor;   // linear sun colour * intensity (Atmosphere)
 
         void vert (inout appdata_full v)
         {
@@ -88,8 +93,8 @@ Shader "BlossomRally/VertexColorWind"
             return smoothstep(0.0, joint, min(e.x, e.y));
         }
 
-        // c: sRGB colour (modified), sm: smoothness (modified)
-        void BR_Detail (inout float3 c, inout half sm, float3 wp, float3 n, float fade)
+        // c: sRGB colour (modified), sm: smoothness (modified), em: emission (linear, added)
+        void BR_Detail (inout float3 c, inout half sm, inout float3 em, float3 wp, float3 n, float fade)
         {
             float mx = max(c.r, max(c.g, c.b));
             float mn = min(c.r, min(c.g, c.b));
@@ -148,6 +153,67 @@ Shader "BlossomRally/VertexColorWind"
                     m *= lerp(0.95, 1.03, BR_DNoise(pc * 1.4) * 0.6 + BR_DNoise(pc * 6.0) * 0.4);
                 }
             }
+            else
+            {
+                // ---- terrain micro-detail by ground colour
+                float3 L = _BR_SunDir.xyz;
+                float2 lp = an.y > 0.7 ? L.xz : (an.x > an.z ? L.zy : L.xy);
+                float reliefK = 0.05;
+                if (mx > 0.78 && sat < 0.16)
+                {
+                    // snow: soft wind-blown drifts + ice crystals glinting in the sun
+                    m *= lerp(0.975, 1.02, BR_DNoise(pc * 0.9) * 0.6 + BR_DNoise(pc * 3.7) * 0.4);
+                    reliefK = 0.09;
+                    float2 cellS = floor(wp.xz * 22.0 + wp.y * 7.0);
+                    float hs = BR_DHash(cellS);
+                    if (hs > 0.93)
+                    {
+                        float3 V = normalize(_WorldSpaceCameraPos - wp);
+                        float3 jit = float3(BR_DHash(cellS + 1.7), BR_DHash(cellS + 4.3), BR_DHash(cellS + 8.9)) - 0.5;
+                        float3 rn = normalize(n + jit * 1.2);
+                        float3 H = normalize(L + V);
+                        float glint = pow(saturate(dot(rn, H)), 160.0);
+                        em += _BR_SunColor.rgb * (glint * 2.5 * fade * fade);
+                    }
+                    dsm = 0.1;
+                }
+                else if (hue > 0.03 && hue < 0.16 && sat > 0.22 && mx > 0.42)
+                {
+                    if (an.y > 0.75)
+                    {
+                        // sand: wind ripples + fine grain
+                        float rip = sin(dot(wp.xz, float2(0.8, 0.6)) * 9.0 + BR_DNoise(wp.xz * 0.7) * 6.0) * 0.5 + 0.5;
+                        m *= lerp(0.95, 1.03, rip) * lerp(0.97, 1.03, BR_DNoise(wp.xz * 11.0));
+                        reliefK = 0.06;
+                    }
+                    else
+                    {
+                        // canyon walls: layered strata
+                        float strata = sin(wp.y * 3.1 + BR_DNoise(pc * 0.35) * 4.0) * 0.5 + 0.5;
+                        m *= lerp(0.88, 1.06, strata) * lerp(0.95, 1.04, BR_DNoise(pc * 5.0));
+                        reliefK = 0.12;
+                    }
+                }
+                else if (hue > 0.16 && hue < 0.48 && sat > 0.15)
+                {
+                    // grass: darker tufts, dry sunlit tips
+                    float tuft = BR_DNoise(wp.xz * 2.3) * 0.55 + BR_DNoise(wp.xz * 9.0) * 0.45;
+                    m *= lerp(0.90, 1.05, tuft);
+                    c = lerp(c, c * float3(1.04, 1.03, 0.92), smoothstep(0.6, 0.9, tuft) * fade * 0.6);
+                }
+                else if (sat < 0.3)
+                {
+                    // rock: ridged cracks + strata
+                    float cr = abs(BR_DNoise(pc * 1.6) - 0.5) * 2.0;
+                    float strata = sin(wp.y * 4.0 + BR_DNoise(pc * 0.5) * 3.0) * 0.5 + 0.5;
+                    m *= lerp(0.82, 1.0, smoothstep(0.0, 0.08, cr)) * lerp(0.94, 1.04, strata);
+                    reliefK = 0.14;
+                }
+                // sun-lit relief: the ground undulation compared a step towards the sun (lit where it falls away)
+                float2 rp = pc * 1.3;
+                float relief = BR_DNoise(rp) - BR_DNoise(rp + lp * 0.35);
+                m *= 1.0 + relief * reliefK * 2.0 * saturate(_BR_SunDir.w);
+            }
             c = lerp(c, c * m, fade);
             sm = saturate(sm + dsm * fade);
         }
@@ -156,11 +222,12 @@ Shader "BlossomRally/VertexColorWind"
         {
             float3 c = IN.color.rgb * _Tint.rgb;
             half sm = _Glossiness;
+            float3 em = float3(0, 0, 0);
             if (_BR_DetailAmount > 0.001 && IN.color.a < 0.05)
             {
                 float dist = distance(_WorldSpaceCameraPos, IN.worldPos);
                 float fade = saturate(1.0 - dist / max(_BR_DetailDist, 1.0)) * _BR_DetailAmount;
-                if (fade > 0.001) BR_Detail(c, sm, IN.worldPos, normalize(IN.worldNormal), fade);
+                if (fade > 0.001) BR_Detail(c, sm, em, IN.worldPos, normalize(IN.worldNormal), fade);
             }
             #ifndef UNITY_COLORSPACE_GAMMA
             c = GammaToLinearSpace(c);
@@ -168,6 +235,7 @@ Shader "BlossomRally/VertexColorWind"
             o.Albedo = c;
             o.Metallic = 0;
             o.Smoothness = sm;
+            o.Emission = em;
             o.Alpha = 1;
         }
         ENDCG

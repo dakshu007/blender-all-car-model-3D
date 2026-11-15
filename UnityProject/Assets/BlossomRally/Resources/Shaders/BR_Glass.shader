@@ -6,6 +6,7 @@
 //      _WipeTex  R = windscreen dirt (wiper arcs are cleaned by the script), G = freshly wiped (rain drops gone)
 //      _CrackTex R = crack lines (painted by the damage script)
 //  * _Rain: rain drops on the glass (hidden where the wipers just passed)
+// Clear reflections (Medium+, global _BR_GfxQ): the outside faces add a sharp reflection-probe layer with fresnel.
 // Two passes: the inside faces (seen from the cockpit) show only dirt / cracks / drops, so the cockpit view is
 // not darkened by the tint; the outside faces show tint + everything.
 Shader "BlossomRally/Glass"
@@ -38,12 +39,14 @@ Shader "BlossomRally/Glass"
     float4 _ScreenU;
     float4 _ScreenN;
     float4x4 _CarW2L;
+    float _BR_GfxQ;
 
     struct Input
     {
         float3 viewDir;
         float3 worldNormal;
         float3 worldPos;
+        float3 worldRefl;
     };
 
     // dirt amount, crack amount and rain-drop amount at this point of the glass
@@ -109,6 +112,11 @@ Shader "BlossomRally/Glass"
             o.Metallic = 0.1;
             o.Smoothness = lerp(_Glossiness, 0.3, saturate(dirt * 1.5)) ;
             o.Alpha = saturate(max(_Color.a + fres * 0.15, dirt * 0.92) + crack * 0.5 + drops * 0.12);
+            if (_BR_GfxQ > 0.5)
+            {
+                half4 rp = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, IN.worldRefl, 0.0);
+                o.Emission = DecodeHDR(rp, unity_SpecCube0_HDR) * ((0.06 + fres * 0.9) * 0.6 * (1.0 - saturate(dirt * 1.5)));
+            }
         }
         ENDCG
     }

@@ -83,6 +83,8 @@ namespace BlossomRally
         static readonly int IdDetail = Shader.PropertyToID("_BR_DetailAmount");
         static readonly int IdDetailDist = Shader.PropertyToID("_BR_DetailDist");
         static readonly int IdNoise = Shader.PropertyToID("_BR_Noise");
+        static readonly int IdGfxQ = Shader.PropertyToID("_BR_GfxQ");
+        static readonly int IdSkyQ = Shader.PropertyToID("_BR_SkyQ");
 
         void Awake()
         {
@@ -131,14 +133,20 @@ namespace BlossomRally
             if (water != null) water.ApplyQuality();
         }
 
+        static readonly float[] DetailDistQ = { 25f, 25f, 38f, 52f };
+
         void ApplyGlobals()
         {
             int q = GraphicsFX.Q;
             // procedural detail on stone / tiles / wood / plaster up close (BR_VertexColorWind)
             float amount = q < 1 ? 0f : (q == 1 ? 0.75f : 1f);
-            float dist = q < 1 ? 1f : new[] { 25f, 25f, 38f, 52f }[q];
+            float dist = q < 1 ? 1f : DetailDistQ[q];
             Shader.SetGlobalFloat(IdDetail, amount);
             Shader.SetGlobalFloat(IdDetailDist, dist);
+            // material extras (car clear coat, glass reflections, water glitter): -1 / 0 = off (Low stays as it was)
+            Shader.SetGlobalFloat(IdGfxQ, q);
+            // sky: 0 = original, 1 = scattering + sun / moon discs + more stars, 2 = + lit clouds, cirrus, milky way
+            Shader.SetGlobalFloat(IdSkyQ, q < 1 ? 0f : (q == 1 ? 1f : 2f));
         }
 
         void LateUpdate()
