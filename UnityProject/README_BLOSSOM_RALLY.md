@@ -101,6 +101,18 @@ Clouds cast drifting shadows across the valley. Changes fade over about 2.5 seco
 
 ## What's new in this version
 
+**0.12.0 (Open-world gameplay).**
+- **Get out and walk** (F), and interact with the world (E).
+- Earn ¥ from **70 jobs** and rally prizes.
+- **Buy cars** at the Jade Motors showroom and **bikes** at Sea Breeze Scooters.
+- Explore **9 enterable tea houses, temples and shops**.
+- Ride **6 motorbikes**.
+- A **living world** with people and traffic.
+- **Cinematic graphics** on High and Ultra.
+- Autosave.
+
+See `Documentation/OPEN_WORLD_GAMEPLAY.md` for the controls and full feature list.
+
 **0.11.0**
 * **12 new cars** (21 in total), each tuned for its terrain:
   * Mountains: Talus Crag trail 4x4, Bramble Wagon 84 retro 4x4.
