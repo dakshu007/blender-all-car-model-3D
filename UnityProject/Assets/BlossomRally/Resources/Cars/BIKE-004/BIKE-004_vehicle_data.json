@@ -1,0 +1,176 @@
+{
+  "car_id": "BIKE-004",
+  "display_name": "Dune Hare 450",
+  "vehicle_class": "Enduro",
+  "fbx": "BIKE-004_Export.fbx",
+  "root": "BIKE-004_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.66858,
+      0.005
+    ],
+    "size": [
+      0.84,
+      1.33704,
+      2.20988
+    ]
+  },
+  "triangles": 8686,
+  "wheels": {
+    "F": {
+      "transform": "BIKE-004_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.74,
+        0.37
+      ],
+      "unity_local_position": [
+        0.0,
+        0.37,
+        0.74
+      ],
+      "radius": 0.3699,
+      "width": 0.09,
+      "steer": true,
+      "drive": false
+    },
+    "R": {
+      "transform": "BIKE-004_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.74,
+        0.36
+      ],
+      "unity_local_position": [
+        0.0,
+        0.36,
+        -0.74
+      ],
+      "radius": 0.3599,
+      "width": 0.135,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "F",
+      "transform": "BIKE-004_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.74,
+        0.37
+      ],
+      "unity_local_position": [
+        0.0,
+        0.37,
+        0.74
+      ],
+      "radius": 0.3699,
+      "width": 0.09,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "R",
+      "transform": "BIKE-004_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.74,
+        0.36
+      ],
+      "unity_local_position": [
+        0.0,
+        0.36,
+        -0.74
+      ],
+      "radius": 0.3599,
+      "width": 0.135,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 1.48,
+  "track": null,
+  "two_wheeler": true,
+  "steering_wheel": null,
+  "colliders": [
+    {
+      "name": "BIKE-004_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.585,
+        0.0
+      ],
+      "unity_size": [
+        0.42,
+        0.73,
+        1.73
+      ]
+    }
+  ],
+  "textures": [
+    "BIKE-004_BaseColor.png"
+  ],
+  "materials": [
+    "M_BIKE-004_Accent",
+    "M_BIKE-004_Paint",
+    "M_BIKE-004_Plate",
+    "M_BIKE-004_Rim",
+    "M_BIKE-004_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-004",
+    "M_Trim_Fork_BIKE-004",
+    "M_Trim_Frame_BIKE-004",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    0.0,
+    1.62,
+    0.02
+  ],
+  "hood_cam": [
+    0.0,
+    1.32,
+    0.3
+  ],
+  "rider_seat": [
+    0.0,
+    0.96,
+    -0.14
+  ],
+  "rider_grip": [
+    0.3473,
+    1.2962,
+    0.2252
+  ],
+  "rider_peg": [
+    0.135,
+    0.4,
+    -0.24
+  ],
+  "steer_rake": 27.0,
+  "fork": {
+    "transform": "BIKE-004_Fork",
+    "unity_pivot": [
+      0.0,
+      1.18973,
+      0.32233
+    ],
+    "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"
+  }
+}

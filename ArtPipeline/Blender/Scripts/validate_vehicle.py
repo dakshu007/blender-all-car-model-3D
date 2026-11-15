@@ -25,6 +25,9 @@ import pipeline_common as pc  # noqa: E402
 # ranges cover the classic rally cars and the SUVs / trucks / buggy of CAR-020..031 (roof racks, tents, wide trophy truck)
 DIM_RANGE = {"length": (3.0, 6.0), "width": (1.4, 2.6), "height": (0.9, 2.6)}
 TRI_BUDGET = (15000, 35000)
+# two-wheelers (bikes/build_bike.py: root "two_wheeler"): panniers / top box / wide bars included
+BIKE_DIM_RANGE = {"length": (1.6, 2.7), "width": (0.5, 1.2), "height": (0.9, 1.7)}
+BIKE_TRI_BUDGET = (4000, 20000)
 PIVOT_TOL = 0.005
 ROUNDTRIP_TOL = 0.002
 
@@ -119,8 +122,9 @@ def main():
     K.add("forward axis documented on root", bool(root and root.get("forward_axis")),
           str(root.get("forward_axis")) if root else "missing")
 
+    bike = bool(root and root.get("two_wheeler"))
     wheel_pos = {}
-    for slot in pc.WHEEL_SLOTS:
+    for slot in pc.wheel_slots(root):
         piv = bpy.data.objects.get(f"{car}_Wheel_{slot}")
         if piv is None:
             not_ready = root is not None and root.get(f"wheel_{slot}_not_ready")
@@ -131,16 +135,20 @@ def main():
         off = (c - piv.matrix_world.translation).length if c else 1e9
         K.add(f"wheel {slot} pivot at axle centre", off < PIVOT_TOL, f"offset {off * 1000:.2f} mm")
         p = piv.matrix_world.translation
-        want_x = -1 if slot.endswith("L") else 1
         want_y = 1 if slot.startswith("F") else -1
-        K.add(f"wheel {slot} on correct corner (+Y fwd, -X left)",
-              (p.x * want_x > 0) and (p.y * want_y > 0), f"({p.x:.3f}, {p.y:.3f}, {p.z:.3f})")
+        if bike:
+            K.add(f"wheel {slot} on the centre line (+Y fwd)", abs(p.x) < 1e-4 and p.y * want_y > 0,
+                  f"({p.x:.3f}, {p.y:.3f}, {p.z:.3f})")
+        else:
+            want_x = -1 if slot.endswith("L") else 1
+            K.add(f"wheel {slot} on correct corner (+Y fwd, -X left)",
+                  (p.x * want_x > 0) and (p.y * want_y > 0), f"({p.x:.3f}, {p.y:.3f}, {p.z:.3f})")
         wheel_pos[slot] = list(p)
 
     bb = pc.world_bbox(meshes)
     size = bb["size"]
     dims = {"width": size[0], "length": size[1], "height": size[2]}
-    for k, (lo, hi) in DIM_RANGE.items():
+    for k, (lo, hi) in (BIKE_DIM_RANGE if bike else DIM_RANGE).items():
         K.add(f"{k} plausible", lo <= dims[k] <= hi, f"{dims[k]:.3f} m (range {lo}-{hi})")
     K.add("sits on ground plane", abs(bb["min"][2]) < 0.01, f"min z {bb['min'][2]:.4f}")
 
@@ -171,8 +179,15 @@ def main():
     K.add("no hidden objects in export set", not hidden, ", ".join(hidden) or "none", severity="warn")
 
     tris = sum(pc.mesh_triangle_count(o.data) for o in meshes)
-    K.add("triangle count recorded / within budget", TRI_BUDGET[0] <= tris <= TRI_BUDGET[1],
-          f"{tris} tris (target {TRI_BUDGET[0]}-{TRI_BUDGET[1]})", severity="warn")
+    tb = BIKE_TRI_BUDGET if bike else TRI_BUDGET
+    K.add("triangle count recorded / within budget", tb[0] <= tris <= tb[1],
+          f"{tris} tris (target {tb[0]}-{tb[1]})", severity="warn")
+    if bike:
+        fork = bpy.data.objects.get(f"{car}_Fork")
+        K.add("fork object (steers) exists", fork is not None and fork.type == "MESH", f"{car}_Fork")
+        for key in ("driver_eye", "hood_cam", "rider_seat", "rider_grip", "rider_peg", "steer_rake"):
+            K.add(f"root anchor {key}", key in root.keys(), str(list(root[key])) if key in root.keys() and key != "steer_rake"
+                  else str(root.get(key)))
     coll_col = bpy.data.collections.get(f"{car}_Collision")
     K.add("collision proxies present (separate collection)",
           bool(coll_col and any(o.type == "MESH" for o in coll_col.all_objects)),

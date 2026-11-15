@@ -1,0 +1,60 @@
+{
+  "car_id": "BIKE-002",
+  "tool": "export_vehicle_fbx.py",
+  "generated_utc": "2026-11-15T05:58:54+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Working/BIKE-002_Working_v001.blend",
+  "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_Export.fbx",
+  "fbx_size_bytes": 199532,
+  "object_count": 13,
+  "objects": [
+    "BIKE-002_Body",
+    "BIKE-002_Exterior",
+    "BIKE-002_Fork",
+    "BIKE-002_Frame",
+    "BIKE-002_Lights",
+    "BIKE-002_Root",
+    "BIKE-002_Wheel_F",
+    "BIKE-002_Wheel_F_Rim",
+    "BIKE-002_Wheel_F_Tire",
+    "BIKE-002_Wheel_R",
+    "BIKE-002_Wheel_R_Rim",
+    "BIKE-002_Wheel_R_Tire",
+    "BIKE-002_Wheels"
+  ],
+  "triangles": 7138,
+  "textures_copied": [
+    "BIKE-002_BaseColor.png"
+  ],
+  "settings": {
+    "use_selection": true,
+    "object_types": [
+      "EMPTY",
+      "MESH"
+    ],
+    "axis_forward": "Z",
+    "axis_up": "Y",
+    "bake_space_transform": false,
+    "apply_unit_scale": true,
+    "apply_scale_options": "FBX_SCALE_UNITS",
+    "global_scale": 1.0,
+    "use_mesh_modifiers": true,
+    "mesh_smooth_type": "FACE",
+    "use_tspace": false,
+    "use_custom_props": true,
+    "add_leaf_bones": false,
+    "bake_anim": false,
+    "path_mode": "STRIP",
+    "embed_textures": false,
+    "colors_type": "NONE"
+  },
+  "actions": [
+    "exported 13 objects -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_Export.fbx",
+    "vehicle data -> /home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_vehicle_data.json"
+  ],
+  "warnings": []
+}

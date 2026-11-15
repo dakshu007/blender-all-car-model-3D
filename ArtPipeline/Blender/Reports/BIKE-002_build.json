@@ -1,0 +1,240 @@
+{
+  "car_id": "BIKE-002",
+  "display_name": "Mantis 750",
+  "tool": "bikes/build_bike.py",
+  "generated_utc": "2026-11-15T05:56:47+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "saved_file": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Working/BIKE-002_Working_v001.blend",
+  "kind": "naked",
+  "bbox": {
+    "min": [
+      -0.4099999964237213,
+      -1.0219999551773071,
+      0.0
+    ],
+    "max": [
+      0.4099999964237213,
+      1.0099999904632568,
+      1.2269200086593628
+    ],
+    "size": [
+      0.8199999928474426,
+      2.0320000648498535,
+      1.2269200086593628
+    ],
+    "center": [
+      0.0,
+      -0.0059999823570251465,
+      0.6134600043296814
+    ]
+  },
+  "total_tris": 7138,
+  "wheels": {
+    "F": {
+      "blender": [
+        0.0,
+        0.71,
+        0.3
+      ],
+      "unity": [
+        0.0,
+        0.3,
+        0.71
+      ]
+    },
+    "R": {
+      "blender": [
+        0.0,
+        -0.71,
+        0.312
+      ],
+      "unity": [
+        0.0,
+        0.312,
+        -0.71
+      ]
+    }
+  },
+  "anchors": {
+    "rider_grip": [
+      0.3173,
+      0.2959,
+      1.0238
+    ],
+    "rider_peg": [
+      0.145,
+      -0.3,
+      0.36
+    ],
+    "rider_seat": [
+      0.0,
+      -0.24,
+      0.84
+    ],
+    "driver_eye": [
+      0.0,
+      0.0,
+      1.45
+    ],
+    "hood_cam": [
+      0.0,
+      0.28,
+      1.2
+    ]
+  },
+  "materials": [
+    "M_BIKE-002_Accent",
+    "M_BIKE-002_Paint",
+    "M_BIKE-002_Plate",
+    "M_BIKE-002_Rim",
+    "M_BIKE-002_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-002",
+    "M_Trim_Fork_BIKE-002",
+    "M_Trim_Frame_BIKE-002",
+    "M_Trim_Grey"
+  ],
+  "objects": [
+    {
+      "name": "BIKE-002_Body",
+      "type": "MESH",
+      "parent": "BIKE-002_Root",
+      "tris": 352,
+      "materials": [
+        "M_BIKE-002_Paint"
+      ]
+    },
+    {
+      "name": "BIKE-002_Exterior",
+      "type": "EMPTY",
+      "parent": "BIKE-002_Root",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "BIKE-002_Fork",
+      "type": "MESH",
+      "parent": "BIKE-002_Root",
+      "tris": 1192,
+      "materials": [
+        "M_Trim_Fork_BIKE-002",
+        "M_Trim_Black",
+        "M_Trim_Alu",
+        "M_Trim_Grey",
+        "M_BIKE-002_Paint",
+        "M_Chrome",
+        "M_Light_Head",
+        "M_Light_Indicator"
+      ]
+    },
+    {
+      "name": "BIKE-002_Frame",
+      "type": "MESH",
+      "parent": "BIKE-002_Exterior",
+      "tris": 1710,
+      "materials": [
+        "M_Trim_Frame_BIKE-002",
+        "M_Trim_Engine_BIKE-002",
+        "M_Trim_Alu",
+        "M_Trim_Black",
+        "M_Trim_Grey",
+        "M_BIKE-002_Accent",
+        "M_Chrome",
+        "M_BIKE-002_Seat",
+        "M_BIKE-002_Plate"
+      ]
+    },
+    {
+      "name": "BIKE-002_Lights",
+      "type": "MESH",
+      "parent": "BIKE-002_Root",
+      "tris": 92,
+      "materials": [
+        "M_Light_Tail",
+        "M_Trim_Black",
+        "M_Light_Indicator"
+      ]
+    },
+    {
+      "name": "BIKE-002_Root",
+      "type": "EMPTY",
+      "parent": null,
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "BIKE-002_Wheel_F",
+      "type": "EMPTY",
+      "parent": "BIKE-002_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "BIKE-002_Wheel_F_Rim",
+      "type": "MESH",
+      "parent": "BIKE-002_Wheel_F",
+      "tris": 1280,
+      "materials": [
+        "M_BIKE-002_Rim",
+        "M_Trim_Alu",
+        "M_Brake_Disc",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "BIKE-002_Wheel_F_Tire",
+      "type": "MESH",
+      "parent": "BIKE-002_Wheel_F",
+      "tris": 720,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "BIKE-002_Wheel_R",
+      "type": "EMPTY",
+      "parent": "BIKE-002_Wheels",
+      "tris": 0,
+      "materials": []
+    },
+    {
+      "name": "BIKE-002_Wheel_R_Rim",
+      "type": "MESH",
+      "parent": "BIKE-002_Wheel_R",
+      "tris": 1072,
+      "materials": [
+        "M_BIKE-002_Rim",
+        "M_Trim_Alu",
+        "M_Brake_Disc",
+        "M_Trim_Grey"
+      ]
+    },
+    {
+      "name": "BIKE-002_Wheel_R_Tire",
+      "type": "MESH",
+      "parent": "BIKE-002_Wheel_R",
+      "tris": 720,
+      "materials": [
+        "M_Tire_Rubber"
+      ]
+    },
+    {
+      "name": "BIKE-002_Wheels",
+      "type": "EMPTY",
+      "parent": "BIKE-002_Root",
+      "tris": 0,
+      "materials": []
+    }
+  ]
+}

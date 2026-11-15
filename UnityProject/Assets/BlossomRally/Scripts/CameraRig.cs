@@ -11,6 +11,9 @@
 //  * gravel / dirt (and a little grass): subtle high-frequency surface vibration
 // ReducedMotion (JuiceSettings, PlayerPrefs) turns off shakes, rolls, vibration and jolts and softens dips.
 // Set externalControl to hand the camera to replay / photo mode / the finish-line orbit.
+// On foot (person != null): third-person orbit around the person (mouse / right stick), over-the-shoulder offset,
+// sphere-cast collision so it never clips into walls, auto-recentre behind a moving person, near / far (Camera key);
+// every switch between the car view and the on-foot view is blended smoothly.
 using UnityEngine;
 
 namespace BlossomRally
@@ -25,6 +28,14 @@ namespace BlossomRally
         public bool showroom;              // slow orbit in the car-select screen
         /// <summary>When true the rig does nothing (replay / photo mode drive the camera).</summary>
         public bool externalControl;
+        /// <summary>On foot: orbit this person instead of following the car (set by the on-foot module).</summary>
+        public Transform person;
+        /// <summary>On foot: eye height of the person (m), whether it moves / sprints and where it faces (yaw).</summary>
+        [System.NonSerialized] public float personEye = 1.55f;
+        [System.NonSerialized] public bool personMoving, personSprint, lookInput;
+        [System.NonSerialized] public float personHeading;
+        /// <summary>On foot: far orbit distance (Camera key toggles).</summary>
+        public bool footFar;
 
         /// <summary>Accessibility: no shakes / rolls / vibration / jolts (stored in PlayerPrefs, same as JuiceSettings.ReducedMotion).</summary>
         public static bool ReducedMotion
@@ -61,6 +72,16 @@ namespace BlossomRally
         float[] prevSpring = new float[0];
         float noiseT;
         ArcadeCar lastTarget;
+
+        // on foot
+        bool footActive;
+        float footYaw, footPitch = 12f, footCur = 3.5f, footIdle;
+        Vector3 footPivot, footPivotVel;
+        // car <-> foot view blend
+        Vector3 blendPos;
+        Quaternion blendRot = Quaternion.identity;
+        float blendT = 1f;
+        const float BlendDur = 0.9f;
 
         void Awake()
         {
@@ -136,6 +157,7 @@ namespace BlossomRally
 
         public void Cycle()
         {
+            if (person != null) { footFar = !footFar; return; }
             mode = (CamMode)(((int)mode + 1) % 4);
         }
 
@@ -180,8 +202,18 @@ namespace BlossomRally
         void LateUpdate()
         {
             if (externalControl) { hasBase = false; return; }
-            if (target == null) return;
             if (cam == null) cam = GetComponent<Camera>();
+            bool foot = person != null && !showroom;
+            if (foot != footActive)
+            {
+                footActive = foot;
+                blendPos = transform.position;
+                blendRot = transform.rotation;
+                blendT = 0f;
+                if (foot) InitFoot();
+            }
+            if (foot) { FootUpdate(); return; }
+            if (target == null) return;
             Transform t = target.transform;
             Rigidbody rb = target.Body;
             Vector3 v = rb != null ? rb.GetVelocity() : Vector3.zero;
@@ -238,17 +270,18 @@ namespace BlossomRally
                         float slipSide = moving ? Mathf.Clamp(target.SlipAngle / 30f, -1f, 1f) : 0f;
                         float swingTarget = slipSide * drift * 1.8f;
                         swing = Mathf.Lerp(swing, swingTarget, 1f - Mathf.Exp(-dt * 2.5f));
-                        rollTarget = reduced ? 0f : slipSide * drift * 3.5f;
+                        float bk = target.IsTwoWheeler ? 1f : 0f;   // motorbikes: lower, closer, bank a little with the lean
+                        rollTarget = reduced ? 0f : slipSide * drift * 3.5f - bk * target.Lean * 0.15f;
 
                         // smooth, speed-dependent follow distance
                         float tall = target.FrameExtra;   // 0 for the classic cars, ~0.4 m for SUVs / trucks
-                        float distTarget = 6.4f + Mathf.Clamp01(speed / 55f) * 1.9f + drift * 0.5f + airPull * 0.9f + tall * 1.6f;
+                        float distTarget = 6.4f + Mathf.Clamp01(speed / 55f) * 1.9f + drift * 0.5f + airPull * 0.9f + tall * 1.6f - bk * 1.5f;
                         followDist = Mathf.SmoothDamp(followDist, distTarget, ref distVel, 0.6f);
 
                         Vector3 right = Vector3.Cross(Vector3.up, smoothDir).normalized;
                         Vector3 desired = t.position - smoothDir * followDist + right * swing
-                                          + Vector3.up * (2.2f + Mathf.Clamp01(speed / 60f) * 0.4f + airPull * 0.45f + tall * 0.9f);
-                        Vector3 look = t.position + Vector3.up * (1.05f + tall * 0.7f) + flatV * (0.06f + 0.04f * drift);
+                                          + Vector3.up * (2.2f + Mathf.Clamp01(speed / 60f) * 0.4f + airPull * 0.45f + tall * 0.9f - bk * 0.55f);
+                        Vector3 look = t.position + Vector3.up * (1.05f + tall * 0.7f - bk * 0.1f) + flatV * (0.06f + 0.04f * drift);
                         // keep the camera out of hills and buildings
                         RaycastHit hit;
                         Vector3 dir = desired - look;
@@ -347,9 +380,74 @@ namespace BlossomRally
             // roll into the slide
             if (!reduced && Mathf.Abs(roll) > 1e-3f) outRot = outRot * Quaternion.Euler(0f, 0f, roll);
 
+            if (blendT < 1f)
+            {
+                blendT = Mathf.Min(1f, blendT + dt / BlendDur);
+                float e = blendT * blendT * (3f - 2f * blendT);
+                outPos = Vector3.Lerp(blendPos, outPos, e);
+                outRot = Quaternion.Slerp(blendRot, outRot, e);
+            }
             transform.SetPositionAndRotation(outPos, outRot);
             lastOutPos = transform.position;
             lastOutRot = transform.rotation;
+        }
+
+        // ---------------------------------------------------------------- on foot
+        void InitFoot()
+        {
+            Vector3 e = transform.eulerAngles;
+            footYaw = e.y;
+            footPitch = Mathf.Clamp(Mathf.DeltaAngle(0f, e.x), -5f, 35f);
+            footPivot = person.position + Vector3.up * personEye;
+            footPivotVel = Vector3.zero;
+            footCur = Mathf.Clamp(Vector3.Distance(transform.position, footPivot), 1.2f, 8f);
+            footIdle = 0f;
+        }
+
+        void FootUpdate()
+        {
+            float dt = Time.deltaTime;
+            Vector3 target = person.position + Vector3.up * personEye;
+            if ((target - footPivot).sqrMagnitude > 400f) { footPivot = target; footPivotVel = Vector3.zero; }   // teleport
+            if (dt > 0f)
+            {
+                footPivot = Vector3.SmoothDamp(footPivot, target, ref footPivotVel, 0.07f);
+                Vector2 look = lookInput ? InputReader.LookDelta(dt) : Vector2.zero;
+                if (look.sqrMagnitude > 1e-6f) footIdle = 0f; else footIdle += dt;
+                footYaw += look.x;
+                footPitch = Mathf.Clamp(footPitch - look.y, -40f, 70f);
+                if (personMoving && footIdle > 1.6f)
+                {
+                    float k = 1f - Mathf.Exp(-dt * (personSprint ? 1.6f : 0.9f));
+                    footYaw = Mathf.LerpAngle(footYaw, personHeading, k);
+                    footPitch = Mathf.Lerp(footPitch, 12f, k * 0.5f);
+                }
+            }
+            Quaternion rot = Quaternion.Euler(footPitch, footYaw, 0f);
+            float want = (footFar ? 5.6f : 3.6f) + (personSprint ? 0.5f : 0f);
+            Vector3 desired = footPivot + rot * new Vector3(0.38f, 0f, -want);
+            Vector3 dv = desired - footPivot;
+            float len = dv.magnitude;
+            Vector3 dn = len > 1e-4f ? dv / len : -transform.forward;
+            float allowed = len;
+            RaycastHit hit;
+            if (Physics.SphereCast(footPivot, 0.22f, dn, out hit, len, ~(1 << 2), QueryTriggerInteraction.Ignore))   // not the person (Ignore Raycast)
+                allowed = Mathf.Max(0.3f, hit.distance - 0.05f);
+            if (allowed < footCur) footCur = allowed;                      // obstruction: pull in at once
+            else if (dt > 0f) footCur = Mathf.MoveTowards(footCur, allowed, dt * (footCur > 4f ? 3f : 5f));
+            Vector3 pos = footPivot + dn * footCur;
+            if (dt > 0f) cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, personSprint ? 64f : 58f, 1f - Mathf.Exp(-dt * 3f));
+            if (blendT < 1f)
+            {
+                if (dt > 0f) blendT = Mathf.Min(1f, blendT + dt / BlendDur);
+                float e = blendT * blendT * (3f - 2f * blendT);
+                pos = Vector3.Lerp(blendPos, pos, e);
+                rot = Quaternion.Slerp(blendRot, rot, e);
+            }
+            transform.SetPositionAndRotation(pos, rot);
+            lastOutPos = pos;
+            lastOutRot = rot;
+            hasBase = false;               // the car view re-bases from here when the person gets back in
         }
 
         void SyncSprings()

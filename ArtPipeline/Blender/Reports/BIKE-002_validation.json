@@ -1,0 +1,284 @@
+{
+  "car_id": "BIKE-002",
+  "tool": "validate_vehicle.py",
+  "generated_utc": "2026-11-15T05:58:55+00:00",
+  "blender": {
+    "version": "5.0.1",
+    "build_hash": "a3db93c5b259",
+    "background": true
+  },
+  "status": "PASS",
+  "blend": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Working/BIKE-002_Working_v001.blend",
+  "fbx": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_Export.fbx",
+  "checks": [
+    {
+      "check": "export collection exists",
+      "status": "PASS",
+      "detail": "BIKE-002"
+    },
+    {
+      "check": "body object exists",
+      "status": "PASS",
+      "detail": "BIKE-002_Body"
+    },
+    {
+      "check": "root at origin, no rotation",
+      "status": "PASS",
+      "detail": "BIKE-002_Root"
+    },
+    {
+      "check": "forward axis documented on root",
+      "status": "PASS",
+      "detail": "+Y"
+    },
+    {
+      "check": "wheel F exists",
+      "status": "PASS",
+      "detail": "BIKE-002_Wheel_F"
+    },
+    {
+      "check": "wheel F pivot at axle centre",
+      "status": "PASS",
+      "detail": "offset 0.00 mm"
+    },
+    {
+      "check": "wheel F on the centre line (+Y fwd)",
+      "status": "PASS",
+      "detail": "(0.000, 0.710, 0.300)"
+    },
+    {
+      "check": "wheel R exists",
+      "status": "PASS",
+      "detail": "BIKE-002_Wheel_R"
+    },
+    {
+      "check": "wheel R pivot at axle centre",
+      "status": "PASS",
+      "detail": "offset 0.00 mm"
+    },
+    {
+      "check": "wheel R on the centre line (+Y fwd)",
+      "status": "PASS",
+      "detail": "(0.000, -0.710, 0.312)"
+    },
+    {
+      "check": "length plausible",
+      "status": "PASS",
+      "detail": "2.032 m (range 1.6-2.7)"
+    },
+    {
+      "check": "width plausible",
+      "status": "PASS",
+      "detail": "0.820 m (range 0.5-1.2)"
+    },
+    {
+      "check": "height plausible",
+      "status": "PASS",
+      "detail": "1.227 m (range 0.9-1.7)"
+    },
+    {
+      "check": "sits on ground plane",
+      "status": "PASS",
+      "detail": "min z 0.0000"
+    },
+    {
+      "check": "no zero-scale objects",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "no empty mesh objects",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "no missing material references",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "every mesh has a UV map",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "no missing texture images",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "texture paths are relative",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "check": "no duplicate / auto-suffixed names",
+      "status": "PASS",
+      "detail": "ok"
+    },
+    {
+      "check": "no hidden objects in export set",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "triangle count recorded / within budget",
+      "status": "PASS",
+      "detail": "7138 tris (target 4000-20000)"
+    },
+    {
+      "check": "fork object (steers) exists",
+      "status": "PASS",
+      "detail": "BIKE-002_Fork"
+    },
+    {
+      "check": "root anchor driver_eye",
+      "status": "PASS",
+      "detail": "[0.0, 0.0, 1.45]"
+    },
+    {
+      "check": "root anchor hood_cam",
+      "status": "PASS",
+      "detail": "[0.0, 0.28, 1.2]"
+    },
+    {
+      "check": "root anchor rider_seat",
+      "status": "PASS",
+      "detail": "[0.0, -0.24, 0.84]"
+    },
+    {
+      "check": "root anchor rider_grip",
+      "status": "PASS",
+      "detail": "[0.3173, 0.2959, 1.0238]"
+    },
+    {
+      "check": "root anchor rider_peg",
+      "status": "PASS",
+      "detail": "[0.145, -0.3, 0.36]"
+    },
+    {
+      "check": "root anchor steer_rake",
+      "status": "PASS",
+      "detail": "25.0"
+    },
+    {
+      "check": "collision proxies present (separate collection)",
+      "status": "PASS",
+      "detail": "BIKE-002_Collision"
+    },
+    {
+      "check": "export file exists",
+      "status": "PASS",
+      "detail": "/home/user/blender-all-car-model-3D/ArtPipeline/VehicleLibrary/BIKE-002/Export/BIKE-002_Export.fbx (199532 bytes)"
+    },
+    {
+      "check": "FBX contains every exported object",
+      "status": "PASS",
+      "detail": "all present"
+    },
+    {
+      "check": "FBX contains nothing extra",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "FBX round trip wheel F position",
+      "status": "PASS",
+      "detail": "delta 0.00 mm"
+    },
+    {
+      "check": "FBX round trip wheel R position",
+      "status": "PASS",
+      "detail": "delta 0.00 mm"
+    },
+    {
+      "check": "FBX triangle count matches",
+      "status": "PASS",
+      "detail": "7138 vs 7138"
+    },
+    {
+      "check": "raw FBX wheel F -> Unity position",
+      "status": "PASS",
+      "detail": "unity (0.0, 0.3, 0.71) (expected (0.0, 0.3, 0.71))"
+    },
+    {
+      "check": "raw FBX wheel F spin axis is lateral",
+      "status": "PASS",
+      "detail": "local X -> unity (1.0, -0.0, 0.0)"
+    },
+    {
+      "check": "raw FBX wheel R -> Unity position",
+      "status": "PASS",
+      "detail": "unity (0.0, 0.312, -0.71) (expected (0.0, 0.312, -0.71))"
+    },
+    {
+      "check": "raw FBX wheel R spin axis is lateral",
+      "status": "PASS",
+      "detail": "local X -> unity (1.0, -0.0, 0.0)"
+    }
+  ],
+  "dimensions_m": {
+    "width": 0.8199999928474426,
+    "length": 2.0320000648498535,
+    "height": 1.2269200086593628
+  },
+  "triangles": 7138,
+  "wheels": {
+    "F": [
+      0.0,
+      0.7099999785423279,
+      0.30000001192092896
+    ],
+    "R": [
+      0.0,
+      -0.7099999785423279,
+      0.31200000643730164
+    ]
+  },
+  "fbx_round_trip": {
+    "F": {
+      "blend": [
+        0.0,
+        0.71,
+        0.3
+      ],
+      "fbx_reimport": [
+        0.0,
+        0.71,
+        0.3
+      ],
+      "unity_expected": [
+        0.0,
+        0.3,
+        0.71
+      ],
+      "unity_from_raw_fbx": [
+        0.0,
+        0.3,
+        0.71
+      ]
+    },
+    "R": {
+      "blend": [
+        0.0,
+        -0.71,
+        0.312
+      ],
+      "fbx_reimport": [
+        0.0,
+        -0.71,
+        0.312
+      ],
+      "unity_expected": [
+        0.0,
+        0.312,
+        -0.71
+      ],
+      "unity_from_raw_fbx": [
+        0.0,
+        0.312,
+        -0.71
+      ]
+    }
+  }
+}

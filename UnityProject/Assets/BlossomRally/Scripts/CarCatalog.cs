@@ -1,4 +1,5 @@
-// CarCatalog.cs - the Blossom Rally cars (the original nine + twelve for the six-region world) and their handling.
+// CarCatalog.cs - the Blossom Rally cars (the original nine + twelve for the six-region world), the six
+// motorbikes (BIKE-001..006, CarSpec.twoWheeler) and their handling.
 //
 // The first constructor arguments (power, vmax, grip, driftGrip, yaw) are the garage display stats.
 // The physics personality lives in the chained setters: engine (torque curve), gearbox, chassis (mass
@@ -71,6 +72,15 @@ namespace BlossomRally
         public string soundClass;            // engine sound family (null = derived from carClass)
         public float upshiftMargin = 250f;   // full-throttle auto upshift this far below the limiter (wheel-speed rpm):
                                              // low-revving engines need more, or wheel slip on a snowy climb holds them in 1st
+        // ---- two-wheelers (motorbikes): VehicleDynamics balances them upright and leans the model visually
+        public bool twoWheeler;              // THE bike flag: 2 wheels (slots F / R), balance assist, lean, rider
+        public float leanMax = 46f;          // deg: deepest visual lean in a corner
+        public float wheelie = 0.5f;         // 0..1: how high (and how eagerly) it lifts the front on a launch
+        public float stoppie = 0.4f;         // 0..1: rear lift under hard braking
+        public string shop;                  // showroom id that sells it ("coast_bikes" for every bike)
+
+        /// <summary>True for motorbikes (two wheels, balance assist, rider).</summary>
+        public bool IsBike { get { return twoWheeler; } }
 
         public CarSpec(string id, string name, string cls, string era, Drive d, float mass, float power, float vmax,
                        float grip, float driftGrip, float yaw)
@@ -128,6 +138,13 @@ namespace BlossomRally
 
         public CarSpec Sound(string family) { soundClass = family; return this; }
 
+        /// <summary>Marks a two-wheeler: lean limit (deg), wheelie and stoppie eagerness (0..1).</summary>
+        public CarSpec Bike(float lean, float wheelieAmount, float stoppieAmount, string showroom = "coast_bikes")
+        {
+            twoWheeler = true; leanMax = lean; wheelie = wheelieAmount; stoppie = stoppieAmount; shop = showroom;
+            return this;
+        }
+
         public CarSpec Brakes(float front, float handbrake)
         {
             brakeTorque = front; handbrakeTorque = handbrake;
@@ -146,7 +163,8 @@ namespace BlossomRally
             }
         }
 
-        /// <summary>Engine sound family: "Group B", "Group 4", "Classic RWD" or "Electric".</summary>
+        /// <summary>Engine sound family: "Group B", "Group 4", "Classic RWD", "Electric" or a bike family
+        /// ("Bike Sport", "Bike Twin", "Bike Single", "Scooter", "V-Twin").</summary>
         public string SoundClass { get { return !string.IsNullOrEmpty(soundClass) ? soundClass : CarCatalog.SoundFor(carClass); } }
 
         /// <summary>Normalised engine torque (0..1) at an rpm, full throttle.</summary>
@@ -184,6 +202,12 @@ namespace BlossomRally
         public WheelData[] wheel_list;
         public float[] driver_eye;   // optional (CAR-020+): driver's eye point, car space
         public float[] hood_cam;     // optional (CAR-020+): bonnet camera point, car space
+        // two-wheelers (BIKE-001+): rider anchors (car space) and the steering axis of the <ID>_Fork object
+        public bool two_wheeler;
+        public float steer_rake;     // deg from vertical (the top of the axis leans back)
+        public float[] rider_seat;   // where the rider's hips sit
+        public float[] rider_grip;   // right hand grip
+        public float[] rider_peg;    // right foot peg
     }
 
     public static class CarCatalog
@@ -197,6 +221,11 @@ namespace BlossomRally
                 case "Electric GT": return "Electric";
                 case "Rally Raid": case "Trophy Truck": case "Dune Buggy": case "Modern Rally": case "Snow Rally": return "Group B";
                 case "Trail 4x4": case "Overland": case "Retro 4x4": case "Luxury SUV": return "Classic RWD";
+                case "Sport Bike": return "Bike Sport";
+                case "Street Naked": case "Adventure Tourer": return "Bike Twin";
+                case "Enduro": return "Bike Single";
+                case "Retro Scooter": return "Scooter";
+                case "Cruiser": return "V-Twin";
                 default: return "Group 4";   // Coupe SUV, Super Saloon and anything new
             }
         }
@@ -326,6 +355,78 @@ namespace BlossomRally
                 .Chassis(0.52f, 0.58f, 1.15f, 35f).Tyres(1.0f, 1.0f, 0.70f, 0.70f, 0.45f)
                 .Suspension(0.13f, 1.05f, 0.85f).Character(0.9f, 0.62f, 0.5f)
                 .OffRoad(0.34f, 1.15f, 0.95f, 1.10f, 1.10f, 1.08f, 0.75f).Brakes(3800f, 3800f),
+
+            // ===================== motorbikes (BIKE-001..006): light, quick, fun - rear-wheel drive, mass incl. rider
+            //          Bike(lean limit deg, wheelie 0..1, stoppie 0..1)  - sold in the "coast_bikes" showroom
+            //          Brakes(front Nm, rear "handbrake" Nm: locks the rear for a sideways slide)
+            // Sport bike: screaming four, six gears, the fastest thing on two wheels - deep lean, eager wheelies
+            new CarSpec("BIKE-001", "Lingyun SR", "Sport Bike", "full-fairing sport bike", Drive.RWD, 270f, 5400f, 245f, 1.10f, 0.62f, 2.4f)
+                .Engine(112f, 10500f, 13500f, 0.45f, 0.82f, 0f, 6500f).Gearbox(6.4f, 0.06f, 2.6f, 1.95f, 1.55f, 1.3f, 1.12f, 0.98f)
+                .Chassis(0.52f, 0.62f, 0.85f, 28f).Tyres(1.0f, 1.0f, 0f)
+                .Suspension(0.06f, 0f, 0f).Character(0.8f, 0.22f, 0.2f)
+                .OffRoad(0.16f, 1.0f, 1.06f, 0.82f, 0.62f, 0.70f, 1.2f).Brakes(760f, 900f).Bike(50f, 0.8f, 0.5f),
+            // Street naked: punchy triple, upright bars, the best all-rounder in the city
+            new CarSpec("BIKE-002", "Mantis 750", "Street Naked", "street naked triple", Drive.RWD, 275f, 4350f, 215f, 1.08f, 0.62f, 2.4f)
+                .Engine(84f, 8000f, 11500f, 0.62f, 0.80f, 0f, 5200f).Gearbox(7.0f, 0.07f, 2.55f, 1.9f, 1.52f, 1.27f, 1.1f, 0.98f)
+                .Chassis(0.50f, 0.64f, 0.82f, 30f).Tyres(1.0f, 1.0f, 0f)
+                .Suspension(0.065f, 0f, 0f).Character(0.9f, 0.26f, 0.1f)
+                .OffRoad(0.17f, 1.0f, 1.04f, 0.86f, 0.66f, 0.74f, 1.15f).Brakes(720f, 900f).Bike(48f, 1.0f, 0.6f),
+            // Retro scooter: the city icon - automatic, nippy off the line, flicks through traffic, tops out early
+            new CarSpec("BIKE-003", "Peony 125", "Retro Scooter", "retro city scooter", Drive.RWD, 195f, 1270f, 105f, 1.02f, 0.62f, 2.4f)
+                .Engine(14f, 7000f, 9500f, 0.85f, 0.75f, 0f, 5600f).Gearbox(9.4f, 0.04f, 2.5f, 1.75f, 1.3f, 1.0f)
+                .Chassis(0.45f, 0.56f, 0.70f, 34f).Tyres(1.0f, 1.0f, 0f)
+                .Suspension(0.06f, 0f, 0f).Character(0.7f, 0.30f, 0f)
+                .OffRoad(0.12f, 0.9f, 1.0f, 0.80f, 0.60f, 0.62f, 1.3f).Brakes(380f, 520f).Bike(38f, 0.2f, 0.25f),
+            // Enduro: tall, light single on knobblies - mountains and desert, slides on dirt, wheelies on a whim
+            new CarSpec("BIKE-004", "Dune Hare 450", "Enduro", "enduro dirt bike", Drive.RWD, 210f, 2700f, 160f, 1.04f, 0.58f, 2.6f)
+                .Engine(58f, 7500f, 11000f, 0.68f, 0.80f, 0f, 5600f).Gearbox(9.4f, 0.05f, 2.4f, 1.8f, 1.45f, 1.2f, 1.02f, 0.9f)
+                .Chassis(0.47f, 0.70f, 0.78f, 32f).Tyres(1.0f, 1.02f, 0f)
+                .Suspension(0.09f, 0f, 0f).Character(1.1f, 0.28f, 0f)
+                .OffRoad(0.30f, 1.2f, 0.90f, 1.16f, 1.05f, 1.22f, 0.55f).Brakes(560f, 640f).Bike(44f, 1.0f, 0.4f),
+            // Adventure tourer: big twin, long travel, crash bars and panniers - snow and mountain passes in comfort
+            new CarSpec("BIKE-005", "Snow Leopard 1100", "Adventure Tourer", "adventure tourer", Drive.RWD, 330f, 4600f, 205f, 1.05f, 0.64f, 2.3f)
+                .Engine(112f, 7000f, 10000f, 0.70f, 0.78f, 0f, 4600f).Gearbox(6.2f, 0.07f, 2.55f, 1.85f, 1.48f, 1.24f, 1.07f, 0.95f)
+                .Chassis(0.50f, 0.70f, 0.95f, 30f).Tyres(1.0f, 1.0f, 0f)
+                .Suspension(0.085f, 0f, 0f).Character(0.9f, 0.32f, 0.1f)
+                .OffRoad(0.24f, 1.15f, 0.98f, 1.08f, 1.14f, 1.06f, 0.75f).Brakes(800f, 900f).Bike(44f, 0.5f, 0.4f),
+            // Cruiser: long, low and chrome - lazy V-twin torque, relaxed lean, a rumble you feel in your chest
+            new CarSpec("BIKE-006", "Red Lantern 1800", "Cruiser", "V-twin cruiser", Drive.RWD, 380f, 4400f, 180f, 1.02f, 0.66f, 2.2f)
+                .Engine(150f, 3200f, 5800f, 0.80f, 0.78f, 0f, 2400f).Gearbox(4.1f, 0.10f, 2.7f, 1.85f, 1.42f, 1.17f, 1.0f, 0.88f)
+                .Chassis(0.47f, 0.58f, 1.15f, 30f).Tyres(1.0f, 1.0f, 0f)
+                .Suspension(0.07f, 0f, 0f).Character(0.8f, 0.34f, 0f)
+                .OffRoad(0.15f, 1.1f, 1.02f, 0.84f, 0.64f, 0.68f, 1.15f).Brakes(820f, 1000f).Bike(34f, 0.15f, 0.2f),
         };
+
+        static readonly System.Collections.Generic.List<CarSpec> bikes = new System.Collections.Generic.List<CarSpec>();
+
+        /// <summary>All two-wheelers in catalogue order (the economy module lists these in "coast_bikes").</summary>
+        public static System.Collections.Generic.List<CarSpec> Bikes
+        {
+            get
+            {
+                if (bikes.Count == 0) foreach (var c in Cars) if (c.twoWheeler) bikes.Add(c);
+                return bikes;
+            }
+        }
+
+        /// <summary>Find a car or bike by id (null if unknown).</summary>
+        public static CarSpec Find(string id)
+        {
+            foreach (var c in Cars) if (c.id == id) return c;
+            return null;
+        }
+
+        /// <summary>Index in Cars (for GameManager / garage), -1 if unknown.</summary>
+        public static int IndexOf(string id)
+        {
+            for (int i = 0; i < Cars.Length; i++) if (Cars[i].id == id) return i;
+            return -1;
+        }
+
+        public static bool IsBike(string id)
+        {
+            var c = Find(id);
+            return c != null && c.twoWheeler;
+        }
     }
 }

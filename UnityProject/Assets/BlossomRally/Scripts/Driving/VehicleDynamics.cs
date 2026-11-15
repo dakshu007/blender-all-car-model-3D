@@ -16,6 +16,17 @@
 //   6. assists    - drift stabiliser (holds the angle the inputs ask for), spin protection beyond the drift
 //                   window, anti-roll-over on kerbs, air control and soft landings
 //   7. telemetry  - slip / drift state / rpm / gear / take-off and landing moments
+//
+// Two-wheelers (CarSpec.twoWheeler, wheels F / R on the centre line) use the very same model with a few gated
+// changes, so every four-wheeled car behaves exactly as before:
+//   * balance assist: a roll PD controller keeps the physics body upright (it never falls over); side forces act
+//     at the centre-of-mass height (no roll torque from cornering) and drive / brake forces at half of it
+//   * the lean is VISUAL: Lean (deg) follows the steady-turn lean atan(v * yawRate / g) at speed and the steering
+//     at walking pace, RiderLean counter-leans the rider at low speed and hangs off at speed (ArcadeCar tilts the
+//     model about the tyre contact line, BikeRider adds the rider's lean)
+//   * Wheelie (deg, + nose up / - stoppie): a sprung visual pitch from full-throttle launches in the low gears and
+//     hard braking (eagerness CarSpec.wheelie / stoppie); steering authority drops while the front is up
+//   * Crash(severity): a short decaying wobble with a throttle cut, then it simply rides on (no falling, no gore)
 using UnityEngine;
 
 namespace BlossomRally
@@ -95,6 +106,7 @@ namespace BlossomRally
         int drivenCount;
         Vector3 frontMidLocal, rearMidLocal;
         float driveRadius = 0.31f;
+        bool bike;                                  // CarSpec.twoWheeler (gates every two-wheeler change)
 
         // per-step scratch
         float[] comp, compRate, vx, vy, tanA, muN, rK, tDrive, tBrake, fxAcc, fyAcc;
@@ -139,6 +151,16 @@ namespace BlossomRally
         public bool LandedThisStep { get; private set; }
         public float LandingAirTime { get; private set; }
         public float LandingImpactSpeed { get; private set; }
+        // two-wheelers (all 0 for cars)
+        /// <summary>Visual lean of the bike, degrees, + = leaning to the right (into a right-hand turn).</summary>
+        public float Lean { get; private set; }
+        /// <summary>Extra lean of the rider relative to the bike (degrees): counter-lean slow, hang-off fast.</summary>
+        public float RiderLean { get; private set; }
+        /// <summary>Visual pitch, degrees: + = wheelie (front up), - = stoppie (rear up).</summary>
+        public float Wheelie { get; private set; }
+        /// <summary>Crash wobble roll (degrees, decays to 0 within ~1.5 s).</summary>
+        public float Wobble { get; private set; }
+        public bool IsTwoWheeler { get { return bike; } }
 
         public string GearLabel { get { return Reversing ? "R" : Gear.ToString(); } }
         /// <summary>This car's suspension attach height above the wheel centre at rest (m).</summary>
@@ -153,12 +175,14 @@ namespace BlossomRally
         bool tookOff;
         Vector3 prevFlatVel, prevVel, lastAirVel;
         bool havePrev;
+        float wheelieVel, wheelieHold, stoppieHold, wobbleTime, wobbleDur = 1f, wobbleAmp, wobblePhase;
 
         public void Init(CarSpec s, DriveWheel[] w, float bodyMass)
         {
             spec = s;
             wheels = w;
             mass = bodyMass;
+            bike = s.twoWheeler;
             int n = w.Length;
             restComp = spec.rideComp;
             susLen = spec.susTravel > 0.05f ? spec.susTravel : SusLen;
@@ -238,6 +262,7 @@ namespace BlossomRally
             float yaw = s.mass * a * b * 1.05f * s.inertia;
             float pitch = yaw * 1.1f;
             float roll = s.mass * (track * track / 12f + 0.06f) * 1.4f;
+            if (s.twoWheeler) roll = s.mass * 0.30f;     // rider + bike about the contact line, held by the balance assist
             inertia = new Vector3(pitch, yaw, roll);
         }
 
@@ -268,7 +293,21 @@ namespace BlossomRally
             limiterCut = 0f;
             Reversing = false;
             Gear = 1;
+            Lean = RiderLean = Wheelie = Wobble = 0f;
+            wheelieVel = wheelieHold = stoppieHold = wobbleTime = 0f;
             if (wheels != null) foreach (var w in wheels) w.angularVelocity = 0f;
+        }
+
+        /// <summary>Two-wheelers: a hard hit (severity 0..1) starts a short wobble; cars ignore it.</summary>
+        public void Crash(float severity)
+        {
+            if (!bike) return;
+            severity = Mathf.Clamp01(severity);
+            float amp = 9f + 16f * severity;
+            if (wobbleTime > 0f && amp < Wobble + 3f) return;
+            wobbleAmp = amp;
+            wobbleDur = wobbleTime = 0.9f + 0.7f * severity;
+            wobblePhase = 0f;
         }
 
         // --------------------------------------------------------------------------------------------- step
@@ -334,6 +373,7 @@ namespace BlossomRally
             float driveCmd = Reversing ? Brake : Throttle;
             float brakeCmd = Reversing ? Throttle : Brake;
             if (Reversing && -ForwardSpeed > 9f) driveCmd = 0f;   // reverse speed limit ~32 km/h
+            if (bike && wobbleTime > 0f) driveCmd *= 0.45f;       // crash wobble: the rider rolls off, then picks it up
 
             // ---------------------------------------------------------------- 2. gearbox
             UpdateGearbox(dt, driveCmd, input.shift);
@@ -362,6 +402,7 @@ namespace BlossomRally
             }
             float maxLock = spec.maxSteer + 6f;
             SteerAngle = Mathf.Clamp(steerDeg, -maxLock, maxLock);
+            if (bike && Wheelie > 2f) SteerAngle *= Mathf.Lerp(1f, 0.4f, Mathf.Clamp01(Wheelie / 15f));   // front in the air
 
             // ---------------------------------------------------------------- 4. suspension
             int n = wheels.Length;
@@ -510,7 +551,8 @@ namespace BlossomRally
                 }
                 Couple(!hbClutch);
             }
-            float mCorner = mass * 0.25f;
+            float mCorner = mass * (bike ? 0.5f : 0.25f);
+            float sideH = bike ? spec.cgHeight : ForceHeight, longH = bike ? spec.cgHeight * 0.5f : LongForceHeight;
             int dc = 0;
             float maxDrivenSlip = 0f, maxDrivenSigma = 0f;
             for (int i = 0; i < n; i++)
@@ -524,8 +566,8 @@ namespace BlossomRally
                 var g = grip[i];
                 float roll = -g.rolling * w.load * Mathf.Clamp(vx[i] / 0.5f, -1f, 1f) - g.looseDrag * spec.looseDrag * w.load * vx[i] * 0.1f;
                 // side force at roll-centre height (controlled roll), drive / brake force near the ground (real pitch)
-                body.AddForceAtPosition(wRight[i] * fy, hits[i].point + up * ForceHeight);
-                body.AddForceAtPosition(wFwd[i] * (fx + roll), hits[i].point + up * LongForceHeight);
+                body.AddForceAtPosition(wRight[i] * fy, hits[i].point + up * sideH);
+                body.AddForceAtPosition(wFwd[i] * (fx + roll), hits[i].point + up * longH);
                 float ls = Mathf.Max(0f, Mathf.Abs(w.angularVelocity * w.radius - vx[i]) - 0.12f * Mathf.Abs(vx[i]) - 1f);
                 w.lateralSlip = Mathf.Sqrt(vy[i] * vy[i] + ls * ls);
                 if (w.driven && Mathf.Abs(vx[i]) > 1f)
@@ -604,7 +646,14 @@ namespace BlossomRally
             }
             // anti roll-over: kerbs and bumps must not flip the car
             float rollAng = Mathf.Asin(Mathf.Clamp(Vector3.Dot(right, Vector3.up), -1f, 1f));
-            if (a.rollGuard > 0f && grounded > 0 && Mathf.Abs(rollAng) > 0.16f)
+            if (bike)
+            {
+                // balance assist: hold the physics body upright (the lean is visual); always on, softer in the air
+                float rollRate = Vector3.Dot(angVel, fwd);
+                float kp = grounded > 0 ? 170f : 70f, kd = grounded > 0 ? 26f : 12f;
+                body.AddAngularAcceleration(fwd * (-rollAng * kp - rollRate * kd));
+            }
+            else if (a.rollGuard > 0f && grounded > 0 && Mathf.Abs(rollAng) > 0.16f)
             {
                 float rollRate = Vector3.Dot(angVel, fwd);
                 float ex = Mathf.Abs(rollAng) - 0.16f;
@@ -658,6 +707,59 @@ namespace BlossomRally
             UprightTimer = Vector3.Dot(up, Vector3.up) < 0.25f ? UprightTimer + dt : 0f;
             for (int i = 0; i < n; i++) if (!wheels[i].front && wheels[i].grounded) RearSurface = wheels[i].surface;
             EngineRpm = Mathf.Lerp(EngineRpm, engRpm, 1f - Mathf.Exp(-dt * 30f));
+            if (bike) BikeVisuals(dt, yawRate, grounded);
+        }
+
+        // ------------------------------------------------------------------------------------- two-wheelers
+        void BikeVisuals(float dt, float yawRate, int grounded)
+        {
+            DriveWheel fw = null, rw = null;
+            for (int i = 0; i < wheels.Length; i++) { if (wheels[i].front) fw = wheels[i]; else rw = wheels[i]; }
+            bool frontDown = fw != null && fw.grounded, rearDown = rw != null && rw.grounded;
+            float v = Mathf.Max(0f, ForwardSpeed);
+
+            // lean: the steady-turn lean at speed, the handlebar at walking pace; flat in the air
+            float k = Smooth01((v - 1.5f) / 6f);
+            float phys = Mathf.Atan(v * yawRate / 9.81f) * Mathf.Rad2Deg;
+            float slow = Steer * 9f * Mathf.Clamp01(v / 1.2f);
+            float target = grounded > 0 ? Mathf.Lerp(slow, phys, k) : Lean * 0.5f;
+            target = Mathf.Clamp(target, -spec.leanMax, spec.leanMax);
+            float want = Mathf.Lerp(Lean, target, 1f - Mathf.Exp(-dt / 0.11f));
+            Lean = Mathf.MoveTowards(Lean, want, dt * 150f);
+            RiderLean = Lean * Mathf.Lerp(-0.6f, 0.22f, k);
+
+            // wheelie: full throttle launches in 1st / 2nd lift the front for a moment, then it sets down
+            bool canWheelie = spec.wheelie > 0f && !Reversing && Throttle > 0.85f && Gear <= 2 && v > 1f && v < 25f
+                              && rearDown && wobbleTime <= 0f && !Shifting;
+            wheelieHold = canWheelie ? wheelieHold + dt : 0f;
+            float wTarget = 0f;
+            if (canWheelie)
+                wTarget = spec.wheelie * 16f * Smooth01(wheelieHold / 0.35f) * (1f - Smooth01((wheelieHold - 1.9f) / 0.6f));
+            // stoppie: hard braking at speed lifts the rear a little
+            bool canStoppie = spec.stoppie > 0f && !Reversing && Brake > 0.8f && v > 7f && v < 30f && frontDown && Handbrake < 0.5f;
+            stoppieHold = canStoppie ? stoppieHold + dt : 0f;
+            if (canStoppie)
+                wTarget = -spec.stoppie * 9f * Smooth01(stoppieHold / 0.25f) * (1f - Smooth01((stoppieHold - 1.2f) / 0.4f));
+            // sprung (slightly under-damped: it bounces as the wheel lands); sub-stepped for 50 Hz physics too
+            float h = dt * 0.5f;
+            for (int s = 0; s < 2; s++)
+            {
+                wheelieVel += (130f * (wTarget - Wheelie) - 15f * wheelieVel) * h;
+                Wheelie += wheelieVel * h;
+            }
+            if (Wheelie > 22f) { Wheelie = 22f; wheelieVel = Mathf.Min(0f, wheelieVel); }
+            if (Wheelie < -12f) { Wheelie = -12f; wheelieVel = Mathf.Max(0f, wheelieVel); }
+
+            // crash wobble (also from hard landings)
+            if (LandedThisStep && LandingImpactSpeed > 7f) Crash((LandingImpactSpeed - 7f) / 8f);
+            if (wobbleTime > 0f)
+            {
+                wobbleTime = Mathf.Max(0f, wobbleTime - dt);
+                wobblePhase += dt * 15f;
+                float env = wobbleTime / Mathf.Max(0.1f, wobbleDur);
+                Wobble = wobbleAmp * env * env * Mathf.Sin(wobblePhase);
+            }
+            else Wobble = 0f;
         }
 
         static float Smooth01(float t) { t = Mathf.Clamp01(t); return t * t * (3f - 2f * t); }
@@ -812,7 +914,7 @@ namespace BlossomRally
         // ------------------------------------------------------------------------------------- drift state
         void UpdateDrift(float dt, float speed, float slip, int grounded, float hb)
         {
-            bool groundOk = grounded >= 3;
+            bool groundOk = grounded >= (bike ? 2 : 3);
             if (!IsDrifting)
             {
                 if (groundOk && speed > 7f && ForwardSpeed > 3f && Mathf.Abs(slip) > 12f && Mathf.Abs(slip) < 100f)

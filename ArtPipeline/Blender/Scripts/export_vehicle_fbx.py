@@ -105,9 +105,11 @@ def main():
             shutil.copy2(src, dst)
         copied.append(os.path.basename(src))
 
-    # Unity-facing vehicle data
+    # Unity-facing vehicle data (bikes: wheel_slots "F,R" on the root)
+    root = bpy.data.objects.get(f"{car}_Root")
+    slots = pc.wheel_slots(root)
     wheels = {}
-    for slot in pc.WHEEL_SLOTS:
+    for slot in slots:
         piv = bpy.data.objects.get(f"{car}_Wheel_{slot}")
         if piv is None:
             log.warn(f"{car}_Wheel_{slot} missing")
@@ -136,7 +138,6 @@ def main():
     vis = [o for o in objs if o.type == "MESH"]
     bb = pc.world_bbox(vis)
     tris = sum(pc.mesh_triangle_count(o.data) for o in vis)
-    root = bpy.data.objects.get(f"{car}_Root")
     steering = bpy.data.objects.get(f"{car}_SteeringWheel")
     data = {
         "car_id": car,
@@ -154,6 +155,7 @@ def main():
         if "FL" in wheels and "RL" in wheels else None,
         "track": round(abs(wheels["FL"]["blender_position"][0] - wheels["FR"]["blender_position"][0]), 4)
         if "FL" in wheels and "FR" in wheels else None,
+        "two_wheeler": bool(root.get("two_wheeler", False)) if root else False,
         "steering_wheel": {"transform": steering.name, "steer_axis": "local +Z in Unity (Blender local +Y)"}
         if steering else None,
         "colliders": colliders,
@@ -161,9 +163,17 @@ def main():
         "materials": sorted({m.name for o in vis for m in o.data.materials if m}),
     }
     # optional camera anchors written by build_generic.py (cars built after CAR-019)
-    for key in ("driver_eye", "hood_cam"):
+    for key in ("driver_eye", "hood_cam", "rider_seat", "rider_grip", "rider_peg"):
         if root is not None and key in root.keys():
             data[key] = pc.blender_to_unity(list(root[key]))
+    if "F" in wheels and "R" in wheels:   # two-wheelers
+        data["wheelbase"] = round(abs(wheels["F"]["blender_position"][1] - wheels["R"]["blender_position"][1]), 4)
+    if root is not None and "steer_rake" in root.keys():
+        data["steer_rake"] = round(float(root["steer_rake"]), 3)
+        fork = bpy.data.objects.get(f"{car}_Fork")
+        if fork is not None:
+            data["fork"] = {"transform": fork.name, "unity_pivot": pc.blender_to_unity(fork.matrix_world.translation),
+                            "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"}
     data_path = os.path.join(out_dir, f"{car}_vehicle_data.json")
     pc.write_json(data_path, data)
     log.act(f"vehicle data -> {data_path}")

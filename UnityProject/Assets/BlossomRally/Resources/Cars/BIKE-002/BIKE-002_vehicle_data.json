@@ -1,0 +1,176 @@
+{
+  "car_id": "BIKE-002",
+  "display_name": "Mantis 750",
+  "vehicle_class": "Street Naked",
+  "fbx": "BIKE-002_Export.fbx",
+  "root": "BIKE-002_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.61346,
+      -0.006
+    ],
+    "size": [
+      0.82,
+      1.22692,
+      2.032
+    ]
+  },
+  "triangles": 7138,
+  "wheels": {
+    "F": {
+      "transform": "BIKE-002_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.71,
+        0.3
+      ],
+      "unity_local_position": [
+        0.0,
+        0.3,
+        0.71
+      ],
+      "radius": 0.3,
+      "width": 0.12,
+      "steer": true,
+      "drive": false
+    },
+    "R": {
+      "transform": "BIKE-002_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.71,
+        0.312
+      ],
+      "unity_local_position": [
+        0.0,
+        0.312,
+        -0.71
+      ],
+      "radius": 0.312,
+      "width": 0.18,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "F",
+      "transform": "BIKE-002_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.71,
+        0.3
+      ],
+      "unity_local_position": [
+        0.0,
+        0.3,
+        0.71
+      ],
+      "radius": 0.3,
+      "width": 0.12,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "R",
+      "transform": "BIKE-002_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.71,
+        0.312
+      ],
+      "unity_local_position": [
+        0.0,
+        0.312,
+        -0.71
+      ],
+      "radius": 0.312,
+      "width": 0.18,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 1.42,
+  "track": null,
+  "two_wheeler": true,
+  "steering_wheel": null,
+  "colliders": [
+    {
+      "name": "BIKE-002_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.515,
+        0.0
+      ],
+      "unity_size": [
+        0.42,
+        0.59,
+        1.67
+      ]
+    }
+  ],
+  "textures": [
+    "BIKE-002_BaseColor.png"
+  ],
+  "materials": [
+    "M_BIKE-002_Accent",
+    "M_BIKE-002_Paint",
+    "M_BIKE-002_Plate",
+    "M_BIKE-002_Rim",
+    "M_BIKE-002_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-002",
+    "M_Trim_Fork_BIKE-002",
+    "M_Trim_Frame_BIKE-002",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    0.0,
+    1.45,
+    0.0
+  ],
+  "hood_cam": [
+    0.0,
+    1.2,
+    0.28
+  ],
+  "rider_seat": [
+    0.0,
+    0.84,
+    -0.24
+  ],
+  "rider_grip": [
+    0.3173,
+    1.0238,
+    0.2959
+  ],
+  "rider_peg": [
+    0.145,
+    0.36,
+    -0.3
+  ],
+  "steer_rake": 25.0,
+  "fork": {
+    "transform": "BIKE-002_Fork",
+    "unity_pivot": [
+      0.0,
+      0.95254,
+      0.40571
+    ],
+    "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"
+  }
+}

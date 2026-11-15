@@ -1,5 +1,6 @@
 // CarFactory.cs - spawns a playable car from Resources/Cars/<ID>: model, Rigidbody, collider,
-// ArcadeCar physics, drift FX and procedural engine audio.
+// ArcadeCar physics, drift FX and procedural engine audio. Motorbikes (spec.twoWheeler, BIKE-001..006) come
+// from the same folders with two wheels (slots F / R), a steering <ID>_Fork, the rider anchors and a BikeRider.
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,7 +30,8 @@ namespace BlossomRally
             // wheels from the exported vehicle data (falls back to the wheel pivots in the model)
             var data = LoadData(spec.id);
             var wheels = new List<ArcadeCar.Wheel>();
-            foreach (string slot in new[] { "FL", "FR", "RL", "RR" })
+            bool bike = spec.twoWheeler;
+            foreach (string slot in bike ? BikeSlots : CarSlots)
             {
                 var w = new ArcadeCar.Wheel { slot = slot, front = slot[0] == 'F' };
                 w.visual = FindDeep(model.transform, spec.id + "_Wheel_" + slot);
@@ -46,6 +48,11 @@ namespace BlossomRally
                     w.local = root.transform.InverseTransformPoint(w.visual.position);
                     w.radius = 0.32f;
                 }
+                else if (bike)
+                {
+                    w.local = new Vector3(0f, 0.31f, w.front ? 0.7f : -0.7f);
+                    w.radius = 0.31f;
+                }
                 else
                 {
                     w.local = new Vector3(slot[1] == 'L' ? -0.75f : 0.75f, 0.32f, w.front ? 1.25f : -1.2f);
@@ -55,7 +62,8 @@ namespace BlossomRally
             }
 
             // body collider from the body mesh bounds (kept above the wheels' reach)
-            Bounds b = new Bounds(new Vector3(0f, 0.8f, 0f), new Vector3(1.8f, 1.2f, 4.2f));
+            Bounds b = bike ? new Bounds(new Vector3(0f, 0.65f, 0f), new Vector3(0.5f, 0.6f, 1.9f))
+                            : new Bounds(new Vector3(0f, 0.8f, 0f), new Vector3(1.8f, 1.2f, 4.2f));
             var body = FindDeep(model.transform, spec.id + "_Body");
             if (body != null)
             {
@@ -97,13 +105,28 @@ namespace BlossomRally
                 car.HoodCam = new Vector3(data.hood_cam[0], data.hood_cam[1], data.hood_cam[2]);
             car.FrameExtra = Mathf.Max(0f, b.max.y - 1.5f);
             car.Init(spec, wheels.ToArray());
+            if (bike)
+            {
+                if (data != null && data.rider_seat != null && data.rider_seat.Length == 3)
+                    car.RiderSeat = new Vector3(data.rider_seat[0], data.rider_seat[1], data.rider_seat[2]);
+                if (data != null && data.rider_grip != null && data.rider_grip.Length == 3)
+                    car.RiderGrip = new Vector3(data.rider_grip[0], data.rider_grip[1], data.rider_grip[2]);
+                if (data != null && data.rider_peg != null && data.rider_peg.Length == 3)
+                    car.RiderPeg = new Vector3(data.rider_peg[0], data.rider_peg[1], data.rider_peg[2]);
+                car.SetupBike(model.transform, FindDeep(model.transform, spec.id + "_Fork"),
+                              data != null && data.steer_rake > 0f ? data.steer_rake : 25f);
+            }
             root.AddComponent<CarFX>();
             root.AddComponent<CarExtras>();
+            if (bike) root.AddComponent<BikeRider>();
             foreach (var t in root.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = CarExtras.CarLayer;
             root.AddComponent<EngineAudio>();
             root.transform.SetPositionAndRotation(pos, rot);
             return car;
         }
+
+        static readonly string[] CarSlots = { "FL", "FR", "RL", "RR" };
+        static readonly string[] BikeSlots = { "F", "R" };
 
         // ---- neon light strips (M_Light_Neon in the FBX, CAR-030): glowing, in the colour the model carries
         struct NeonSlot { public Renderer r; public int index; public Color c; }
@@ -172,7 +195,7 @@ namespace BlossomRally
             if (calibrated) return;
             calibrated = true;
             foreach (var spec in CarCatalog.Cars)
-                if (TryCar(spec.id)) return;
+                if (!spec.twoWheeler && TryCar(spec.id)) return;   // needs three wheel corners: cars only
             Debug.LogWarning("[BlossomRally] axis calibration failed - using identity");
         }
 

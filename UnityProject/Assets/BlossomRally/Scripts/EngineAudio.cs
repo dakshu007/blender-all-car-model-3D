@@ -3,6 +3,9 @@
 // turbo whistle + blow-off valve, tyre squeal on hard surfaces, per-surface rolling noise and wind.
 // Every loop is generated once (cached in static fields, per car class for the engine) as a seamless
 // circular buffer; at runtime only pitch / volume are modulated, so the CPU cost is tiny.
+// Motorbikes have their own families (CarCatalog.SoundFor): "Bike Sport" (screaming four), "Bike Twin",
+// "Bike Single" (buzzy thumper), "Scooter" (thin buzz) and "V-Twin" (uneven potato rumble). They rev much higher,
+// so every rpm threshold is scaled to the bike's limiter, and the recorded car loops are not used.
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -50,7 +53,8 @@ namespace BlossomRally
         AudioSource[] surface = new AudioSource[4];
         bool started;
 
-        bool groupB, classic, electric;
+        bool groupB, classic, electric, bikeFamily;
+        float rpmScale = 1f;      // bikes: rpm thresholds scaled to the limiter (7600 rpm = a car's)
         float classPitch = 1f, popChance = 1f;
         float load, spool, gearCut, cutTimer;
         int lastGear = 1;
@@ -70,6 +74,20 @@ namespace BlossomRally
             electric = cls == "Electric";
             classPitch = groupB ? 1.04f : classic ? 0.9f : electric ? 0.62f : 1f;
             popChance = groupB ? 1.3f : classic ? 0.45f : electric ? 0f : 1f;
+            bikeFamily = IsBikeFamily(cls);
+            if (bikeFamily)
+            {
+                // firing pulses per rev vs the four-cylinder loops: four 1 (x2 pulses), twins 0.5, single 0.25-ish
+                switch (cls)
+                {
+                    case "Bike Sport": classPitch = 0.92f; popChance = 1.0f; break;
+                    case "Bike Twin": classPitch = 0.62f; popChance = 0.8f; break;
+                    case "Bike Single": classPitch = 0.52f; popChance = 0.6f; break;
+                    case "Scooter": classPitch = 0.80f; popChance = 0.15f; break;
+                    default: classPitch = 0.50f; popChance = 1.2f; break;      // V-Twin
+                }
+                rpmScale = 7600f / Mathf.Max(3000f, car.spec.limiterRpm);
+            }
 
             var clips = EngineClips(cls);
             EnsureSharedClips();
@@ -83,7 +101,7 @@ namespace BlossomRally
             // the procedural layers stay underneath (quieter) for throttle load and texture
             string key = groupB ? "GroupB" : classic ? "Classic" : "Group4";
             AudioClip lo = null, hi = null;
-            if (!electric) try
+            if (!electric && !bikeFamily) try
             {
                 lo = Resources.Load<AudioClip>(EngineFolder + key + "_Low");
                 hi = Resources.Load<AudioClip>(EngineFolder + key + "_High");
@@ -137,7 +155,8 @@ namespace BlossomRally
             showFade = Mathf.MoveTowards(showFade, frozen ? (car.enabled ? 0.25f : 0f) : 1f, dt * 2f);
             float sfx = GameSettings.SfxVolume * showFade;
             float rpm = car.EngineRpm;
-            float rpm01 = Mathf.InverseLerp(900f, 7600f, rpm);
+            float rpmN = rpm * rpmScale;                 // = rpm for cars
+            float rpm01 = Mathf.InverseLerp(900f, 7600f, rpmN);
             float thr = Mathf.Clamp01(car.throttle);
             bool live = car.controlsEnabled;
 
@@ -153,7 +172,7 @@ namespace BlossomRally
                     PlayOne(shiftClip, 0.42f * sfx, Random.Range(0.92f, 1.08f));
                     if (live) InputReader.Rumble(0.22f, 0.12f, 0.07f);
                 }
-                else if (gear < lastGear && thr < 0.3f && rpm > 3000f && Random.value < 0.5f * popChance)
+                else if (gear < lastGear && thr < 0.3f && rpmN > 3000f && Random.value < 0.5f * popChance)
                 {
                     PlayOne(popClips[Random.Range(0, popClips.Length)], 0.22f * sfx, Random.Range(1.0f, 1.2f));   // downshift blip
                     RaiseBackfire(0.5f);
@@ -166,7 +185,7 @@ namespace BlossomRally
             float cutGain = 1f - 0.65f * gearCut;
 
             // ---- engine layers
-            float x = Mathf.InverseLerp(2700f, 5300f, rpm);
+            float x = Mathf.InverseLerp(2700f, 5300f, rpmN);
             float lowW = Mathf.Cos(x * Mathf.PI * 0.5f), highW = Mathf.Sin(x * Mathf.PI * 0.5f);
             float onW = Mathf.Sqrt(load), offW = Mathf.Sqrt(1f - load) * 0.85f;
             float gain = 0.34f * (0.6f + 0.4f * load) * (0.78f + 0.22f * rpm01) * cutGain * sfx * procMix;
@@ -196,7 +215,7 @@ namespace BlossomRally
             if (lifted)
             {
                 liftTime = now;
-                if (rpm > 4300f && peakThrottle > 0.7f && Random.value < 0.85f * Mathf.Min(1f, popChance))
+                if (rpmN > 4300f && peakThrottle > 0.7f && Random.value < 0.85f * Mathf.Min(1f, popChance))
                 {
                     crackles = Random.Range(2, groupB ? 8 : 6);
                     nextCrackle = now + Random.Range(0.03f, 0.12f);
@@ -217,7 +236,7 @@ namespace BlossomRally
                 RaiseBackfire(popVol / 0.36f);
             }
             // occasional overrun pops on a long lift at high revs
-            if (thr < 0.1f && rpm > 4800f && now - liftTime > 0.4f && Random.value < dt * 1.2f * popChance * rpm01)
+            if (thr < 0.1f && rpmN > 4800f && now - liftTime > 0.4f && Random.value < dt * 1.2f * popChance * rpm01)
             {
                 PlayOne(popClips[Random.Range(0, popClips.Length)], Random.Range(0.1f, 0.2f) * sfx, Random.Range(0.9f, 1.2f));
                 RaiseBackfire(0.35f);
@@ -295,12 +314,65 @@ namespace BlossomRally
         {
             public float[] harm;      // harmonic weights of the smooth tone
             public float tone, burst, burstDecay, formant, rasp, rough, sub, cutoff, drive;
+            public float[] cyl;       // per-firing amplitude pattern (null = the four-cylinder imbalance)
+        }
+
+        static bool IsBikeFamily(string cls)
+        {
+            return cls == "Bike Sport" || cls == "Bike Twin" || cls == "Bike Single" || cls == "Scooter" || cls == "V-Twin";
+        }
+
+        /// <summary>Motorbike engine loops: brighter, raspier, buzzier than the cars; twins / singles / the V-twin
+        /// get uneven firing patterns.</summary>
+        static AudioClip[] BikeClips(string cls)
+        {
+            EngineProfile on;
+            switch (cls)
+            {
+                case "Bike Sport":
+                    on = new EngineProfile { harm = new[] { 1f, 0.8f, 0.7f, 0.62f, 0.52f, 0.45f, 0.36f, 0.3f, 0.22f, 0.16f, 0.1f },
+                        tone = 0.75f, burst = 0.45f, burstDecay = 8f, formant = 6f, rasp = 0.34f, rough = 0.07f, sub = 0.05f,
+                        cutoff = 4400f, drive = 2.3f, cyl = new[] { 1f, 0.95f, 1.04f, 0.97f } };
+                    break;
+                case "Bike Twin":
+                    on = new EngineProfile { harm = new[] { 1f, 0.75f, 0.55f, 0.5f, 0.36f, 0.28f, 0.2f, 0.14f },
+                        tone = 0.65f, burst = 0.7f, burstDecay = 6f, formant = 4f, rasp = 0.3f, rough = 0.12f, sub = 0.3f,
+                        cutoff = 3100f, drive = 2.1f, cyl = new[] { 1f, 0.72f, 1f, 0.72f } };
+                    break;
+                case "Bike Single":
+                    on = new EngineProfile { harm = new[] { 1f, 0.7f, 0.62f, 0.5f, 0.42f, 0.36f, 0.3f, 0.22f, 0.16f },
+                        tone = 0.55f, burst = 0.95f, burstDecay = 7f, formant = 5f, rasp = 0.46f, rough = 0.18f, sub = 0.45f,
+                        cutoff = 3500f, drive = 2.6f, cyl = new[] { 1f, 0.5f, 1.02f, 0.52f } };
+                    break;
+                case "Scooter":
+                    on = new EngineProfile { harm = new[] { 0.7f, 0.9f, 0.6f, 0.7f, 0.4f, 0.45f, 0.25f, 0.2f },
+                        tone = 0.7f, burst = 0.3f, burstDecay = 10f, formant = 7f, rasp = 0.5f, rough = 0.1f, sub = 0f,
+                        cutoff = 5200f, drive = 2.8f, cyl = new[] { 1f, 0.9f, 1f, 0.9f } };
+                    break;
+                default:   // V-Twin: big uneven pulses, lots of low end
+                    on = new EngineProfile { harm = new[] { 1f, 0.6f, 0.35f, 0.22f, 0.12f, 0.06f },
+                        tone = 0.6f, burst = 1.0f, burstDecay = 5f, formant = 3f, rasp = 0.24f, rough = 0.22f, sub = 0.9f,
+                        cutoff = 1500f, drive = 2.0f, cyl = new[] { 1f, 0.42f, 1.1f, 0.4f } };
+                    break;
+            }
+            var off = on; off.burst *= 0.35f; off.rasp *= 0.4f; off.cutoff *= 0.45f; off.drive *= 0.6f; off.rough *= 1.6f;
+            var onHigh = on; onHigh.cutoff *= 1.5f; onHigh.rough *= 0.6f;
+            var offHigh = off; offHigh.cutoff *= 1.4f;
+            uint seed = (uint)(cls.GetHashCode() & 0x7fffffff) | 1u;
+            return new[]
+            {
+                ProcAudio.MakeClip("BR_Eng_LowOn", Engine(on, LowPeriod, LowCycles, seed), Rate, 1),
+                ProcAudio.MakeClip("BR_Eng_LowOff", Engine(off, LowPeriod, LowCycles, seed + 11), Rate, 1),
+                ProcAudio.MakeClip("BR_Eng_HighOn", Engine(onHigh, HighPeriod, HighCycles, seed + 23), Rate, 1),
+                ProcAudio.MakeClip("BR_Eng_HighOff", Engine(offHigh, HighPeriod, HighCycles, seed + 37), Rate, 1),
+            };
         }
 
         static AudioClip[] EngineClips(string cls)
         {
             AudioClip[] c;
             if (engineCache.TryGetValue(cls, out c) && c != null && c[0] != null) return c;
+            if (IsBikeFamily(cls)) { c = BikeClips(cls); engineCache[cls] = c; return c; }
             bool b = cls == "Group B", classic = cls == "Classic RWD";
             if (cls == "Electric")
             {
@@ -373,7 +445,7 @@ namespace BlossomRally
                 table[j] = s * p.tone * 0.35f + burst * p.burst;
             }
             // per-cycle amplitudes: random roughness x four-cylinder imbalance
-            float[] cyl = { 1f, 0.9f, 1.06f, 0.95f };
+            float[] cyl = p.cyl != null && p.cyl.Length == 4 ? p.cyl : new[] { 1f, 0.9f, 1.06f, 0.95f };
             var amp = new float[cycles];
             for (int k = 0; k < cycles; k++) amp[k] = (1f + p.rough * rng.Signed) * cyl[k & 3];
 

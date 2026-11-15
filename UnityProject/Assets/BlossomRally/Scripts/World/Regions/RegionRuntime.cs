@@ -232,7 +232,7 @@ namespace BlossomRally
 
             // player region + banner
             var gm = GameManager.Instance;
-            Vector3 car = gm != null && gm.Car != null ? gm.Car.transform.position : eye;
+            Vector3 car = gm != null && gm.Car != null ? PlayerState.Position : eye;      // the person on foot
             RegionId now = WorldLayout.At(new Vector2(car.x, car.z));
             if (now != Current)
             {

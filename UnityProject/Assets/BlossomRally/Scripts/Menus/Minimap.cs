@@ -76,7 +76,8 @@ namespace BlossomRally
         {
             var gm = GameManager.Instance;
             var car = gm != null ? gm.Car : null;
-            if (car != null && gm.IsDriving) Gps.Track(new Vector2(car.transform.position.x, car.transform.position.z));
+            Vector3 pp = PlayerState.Position;                      // the person on foot, otherwise the vehicle
+            if (car != null && gm.IsDriving) Gps.Track(new Vector2(pp.x, pp.z));
             visible = ShouldShow();
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
             if (!visible) { fade = 0f; headingInit = false; return; }
@@ -87,7 +88,7 @@ namespace BlossomRally
             rect = new Rect(Mathf.Round(26f * s), Mathf.Round(H - 26f * s - 30f * s - h), w, h);
 
             // heading from the camera (smooth), falling back to the car
-            Vector3 fwd = car.transform.forward;
+            Vector3 fwd = PlayerState.Forward;
             var cam = Camera.main;
             if (cam != null)
             {
@@ -100,7 +101,7 @@ namespace BlossomRally
             // zoom out with speed
             float want = Mathf.Lerp(260f, 560f, Mathf.Clamp01((car.SpeedKmh - 25f) / 140f));
             size = Mathf.Lerp(size, want, MenuArt.Damp(dt, 1.6f));
-            center = new Vector2(car.transform.position.x, car.transform.position.z);
+            center = new Vector2(pp.x, pp.z);
 
             if (Time.unscaledTime >= nextRender)
             {
@@ -257,7 +258,7 @@ namespace BlossomRally
             var gm = GameManager.Instance;
             if (gm != null && gm.Car != null)
             {
-                Vector3 cf = gm.Car.transform.forward;
+                Vector3 cf = PlayerState.Forward;
                 float rel = (Mathf.Atan2(cf.x, cf.z) * Mathf.Rad2Deg - heading) * Mathf.Deg2Rad;
                 Vector2 dir = new Vector2(Mathf.Sin(rel), -Mathf.Cos(rel));
                 MenuArt.Tex(new Rect(piv.x - 22f * s, piv.y - 22f * s, 44f * s, 44f * s), MenuArt.Glow, new Color(1f, 1f, 1f, 0.55f * k));

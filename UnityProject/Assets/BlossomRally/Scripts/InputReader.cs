@@ -2,7 +2,10 @@
 //  * keyboard through the legacy Input Manager, or the Input System package when only the new
 //    backend is enabled (so the game works with every "Active Input Handling" setting)
 //  * gamepad (Xbox / PlayStation / MFi): RT throttle, LT brake, left stick steer, A/B handbrake,
-//    Y camera, X photo, Select reset, Start pause, LB/RB replay, d-pad menus - with rumble
+//    L3 camera, X photo (or interact when a prompt shows), Y get in / out, Select reset, Start pause, LB replay,
+//    d-pad menus - with rumble
+//  * on foot: WASD / left stick move, Shift / LB sprint, Space / A jump, mouse / right stick look,
+//    E / X interact, F / Y get in or out of a vehicle
 //  * remappable keyboard bindings from GameSettings
 using UnityEngine;
 
@@ -128,8 +131,9 @@ namespace BlossomRally
             if (shiftFrame == Time.frameCount) return shiftValue;
             shiftFrame = Time.frameCount;
             int r = 0;
-            if (Down(KeyCode.LeftShift) || Down(KeyCode.E) || GamepadBridge.ButtonDown(PadButton.RightShoulder)) r = 1;
-            else if (Down(KeyCode.LeftControl) || Down(KeyCode.Q) || GamepadBridge.ButtonDown(PadButton.RightStickPress)) r = -1;
+            bool prompt = InteractPromptVisible;     // E is "interact" while a prompt shows
+            if (Down(KeyCode.LeftShift) || (!prompt && Down(KeyCode.E)) || GamepadBridge.ButtonDown(PadButton.RightShoulder)) r = 1;
+            else if (Down(KeyCode.LeftControl) || (!prompt && Down(KeyCode.Q)) || GamepadBridge.ButtonDown(PadButton.RightStickPress)) r = -1;
             float ry = GamepadBridge.RightStick.y;
             int f = ry > 0.75f ? 1 : (ry < -0.75f ? -1 : 0);
             if (f != 0 && flickState == 0 && r == 0) r = f;
@@ -145,12 +149,93 @@ namespace BlossomRally
             switch (a)
             {
                 case GameAction.Reset: return GamepadBridge.ButtonDown(PadButton.Select);
-                case GameAction.Camera: return GamepadBridge.ButtonDown(PadButton.North);
-                case GameAction.Photo: return GamepadBridge.ButtonDown(PadButton.West);
+                case GameAction.Camera: return GamepadBridge.ButtonDown(PadButton.LeftStickPress);      // Y is get in / out
+                case GameAction.Photo: return GamepadBridge.ButtonDown(PadButton.West) && !InteractPromptVisible;   // X interacts first
                 case GameAction.Replay: return GamepadBridge.ButtonDown(PadButton.LeftShoulder);
                 case GameAction.Map: return GamepadBridge.ButtonDown(PadButton.DpadDown);
                 default: return false;
             }
+        }
+
+        // ---- on foot / interaction ----
+        /// <summary>Set by the interaction system while an "E  ..." prompt is on screen (E / X then interact).</summary>
+        public static bool InteractPromptVisible { get; set; }
+
+        /// <summary>Interact: E / gamepad X.</summary>
+        public static bool InteractDown { get { return Down(KeyCode.E) || GamepadBridge.ButtonDown(PadButton.West); } }
+        /// <summary>Get in / out of a vehicle: F / gamepad Y.</summary>
+        public static bool VehicleDown { get { return Down(KeyCode.F) || GamepadBridge.ButtonDown(PadButton.North); } }
+        /// <summary>On foot: Shift / gamepad LB (or left stick click).</summary>
+        public static bool SprintHeld
+        {
+            get { return Key(KeyCode.LeftShift) || Key(KeyCode.RightShift) || GamepadBridge.Button(PadButton.LeftShoulder) || GamepadBridge.Button(PadButton.LeftStickPress); }
+        }
+        /// <summary>On foot: Space / gamepad A.</summary>
+        public static bool JumpDown { get { return Down(KeyCode.Space) || GamepadBridge.ButtonDown(PadButton.South); } }
+
+        /// <summary>True when the last Move value came from an analogue stick.</summary>
+        public static bool MoveAnalog { get; private set; }
+
+        /// <summary>On-foot movement: x = right, y = forward, magnitude 0..1 (driving bindings, arrows, left stick).</summary>
+        public static Vector2 Move
+        {
+            get
+            {
+                Vector2 k = Vector2.zero;
+                if (Bound(GameAction.Throttle) || Key(KeyCode.UpArrow)) k.y += 1f;
+                if (Bound(GameAction.Brake) || Key(KeyCode.DownArrow)) k.y -= 1f;
+                if (Bound(GameAction.SteerLeft) || Key(KeyCode.LeftArrow)) k.x -= 1f;
+                if (Bound(GameAction.SteerRight) || Key(KeyCode.RightArrow)) k.x += 1f;
+                if (k.sqrMagnitude > 0f) { MoveAnalog = false; return k.sqrMagnitude > 1f ? k.normalized : k; }
+                Vector2 s = GamepadBridge.LeftStick;
+                float m = s.magnitude;
+                if (m > 0.15f)
+                {
+                    MoveAnalog = true;
+                    float r = Mathf.Clamp01((m - 0.15f) / 0.8f);
+                    return s / m * r;
+                }
+                MoveAnalog = false;
+                return Vector2.zero;
+            }
+        }
+
+        static bool mouseAxesOk = true;
+
+        static float MouseAxis(string name)
+        {
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (!mouseAxesOk) return 0f;
+            try { return Input.GetAxisRaw(name); }
+            catch (System.ArgumentException) { mouseAxesOk = false; return 0f; }
+#else
+            return 0f;
+#endif
+        }
+
+        /// <summary>Mouse look sensitivity multiplier (1 = default).</summary>
+        public static float LookSensitivity = 1f;
+
+        /// <summary>Camera look this frame in degrees (x = yaw right, y = pitch up): mouse + right stick.</summary>
+        public static Vector2 LookDelta(float dt)
+        {
+            Vector2 d;
+#if ENABLE_LEGACY_INPUT_MANAGER
+            d = new Vector2(MouseAxis("Mouse X"), MouseAxis("Mouse Y")) * 2.2f;      // legacy axes: ~0.1 per pixel
+            if (d.sqrMagnitude < 1e-8f) d = GamepadBridge.MouseDelta * 0.16f;
+#else
+            d = GamepadBridge.MouseDelta * 0.16f;
+#endif
+            d *= LookSensitivity;
+            Vector2 s = GamepadBridge.RightStick;
+            float m = s.magnitude;
+            if (m > 0.15f)
+            {
+                float r = Mathf.Clamp01((m - 0.15f) / 0.8f);
+                r = 0.4f * r + 0.6f * r * r;
+                d += s / m * r * new Vector2(170f, 110f) * dt;
+            }
+            return d;
         }
 
         // ---- menu navigation (keyboard + gamepad) ----

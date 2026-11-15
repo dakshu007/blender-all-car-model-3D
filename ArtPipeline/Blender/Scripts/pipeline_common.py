@@ -12,6 +12,14 @@ import sys
 import bpy
 
 WHEEL_SLOTS = ("FL", "FR", "RL", "RR")
+BIKE_SLOTS = ("F", "R")
+
+
+def wheel_slots(root):
+    """Wheel slots of a vehicle: the four car corners, or the root's "wheel_slots" (bikes: "F,R")."""
+    if root is not None and "wheel_slots" in root.keys():
+        return tuple(s.strip() for s in str(root["wheel_slots"]).split(",") if s.strip())
+    return WHEEL_SLOTS
 
 
 def script_args(argv=None):

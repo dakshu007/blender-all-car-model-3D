@@ -22,6 +22,8 @@ namespace BlossomRally
         public static Vector2 RightStick { get { var g = Gamepad.current; return g != null ? g.rightStick.ReadValue() : Vector2.zero; } }
         public static float RightTrigger { get { var g = Gamepad.current; return g != null ? g.rightTrigger.ReadValue() : 0f; } }
         public static float LeftTrigger { get { var g = Gamepad.current; return g != null ? g.leftTrigger.ReadValue() : 0f; } }
+        /// <summary>Mouse movement this frame in pixels (zero without a mouse).</summary>
+        public static Vector2 MouseDelta { get { var m = Mouse.current; return m != null ? m.delta.ReadValue() : Vector2.zero; } }
 
         static ButtonControl Btn(Gamepad g, PadButton b)
         {
@@ -95,6 +97,7 @@ namespace BlossomRally
         public static Vector2 RightStick { get { return Vector2.zero; } }
         public static float RightTrigger { get { return 0f; } }
         public static float LeftTrigger { get { return 0f; } }
+        public static Vector2 MouseDelta { get { return Vector2.zero; } }
         public static bool Button(PadButton b) { return false; }
         public static bool ButtonDown(PadButton b) { return false; }
         public static void SetRumble(float low, float high) { }

@@ -84,14 +84,14 @@ namespace BlossomRally
         static Vector2 PlayerPos()
         {
             var gm = GameManager.Instance;
-            if (gm != null && gm.Car != null) { Vector3 p = gm.Car.transform.position; return new Vector2(p.x, p.z); }
+            if (gm != null && gm.Car != null) { Vector3 p = PlayerState.Position; return new Vector2(p.x, p.z); }
             return MapData.Garage;
         }
 
         static Vector2 PlayerDir()
         {
             var gm = GameManager.Instance;
-            if (gm != null && gm.Car != null) { Vector3 f = gm.Car.transform.forward; return new Vector2(f.x, -f.z); }
+            if (gm != null && gm.Car != null) { Vector3 f = PlayerState.Forward; return new Vector2(f.x, -f.z); }
             return new Vector2(0f, -1f);
         }
 

@@ -3,6 +3,8 @@
 // Drive = free roam or an event (rally stage / drift challenge via StageManager).
 // Also: drift scoring, HUD, ESC pause menu (weather, time of day, petals, camera, photo mode,
 // replay, settings, garage, main menu), and wiring of audio, valley life, replay and photo mode.
+// Drive has an on-foot sub-state (Gameplay/OnFoot: PlayerOnFoot, F / gamepad Y): no speedo / drift HUD on foot,
+// reset = back to the nearest road, fast travel / events / garage / title put the player back in the car first.
 // Press Play in ANY scene - it bootstraps itself if needed.
 using System.Collections;
 using UnityEngine;
@@ -118,6 +120,7 @@ namespace BlossomRally
             ReplaySystem.OnSound = PlaySfx;
             PhotoMode.OnSound = PlaySfx;
             StageManager.OnToast = Toast;
+            GameplayHooks.Toast = Toast;                 // gameplay modules (economy, places...) toast through here
             stages.OnExitToFreeRoam = () => { Toast("Free roam"); };
             MusicDirector.Ensure();
             MusicDirector.SetMode(MusicMode.Title);
@@ -140,7 +143,7 @@ namespace BlossomRally
             ValleyLife.Create(world);
             WaterLife.Create(world);
             WorldHooks.RaiseWorldBuilt(world);
-            SpawnCar(0, garage.TablePos, Quaternion.identity);
+            SpawnCar(EconomySave.StartCarIndex(), garage.TablePos, Quaternion.identity);   // the saved vehicle
             EnterTitle();
         }
 
@@ -172,6 +175,9 @@ namespace BlossomRally
             pauseMenu.Add("Photo mode", () => { SetPaused(false); photo.Enter(); });
             pauseMenu.Add("Instant replay", () => { SetPaused(false); if (replay.HasRecording) replay.Begin(); else Toast("Nothing to replay yet"); });
             pauseMenu.Add("Photo album", () => PhotoAlbum.Open(null));
+            pauseMenu.Add("Save game", EconomyDirector.SaveFromMenu, () => EconomySave.Data != null ? Wallet.Format(Wallet.Balance) : "");
+            pauseMenu.Add("Jobs nearby", () => { SetPaused(false); if (JobBoard.Instance != null) JobBoard.Instance.Open("phone", true); }, null, null, () => stages == null || !stages.Running);
+            pauseMenu.Add("Cancel current job", () => { SetPaused(false); if (JobSystem.Instance != null) JobSystem.Instance.Abandon(); }, null, null, () => JobSystem.HasJob);
             pauseMenu.Add("Settings", () => settings.Open(null));
             pauseMenu.Add("Garage (change car / livery)", () => { SetPaused(false); if (stages.Running) stages.Abort(); pendingEvent = -1; EnterSelect(); });
             pauseMenu.Add("Controls help", () => { showHelp = !showHelp; helpTimer = 0f; }, () => showHelp ? "Shown" : "Hidden");
@@ -248,6 +254,7 @@ namespace BlossomRally
         // ------------------------------------------------------------------ states
         void EnterTitle()
         {
+            PlayerOnFoot.ForceIntoCarIfOnFoot();
             ScorePopups.Clear();
             state = State.Title;
             activeTitleMenu = titleMenu;
@@ -261,6 +268,7 @@ namespace BlossomRally
 
         void EnterSelect()
         {
+            PlayerOnFoot.ForceIntoCarIfOnFoot();
             state = State.Select;
             if (car == null) SpawnCar(carIndex, garage.TablePos, Quaternion.identity);
             garage.Show(car);
@@ -294,11 +302,16 @@ namespace BlossomRally
         {
             carIndex = (index % CarCatalog.Cars.Length + CarCatalog.Cars.Length) % CarCatalog.Cars.Length;
             Vector3 v = Vector3.zero;
+            bool onFoot = PlayerOnFoot.OnFootOrBusy;
+            var foot = PlayerOnFoot.Instance;
             if (car != null)
             {
                 if (car.Body != null && !car.Body.isKinematic) v = car.Body.GetVelocity();
-                Destroy(car.gameObject);
+                if (foot != null) foot.VehicleRemoved(car);
+                if (PlayerVehicles.IsModuleOwned(car)) { if (foot != null) foot.ParkLeftBehind(car); }   // another module's bike stays parked
+                else Destroy(car.gameObject);
             }
+            PlayerVehicles.ClearLeftover(null);          // a new garage car replaces the one left parked
             car = CarFactory.Create(CarCatalog.Cars[carIndex], pos, rot);
             if (car == null) return;
             car.controlsEnabled = state == State.Drive;
@@ -308,6 +321,28 @@ namespace BlossomRally
             rig.target = car;
             if (state == State.Select || state == State.Title) garage.Show(car);
             ResetDrift(false);
+            if (onFoot && foot != null) foot.ParkSpawned(car);       // swapped while walking around: parks, empty
+        }
+
+        /// <summary>Make another vehicle (e.g. a bike or car another module spawned, entered on foot) the player's vehicle.
+        /// The previous garage car stays parked in the world (one at most); module-owned vehicles are never destroyed.</summary>
+        public void AdoptVehicle(ArcadeCar v)
+        {
+            if (v == null || v == car) return;
+            var old = car;
+            car = v;
+            for (int i = 0; i < CarCatalog.Cars.Length; i++)
+                if (v.spec != null && CarCatalog.Cars[i] == v.spec) { carIndex = i; break; }
+            car.OnImpact = OnImpact;
+            rig.target = car;
+            ResetDrift(false);
+            var foot = PlayerOnFoot.Instance;
+            if (old != null)
+            {
+                if (foot != null) foot.ParkLeftBehind(old);
+                if (!PlayerVehicles.IsModuleOwned(old)) PlayerVehicles.SetLeftover(old);
+            }
+            if (PlayerVehicles.Leftover == v) PlayerVehicles.ClearLeftover(v);
         }
 
         void OnImpact(float speed)
@@ -323,6 +358,7 @@ namespace BlossomRally
 
         void Respawn()
         {
+            if (PlayerOnFoot.OnFootOrBusy) { if (PlayerOnFoot.Instance != null) PlayerOnFoot.Instance.RespawnOnRoad(); return; }
             if (car == null) return;
             if (stages != null && stages.HandleRespawn()) return;
             Vector3 p; Quaternion r;
@@ -330,9 +366,22 @@ namespace BlossomRally
             TeleportCar(p, r);
         }
 
+        /// <summary>Catalogue index of the player's current vehicle.</summary>
+        public int CarIndex { get { return carIndex; } }
+
+        /// <summary>Economy showroom "set as current": swap the player's vehicle in place (parked where the old one was).</summary>
+        public void SwapCar(int index)
+        {
+            if (car == null || index < 0 || index >= CarCatalog.Cars.Length) return;
+            Vector3 f = Vector3.ProjectOnPlane(car.transform.forward, Vector3.up);
+            SpawnCar(index, car.transform.position + Vector3.up * 0.4f, Quaternion.LookRotation(f.sqrMagnitude > 1e-4f ? f : Vector3.forward));
+            if (car != null && PlayerState.OnFoot) car.controlsEnabled = false;
+        }
+
         /// <summary>Place the player's car at a pose with zero velocity (event restarts, checkpoint resets).</summary>
         public void TeleportCar(Vector3 p, Quaternion r)
         {
+            PlayerOnFoot.ForceIntoCarIfOnFoot();       // fast travel / events: back in the car first
             if (car == null || car.Body == null) return;
             if (!car.Body.isKinematic)
             {
@@ -380,16 +429,19 @@ namespace BlossomRally
                 if (pauseMenu.HandleInput()) SetPaused(false);
                 return;
             }
+            if (GameplayHooks.MenuOpen) { if (toastTimer > 0f) toastTimer -= Time.deltaTime; return; }   // a shop / showroom / job board has the input
             bool results = stages.ShowingResults;
             if (InputReader.PauseDown && !results) { SetPaused(true); UI.Sound("MenuSelect"); return; }
-            if (!stages.Running)
+            bool foot = PlayerOnFoot.OnFootOrBusy;
+            if (!stages.Running && !foot)
             {
                 // quick car swap: 1-9 pick the first nine, [ and ] step through the whole garage
                 int pick = -1;
                 for (int i = 0; i < Mathf.Min(9, CarCatalog.Cars.Length); i++)
                     if (InputReader.Down(KeyCode.Alpha1 + i)) pick = i;
-                if (InputReader.Down(KeyCode.LeftBracket)) pick = (carIndex - 1 + CarCatalog.Cars.Length) % CarCatalog.Cars.Length;
-                if (InputReader.Down(KeyCode.RightBracket)) pick = (carIndex + 1) % CarCatalog.Cars.Length;
+                if (InputReader.Down(KeyCode.LeftBracket)) pick = Garage.NextOwned(carIndex, -1);
+                if (InputReader.Down(KeyCode.RightBracket)) pick = Garage.NextOwned(carIndex, 1);
+                if (pick >= 0 && Garage.Locked(pick)) { Toast(CarCatalog.Cars[pick].name + " - buy it at the Jade Harbour Showroom"); pick = -1; }
                 if (pick >= 0)
                 {
                     SpawnCar(pick, car.transform.position + Vector3.up * 0.6f, Quaternion.LookRotation(Vector3.ProjectOnPlane(car.transform.forward, Vector3.up)));
@@ -397,9 +449,10 @@ namespace BlossomRally
                 }
                 if (InputReader.Down(KeyCode.Tab)) { pendingEvent = -1; EnterSelect(); return; }
             }
+            else if (!stages.Running && InputReader.Down(KeyCode.Tab)) { pendingEvent = -1; EnterSelect(); return; }
             if (InputReader.ActionDown(GameAction.Reset) && !results) Respawn();
             if (InputReader.ActionDown(GameAction.Camera)) { rig.Cycle(); UI.Sound("Camera"); }
-            if (InputReader.ActionDown(GameAction.Replay) && !results)
+            if (!foot && InputReader.ActionDown(GameAction.Replay) && !results)
             {
                 if (replay.HasRecording) { replay.Begin(); return; }
                 Toast("Nothing to replay yet");
@@ -409,11 +462,11 @@ namespace BlossomRally
             if (InputReader.Down(KeyCode.P) || GamepadBridge.ButtonDown(PadButton.DpadUp)) { petals.CycleLevel(); Toast("Petals: " + PetalNames[petals.level]); }
             if (InputReader.Down(KeyCode.G) || GamepadBridge.ButtonDown(PadButton.DpadRight)) { atmosphere.CycleWeather(); Toast("Weather: " + atmosphere.Current.name); }
             if (InputReader.Down(KeyCode.T) || GamepadBridge.ButtonDown(PadButton.DpadLeft)) { atmosphere.CycleTimeOfDay(); Toast("Time of day: " + atmosphere.CurrentTime.name); }
-            if (InputReader.Down(KeyCode.F)) { postFx.effectEnabled = !postFx.effectEnabled; Toast(postFx.effectEnabled ? "Colour grade ON" : "Colour grade OFF"); }
+            if (InputReader.Down(KeyCode.K)) { postFx.effectEnabled = !postFx.effectEnabled; Toast(postFx.effectEnabled ? "Colour grade ON" : "Colour grade OFF"); }
             if (InputReader.Down(KeyCode.H)) showHelp = !showHelp;
-            if (car != null && (car.UprightTimer > 2f || car.transform.position.y < -30f)) Respawn();
-            UpdateDrift(Time.deltaTime);
-            float speed01 = car != null ? Mathf.Clamp01(car.SpeedKmh / 160f) : 0f;
+            if (!foot && car != null && (car.UprightTimer > 2f || car.transform.position.y < -30f)) Respawn();
+            if (!foot) UpdateDrift(Time.deltaTime);
+            float speed01 = car != null && !foot ? Mathf.Clamp01(car.SpeedKmh / 160f) : 0f;
             float intensity = Mathf.Max(0.2f * speed01, drifting ? 0.2f + 0.8f * (driftCombo - 1f) / 7f : 0f);
             MusicDirector.SetIntensity(intensity);
             if (helpTimer > 0f) { helpTimer -= Time.deltaTime; if (helpTimer <= 0f) showHelp = false; }
@@ -438,7 +491,11 @@ namespace BlossomRally
                 if (ex != null) ex.Clean();
                 Toast("Washed, repaired and polished");
             }
-            if (InputReader.MenuConfirm) { UI.Sound("MenuSelect"); EnterDrive(); return; }
+            if (InputReader.MenuConfirm)
+            {
+                if (Garage.Locked(carIndex)) { UI.Sound("MenuBack"); Toast("Locked - buy it at the " + VehiclePrices.ShowroomName(CarCatalog.Cars[carIndex].shop ?? "city_cars")); return; }
+                UI.Sound("MenuSelect"); EnterDrive(); return;
+            }
             if (InputReader.MenuBack) { UI.Sound("MenuBack"); pendingEvent = -1; EnterTitle(); }
         }
 
@@ -547,8 +604,10 @@ namespace BlossomRally
                 return;
             }
             if (HideHud) return;
-            // ---- driving HUD ----
-            if (car != null)
+            bool onFootHud = PlayerOnFoot.OnFootOrBusy;
+            if (car != null && car.spec != null) spec = car.spec;
+            // ---- driving HUD (hidden on foot) ----
+            if (car != null && !onFootHud)
             {
                 // HUD strings are rebuilt only when the shown value changes (no garbage per frame)
                 int kmh = Mathf.RoundToInt(car.SpeedKmh);
@@ -562,13 +621,13 @@ namespace BlossomRally
                 }
                 UI.Label(new Rect(W - 330, H - 60, 300, 30), hudGear, UI.MidRight, pink);
             }
-            if (!stages.Running)
+            if (!stages.Running && !onFootHud)
             {
                 int sc = Mathf.RoundToInt(totalScore), bd = Mathf.RoundToInt(bestDrift);
                 if (sc != hudScoreV || bd != hudBestV || hudScore == null) { hudScoreV = sc; hudBestV = bd; hudScore = "Score " + sc + "    Best drift " + bd; }
                 UI.Label(new Rect(20, Mathf.Min(H - 60, Minimap.TopEdge - 30), 500, 30), hudScore, UI.MidLeft, white);
             }
-            if (car != null && car.IsDrifting)
+            if (car != null && car.IsDrifting && !onFootHud)
             {
                 float bw = 280f, bx = (W - bw) * 0.5f, by = H - 46f;
                 UI.Panel(new Rect(bx - 4, by - 4, bw + 8, 18), 0.45f);
@@ -584,7 +643,7 @@ namespace BlossomRally
                 if (dk != hudDriftV || hudDrift == null) { hudDriftV = dk; hudDrift = (right ? "DRIFT  >  " : "<  DRIFT  ") + ang + "°"; }
                 UI.Label(new Rect(0, by - 34, W, 28), hudDrift, UI.Mid, white);
             }
-            if (!stages.Running)
+            if (!stages.Running && !onFootHud)
             {
                 if (drifting && driftPoints > 10f)
                 {
@@ -605,9 +664,9 @@ namespace BlossomRally
                 {
                     helpCheck = Time.frameCount + 30;                  // key bindings can change in the settings
                     int st = BindingStamp();
-                    if (helpText == null || st != helpStamp) { helpStamp = st; helpText = BuildHelp(); }
+                    if (helpText == null || st != helpStamp) { helpStamp = st; helpText = BuildHelp(); footHelp = BuildFootHelp(); }
                 }
-                UI.Label(new Rect(30, 26, 410, 340), helpText, UI.Small, white);
+                UI.Label(new Rect(30, 26, 410, 340), onFootHud ? footHelp : helpText, UI.Small, white);
             }
             if (paused)
             {
@@ -619,7 +678,7 @@ namespace BlossomRally
         // ---- cached HUD text (rebuilt only when the value changes)
         int hudKmh = int.MinValue, hudScoreV = int.MinValue, hudBestV = int.MinValue, hudDriftV = int.MinValue, hudComboV = int.MinValue, hudPtsV = int.MinValue;
         int hudGearV = int.MinValue;
-        string hudSpeed, hudGear, hudCarFor, hudScore, hudDrift, hudCombo, hudPts, helpText;
+        string hudSpeed, hudGear, hudCarFor, hudScore, hudDrift, hudCombo, hudPts, helpText, footHelp;
         int helpCheck, helpStamp;
 
         static int BindingStamp()
@@ -639,9 +698,21 @@ namespace BlossomRally
                       "   counter-steer or lift off = straighten out\n" +
                       "   " + Key(GameAction.Handbrake) + " + steer the other way = switch sides\n\n" +
                       Key(GameAction.Reset) + " reset    " + Key(GameAction.Camera) + " camera    " + Key(GameAction.Replay) + " replay    " + Key(GameAction.Photo) + " photo\n" +
-                      "G weather    T time of day    P petals    F grade\n" +
-                      "1 - 9 switch car    TAB garage    M map    ESC pause    H help\n" +
-                      "Gamepad: RT/LT drive, stick steer, A/B handbrake,\nY camera, X photo, LB replay, Select reset, Start pause";
+                      "G weather    T time of day    P petals    K grade\n" +
+                      "F get out    E use    1 - 9 switch car    TAB garage    M map    ESC pause    H help\n" +
+                      "Gamepad: RT/LT drive, stick steer, A/B handbrake, Y get out,\nL3 camera, X photo / use, LB replay, Select reset, Start pause";
+        }
+
+        static string BuildFootHelp()
+        {
+            return
+                      "ON FOOT\n\n" +
+                      Key(GameAction.Throttle) + " " + Key(GameAction.SteerLeft) + " " + Key(GameAction.Brake) + " " + Key(GameAction.SteerRight) + " / arrows  walk     SHIFT sprint\n" +
+                      "SPACE jump     mouse  look around\n" +
+                      "F  get in a vehicle     E  use / enter (prompts)\n" +
+                      Key(GameAction.Camera) + " camera distance    " + Key(GameAction.Reset) + " back to the road    " + Key(GameAction.Photo) + " photo\n" +
+                      "M map    TAB garage    ESC pause    H help\n\n" +
+                      "Gamepad: left stick walk, right stick look, LB sprint,\nA jump, Y get in, X use, L3 camera, Select road";
         }
 
         static string Key(GameAction a)

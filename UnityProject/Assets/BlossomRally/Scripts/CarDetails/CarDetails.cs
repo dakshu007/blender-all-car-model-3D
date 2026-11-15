@@ -12,6 +12,8 @@
 // All small animated parts of one car (crew, needles, wipers, antenna, vent, knot...) are posed into ONE
 // LifeBatch mesh = one draw call with the shared vertex-colour material. Quality Low drops the co-driver,
 // beams, haze, exhaust light, debris and the knot, and poses at a reduced rate.
+// Motorbikes (spec.twoWheeler) get no cabin systems (crew, cockpit, windscreen, dangles, decals, beams) and no
+// CarDamage dents: their rider is BikeRider, their crashes a wobble; they keep the tyre debris.
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,8 +35,12 @@ namespace BlossomRally
         {
             if (car == null || car.GetComponent<CarDetails>() != null) return;
             var anatomy = CarAnatomy.Build(car);
-            var dmg = car.gameObject.AddComponent<CarDamage>();
-            dmg.Setup(anatomy);
+            CarDamage dmg = null;
+            if (!car.IsTwoWheeler)
+            {
+                dmg = car.gameObject.AddComponent<CarDamage>();
+                dmg.Setup(anatomy);
+            }
             var det = car.gameObject.AddComponent<CarDetails>();
             det.Setup(anatomy, dmg);
         }
@@ -121,6 +127,16 @@ namespace BlossomRally
             builtQuality = quality;
             PickColours();
             batch = new LifeBatch();
+            if (car != null && car.IsTwoWheeler)
+            {
+                if (quality >= 1) systems.Add(new CarDebris());
+                foreach (var s in systems)
+                {
+                    try { s.Build(this); }
+                    catch (System.Exception e) { Debug.LogException(e); }
+                }
+                return;
+            }
             decals = new CarDecals();
             windscreen = new CarWindscreen();
             lightsFx = new CarLightsFX();

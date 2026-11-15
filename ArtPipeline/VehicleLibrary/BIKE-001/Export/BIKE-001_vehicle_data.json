@@ -1,0 +1,177 @@
+{
+  "car_id": "BIKE-001",
+  "display_name": "Lingyun SR",
+  "vehicle_class": "Sport Bike",
+  "fbx": "BIKE-001_Export.fbx",
+  "root": "BIKE-001_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.564,
+      -0.006
+    ],
+    "size": [
+      0.7,
+      1.128,
+      2.012
+    ]
+  },
+  "triangles": 6382,
+  "wheels": {
+    "F": {
+      "transform": "BIKE-001_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.7,
+        0.3
+      ],
+      "unity_local_position": [
+        0.0,
+        0.3,
+        0.7
+      ],
+      "radius": 0.3,
+      "width": 0.12,
+      "steer": true,
+      "drive": false
+    },
+    "R": {
+      "transform": "BIKE-001_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.7,
+        0.312
+      ],
+      "unity_local_position": [
+        0.0,
+        0.312,
+        -0.7
+      ],
+      "radius": 0.312,
+      "width": 0.185,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "F",
+      "transform": "BIKE-001_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.7,
+        0.3
+      ],
+      "unity_local_position": [
+        0.0,
+        0.3,
+        0.7
+      ],
+      "radius": 0.3,
+      "width": 0.12,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "R",
+      "transform": "BIKE-001_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.7,
+        0.312
+      ],
+      "unity_local_position": [
+        0.0,
+        0.312,
+        -0.7
+      ],
+      "radius": 0.312,
+      "width": 0.185,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 1.4,
+  "track": null,
+  "two_wheeler": true,
+  "steering_wheel": null,
+  "colliders": [
+    {
+      "name": "BIKE-001_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.525,
+        0.0
+      ],
+      "unity_size": [
+        0.42,
+        0.61,
+        1.65
+      ]
+    }
+  ],
+  "textures": [
+    "BIKE-001_BaseColor.png"
+  ],
+  "materials": [
+    "M_BIKE-001_Accent",
+    "M_BIKE-001_Paint",
+    "M_BIKE-001_Plate",
+    "M_BIKE-001_Rim",
+    "M_BIKE-001_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Glass_Tint",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-001",
+    "M_Trim_Fork_BIKE-001",
+    "M_Trim_Frame_BIKE-001",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    0.0,
+    1.38,
+    0.02
+  ],
+  "hood_cam": [
+    0.0,
+    1.22,
+    0.3
+  ],
+  "rider_seat": [
+    0.0,
+    0.86,
+    -0.22
+  ],
+  "rider_grip": [
+    0.2662,
+    0.8678,
+    0.3395
+  ],
+  "rider_peg": [
+    0.145,
+    0.36,
+    -0.3
+  ],
+  "steer_rake": 24.0,
+  "fork": {
+    "transform": "BIKE-001_Fork",
+    "unity_pivot": [
+      0.0,
+      0.93948,
+      0.41528
+    ],
+    "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"
+  }
+}

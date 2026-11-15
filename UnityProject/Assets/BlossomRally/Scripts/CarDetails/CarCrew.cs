@@ -195,6 +195,12 @@ namespace BlossomRally
         {
             var car = d.car;
             var batch = d.batch;
+            if (PlayerState.IsVehicleEmpty(car))      // on-foot module: the player got out - empty seats, wheel at rest
+            {
+                if (!emptied) { emptied = true; HideCrew(batch); Dispose(); }
+                return;
+            }
+            emptied = false;
             idleT += dt;
             Vector3 felt = d.FeltGravity();
             Vector2 g = new Vector2(Mathf.Clamp(felt.x / 9.81f, -1.3f, 1.3f), Mathf.Clamp(felt.z / 9.81f, -1.3f, 1.3f));
@@ -269,6 +275,19 @@ namespace BlossomRally
                     if (sd > 0f) hr = Vector3.Lerp(hr, pt, pointW); else hl = Vector3.Lerp(hl, pt, pointW);
                 }
                 PosePerson(d, co, g, dt, hl, hr);
+            }
+        }
+
+        bool emptied;
+
+        void HideCrew(LifeBatch batch)
+        {
+            foreach (var p in new[] { drv, co })
+            {
+                if (p == null) continue;
+                batch.Set(p.legs, Matrix4x4.zero); batch.Set(p.torso, Matrix4x4.zero); batch.Set(p.head, Matrix4x4.zero);
+                batch.Set(p.upL, Matrix4x4.zero); batch.Set(p.foL, Matrix4x4.zero); batch.Set(p.upR, Matrix4x4.zero); batch.Set(p.foR, Matrix4x4.zero);
+                if (p.book >= 0) batch.Set(p.book, Matrix4x4.zero);
             }
         }
 

@@ -302,6 +302,54 @@ namespace BlossomRally
             }
         }
 
+        // ================================================================== ownership (economy module)
+        /// <summary>True when the catalogue entry at index isn't owned yet (bought in a showroom): it can be viewed, not driven.</summary>
+        public static bool Locked(int index)
+        {
+            var cars = CarCatalog.Cars;
+            return index >= 0 && index < cars.Length && cars[index] != null && !Wallet.Owns(cars[index].id);
+        }
+
+        /// <summary>Next owned vehicle from 'from' in direction dir (wraps; returns 'from' if nothing else is owned).</summary>
+        public static int NextOwned(int from, int dir)
+        {
+            int n = CarCatalog.Cars.Length;
+            for (int k = 1; k <= n; k++)
+            {
+                int i = ((from + dir * k) % n + n) % n;
+                if (!Locked(i)) return i;
+            }
+            return from;
+        }
+
+        string lockFor, lockPrice, lockWhere, lockHave;
+        int lockHaveFor = int.MinValue;
+
+        /// <summary>Locked vehicle on the turntable: padlock, price and where to buy it.</summary>
+        void DrawLock(float W, float H, float s)
+        {
+            var gm = GameManager.Instance;
+            var spec = gm != null && gm.Car != null ? gm.Car.spec : null;
+            if (spec == null || Wallet.Owns(spec.id)) return;
+            if (!ReferenceEquals(lockFor, spec.id))
+            {
+                lockFor = spec.id;
+                lockPrice = VehiclePrices.PriceText(spec);
+                lockWhere = "Buy at " + VehiclePrices.ShowroomName(spec.shop ?? (VehiclePrices.IsBike(spec) ? "coast_bikes" : "city_cars"));
+            }
+            if (lockHaveFor != Wallet.Balance) { lockHaveFor = Wallet.Balance; lockHave = "You have " + Wallet.Format(Wallet.Balance); }
+            float w = 470f * s, h = 112f * s;
+            Rect r = new Rect((W - w) * 0.5f, H - 190f * s, w, h);
+            MenuArt.Card(r, 1f);
+            float pulse = 0.85f + 0.15f * Mathf.Sin(Time.unscaledTime * 3f);
+            EcoGui.Lock(new Rect(r.x + 26f * s, r.y + 22f * s, 50f * s, 66f * s), MenuArt.A(UI.Gold, pulse));
+            float x = r.x + 100f * s;
+            MenuArt.Text(new Rect(x, r.y + 12f * s, w - 120f * s, 34f * s), "LOCKED", MenuArt.MidL, UI.Pink);
+            MenuArt.Text(new Rect(x, r.y + 12f * s, w - 120f * s, 34f * s), lockPrice, MenuArt.MidR, UI.Gold);
+            MenuArt.Text(new Rect(x, r.y + 48f * s, w - 120f * s, 26f * s), lockWhere, MenuArt.Body, UI.White);
+            MenuArt.Text(new Rect(x, r.y + 76f * s, w - 120f * s, 22f * s), lockHave, MenuArt.Small, MenuArt.A(UI.White, 0.65f));
+        }
+
         static float DeadZone(float v) { return Mathf.Abs(v) < 0.15f ? 0f : (v - Mathf.Sign(v) * 0.15f) / 0.85f; }
 
         // ================================================================== animation + camera
@@ -437,6 +485,7 @@ namespace BlossomRally
                 bool c;
                 MenuArt.Chip(24f * s, H - 52f * s, pad ? "Y" : "V", "showroom walk-around", true, out c);
                 if (c) SetShowroom(true);
+                DrawLock(W, H, s);
                 return;
             }
             var gm = GameManager.Instance;

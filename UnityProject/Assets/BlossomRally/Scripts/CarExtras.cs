@@ -5,6 +5,7 @@
 //  * petals settling on the bonnet / roof / boot when slow, blown off at speed
 //  * spray from the tyres on wet roads
 //  * continuous gamepad rumble from the surface and drifting
+// Motorbikes: the headlight and the settled petals ride on the tilted model (they lean with the bike).
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -82,6 +83,17 @@ namespace BlossomRally
 #else
             weather = Object.FindObjectOfType<PetalWeather>();
 #endif
+            if (car.IsTwoWheeler)
+            {
+                // the bike's own lamp height (just under the bonnet-camera point), then lean with the model
+                hl.transform.localPosition = new Vector3(0f, Mathf.Clamp(car.HoodCam.y - 0.28f, 0.6f, 1.2f), extents.z - 0.1f);
+                headlight.spotAngle = 70f;
+                if (car.Model != null)
+                {
+                    hl.transform.SetParent(car.Model, true);
+                    pgo.transform.SetParent(car.Model, true);
+                }
+            }
         }
 
         void OnDestroy()

@@ -42,6 +42,12 @@ namespace BlossomRally
                 case "CAR-029": return Srgb(29, 35, 51);
                 case "CAR-030": return Srgb(42, 31, 77);
                 case "CAR-031": return Srgb(122, 37, 49);
+                case "BIKE-001": return Srgb(243, 241, 236);   // motorbikes: the livery base colour
+                case "BIKE-002": return Srgb(46, 125, 107);
+                case "BIKE-003": return Srgb(159, 216, 200);
+                case "BIKE-004": return Srgb(242, 138, 46);
+                case "BIKE-005": return Srgb(217, 210, 193);
+                case "BIKE-006": return Srgb(158, 27, 44);
                 default: return Color.white;
             }
         }

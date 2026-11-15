@@ -39,5 +39,26 @@ namespace BlossomRally
         /// <summary>Raised after the player got out (true) or into (false) a vehicle.</summary>
         public static event System.Action<bool> OnFootChanged;
         public static void RaiseOnFootChanged(bool onFoot) { if (OnFootChanged != null) OnFootChanged(onFoot); }
+
+        /// <summary>True while getting in / out of a vehicle (the short door animation).</summary>
+        public static bool InTransition { get; set; }
+
+        // ---- parked, empty vehicles (crew hidden, lights off): the car the player left, a left-behind car
+        static readonly System.Collections.Generic.List<ArcadeCar> empty = new System.Collections.Generic.List<ArcadeCar>(4);
+
+        /// <summary>True when nobody sits in this vehicle (the player got out): cockpit crew is hidden.</summary>
+        public static bool IsVehicleEmpty(ArcadeCar v)
+        {
+            if (v == null) return false;
+            for (int i = 0; i < empty.Count; i++) if (empty[i] == v) return true;
+            return false;
+        }
+
+        public static void SetVehicleEmpty(ArcadeCar v, bool isEmpty)
+        {
+            for (int i = empty.Count - 1; i >= 0; i--)
+                if (empty[i] == null || empty[i] == v) empty.RemoveAt(i);
+            if (isEmpty && v != null) empty.Add(v);
+        }
     }
 }

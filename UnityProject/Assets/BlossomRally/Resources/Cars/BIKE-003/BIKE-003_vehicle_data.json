@@ -1,0 +1,174 @@
+{
+  "car_id": "BIKE-003",
+  "display_name": "Peony 125",
+  "vehicle_class": "Retro Scooter",
+  "fbx": "BIKE-003_Export.fbx",
+  "root": "BIKE-003_Root",
+  "axes": {
+    "blender": "+Y forward, +Z up, +X right",
+    "unity": "+Z forward, +Y up, +X right",
+    "mapping": "unity = (blender.x, blender.z, blender.y)"
+  },
+  "bounds_unity": {
+    "center": [
+      0.0,
+      0.58631,
+      -0.00656
+    ],
+    "size": [
+      0.62538,
+      1.17262,
+      1.87688
+    ]
+  },
+  "triangles": 6342,
+  "wheels": {
+    "F": {
+      "transform": "BIKE-003_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.64,
+        0.245
+      ],
+      "unity_local_position": [
+        0.0,
+        0.245,
+        0.64
+      ],
+      "radius": 0.245,
+      "width": 0.105,
+      "steer": true,
+      "drive": false
+    },
+    "R": {
+      "transform": "BIKE-003_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.64,
+        0.245
+      ],
+      "unity_local_position": [
+        0.0,
+        0.245,
+        -0.64
+      ],
+      "radius": 0.245,
+      "width": 0.11,
+      "steer": false,
+      "drive": true
+    }
+  },
+  "wheel_list": [
+    {
+      "slot": "F",
+      "transform": "BIKE-003_Wheel_F",
+      "blender_position": [
+        0.0,
+        0.64,
+        0.245
+      ],
+      "unity_local_position": [
+        0.0,
+        0.245,
+        0.64
+      ],
+      "radius": 0.245,
+      "width": 0.105,
+      "steer": true,
+      "drive": false
+    },
+    {
+      "slot": "R",
+      "transform": "BIKE-003_Wheel_R",
+      "blender_position": [
+        0.0,
+        -0.64,
+        0.245
+      ],
+      "unity_local_position": [
+        0.0,
+        0.245,
+        -0.64
+      ],
+      "radius": 0.245,
+      "width": 0.11,
+      "steer": false,
+      "drive": true
+    }
+  ],
+  "wheelbase": 1.28,
+  "track": null,
+  "two_wheeler": true,
+  "steering_wheel": null,
+  "colliders": [
+    {
+      "name": "BIKE-003_Collider_Body",
+      "type": "BoxCollider",
+      "unity_center": [
+        0.0,
+        0.505,
+        0.0
+      ],
+      "unity_size": [
+        0.42,
+        0.57,
+        1.53
+      ]
+    }
+  ],
+  "textures": [
+    "BIKE-003_BaseColor.png"
+  ],
+  "materials": [
+    "M_BIKE-003_Paint",
+    "M_BIKE-003_Plate",
+    "M_BIKE-003_Rim",
+    "M_BIKE-003_Seat",
+    "M_Brake_Disc",
+    "M_Chrome",
+    "M_Light_Head",
+    "M_Light_Indicator",
+    "M_Light_Tail",
+    "M_Tire_Rubber",
+    "M_Trim_Accent2_BIKE-003",
+    "M_Trim_Alu",
+    "M_Trim_Black",
+    "M_Trim_Engine_BIKE-003",
+    "M_Trim_Grey"
+  ],
+  "driver_eye": [
+    0.0,
+    1.48,
+    -0.1
+  ],
+  "hood_cam": [
+    0.0,
+    1.18,
+    0.22
+  ],
+  "rider_seat": [
+    0.0,
+    0.82,
+    -0.24
+  ],
+  "rider_grip": [
+    0.251,
+    0.9026,
+    0.3334
+  ],
+  "rider_peg": [
+    0.1,
+    0.27,
+    0.16
+  ],
+  "steer_rake": 24.0,
+  "fork": {
+    "transform": "BIKE-003_Fork",
+    "unity_pivot": [
+      0.0,
+      0.8114,
+      0.38782
+    ],
+    "steer_axis": "rake from vertical, top leaning back (unity: 0, cos, -sin)"
+  }
+}
